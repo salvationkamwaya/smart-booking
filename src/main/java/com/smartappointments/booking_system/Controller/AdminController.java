@@ -16,10 +16,32 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
-    @GetMapping
+    @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("userCount", adminService.getAllUsers().size());
-        model.addAttribute("activeAppointments", adminService.getAppointmentsByStatus("CONFIRMED"));
+        // Get all data for dashboard
+        List<User> allUsers = adminService.getAllUsers();
+        List<Appointment> allAppointments = adminService.getAllAppointments();
+        List<Appointment> confirmedAppointments = adminService.getAppointmentsByStatus("CONFIRMED");
+        List<Appointment> recentAppointments = allAppointments.stream()
+                .sorted((a1, a2) -> a2.getAppointmentTime().compareTo(a1.getAppointmentTime()))
+                .limit(5)
+                .toList();
+        
+        // Calculate statistics
+        long totalUsers = allUsers.size();
+        long activeAppointmentsCount = confirmedAppointments.size();
+        long providersOnline = allUsers.stream()
+                .filter(user -> user.getRole().toString().contains("PROVIDER") && user.isActive())
+                .count();
+        
+        // Add data to model
+        model.addAttribute("totalUsers", totalUsers);
+        model.addAttribute("activeAppointmentsCount", activeAppointmentsCount);
+        model.addAttribute("providersOnline", providersOnline);
+        model.addAttribute("satisfactionRate", 94); // This could be calculated from feedback data
+        model.addAttribute("allUsers", allUsers.stream().limit(4).toList()); // Show first 4 users
+        model.addAttribute("recentAppointments", recentAppointments);
+        
         return "admin/admin-dashboard";
     }
 
