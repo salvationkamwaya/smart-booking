@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Appointments - Availability Settings</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    * {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    :root {
+        --soft-white: #FAFAFA;
+        --charcoal-gray: #333333;
+        --teal-blue: #26A69A;
+        --navy-blue: #1A3C5A;
+        --coral-red: #FF6F61;
+        --mint-green: #A7F3D0;
+        --light-gray: #F5F7FA;
+        --medium-gray: #E4E7EB;
+        --dark-gray: #64748B;
+    }
+
+    .availability-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--teal-blue);
+    }
+
+    .availability-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .day-pill {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        background-color: var(--mint-green);
+        color: var(--charcoal-gray);
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-right: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .day-pill.active {
+        background-color: var(--teal-blue);
+        color: white;
+    }
+
+    .time-range-badge {
+        background-color: rgba(38, 166, 154, 0.15);
+        color: var(--teal-blue);
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .schedule-table th {
+        background-color: rgba(26, 60, 90, 0.05);
+        font-weight: 600;
+        color: var(--navy-blue);
+    }
+
+    .schedule-table tr:nth-child(even) {
+        background-color: rgba(245, 247, 250, 0.5);
+    }
+
+    .schedule-table tr:hover {
+        background-color: rgba(167, 243, 208, 0.1);
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: var(--teal-blue);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .override-card {
+        border-left: 4px solid #FFA726;
+    }
+
+    .time-off-card {
+        border-left: 4px solid #EF5350;
+    }
+
+    .calendar-highlight {
+        background-color: rgba(167, 243, 208, 0.3);
+        border-radius: 50%;
+    }
+
+    .flatpickr-day.selected {
+        background-color: var(--teal-blue);
+        border-color: var(--teal-blue);
+    }
+
+    .flatpickr-day.blocked {
+        background-color: #FFEBEE;
+        color: #EF5350;
+        border-color: #EF5350;
+    }
+
+    .flatpickr-day.override {
+        background-color: #FFF3E0;
+        color: #FFA726;
+        border-color: #FFA726;
+    }
+
+    @media (max-width: 768px) {
+        .schedule-container {
+            overflow-x: auto;
+        }
+
+        .schedule-table {
+            min-width: 700px;
+        }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<!-- Navigation Bar -->
+<nav class="bg-blue-900 text-white p-4 fixed top-0 w-full shadow-lg z-50">
+  <div class="container mx-auto flex justify-between items-center">
+    <button class="md:hidden p-2 text-white rounded-lg hover:bg-teal-700 transition-colors">
+      <i class="fas fa-bars w-5 h-5"></i>
+    </button>
+    <div class="flex items-center">
+      <i class="fas fa-calendar-check text-teal-400 text-xl mr-2"></i>
+      <h1 class="text-xl font-bold">Smart Appointments</h1>
+    </div>
+    <div class="flex items-center space-x-4">
+      <div class="hidden md:flex items-center">
+        <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold mr-2">P</div>
+        <span class="font-medium">Dr. Sarah Johnson</span>
+      </div>
+      <button class="bg-red-500 hover:bg-teal-700 px-4 py-2 rounded-lg transition-colors duration-300 flex items-center">
+        <i class="fas fa-sign-out-alt mr-2"></i>
+        <span class="hidden sm:inline">Logout</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="flex min-h-screen pt-16">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-blue-900 text-white p-6 fixed top-16 h-full hidden md:block transition-all duration-300 z-40 shadow-xl">
+    <div class="flex items-center justify-between mb-8">
+      <h2 class="text-xl font-semibold flex items-center">
+        <i class="fas fa-user-md mr-2 text-teal-400"></i>
+        Provider Menu
+      </h2>
+    </div>
+    <nav>
+      <ul class="space-y-3">
+        <li>
+          <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
+            <i class="fas fa-tachometer-alt mr-3"></i>
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
+            <i class="fas fa-plus-circle mr-3"></i>
+            Add Time Slot
+          </a>
+        </li>
+        <li>
+          <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
+            <i class="fas fa-calendar-alt mr-3"></i>
+            View Calendar
+          </a>
+        </li>
+        <li>
+          <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
+            <i class="fas fa-list mr-3"></i>
+            My Appointments
+          </a>
+        </li>
+        <li>
+          <a href="#" class="block px-4 py-3 rounded-xl bg-teal-700 text-white transition-colors duration-300 flex items-center">
+            <i class="fas fa-sliders-h mr-3"></i>
+            Availability Settings
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
+    <div class="max-w-6xl mx-auto">
+      <!-- Page Header -->
+      <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Availability Settings</h1>
+        <p class="text-gray-600 mt-2">Configure your regular hours, specific overrides, and time off periods</p>
+      </div>
+
+      <!-- Recurring Schedule Section -->
+      <section class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">Recurring Weekly Schedule</h2>
+          <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+            <i class="fas fa-save mr-2"></i> Save Changes
+          </button>
+        </div>
+
+        <div class="schedule-container">
+          <table class="schedule-table w-full border-collapse">
+            <thead>
+            <tr>
+              <th class="p-3 text-left">Day</th>
+              <th class="p-3 text-left">Availability</th>
+              <th class="p-3 text-left">Time Slots</th>
+              <th class="p-3 text-center">Status</th>
+              <th class="p-3 text-center">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Monday -->
+            <tr>
+              <td class="p-3 font-medium">Monday</td>
+              <td class="p-3">
+                <div class="flex flex-wrap">
+                  <span class="time-range-badge">9:00 AM - 12:00 PM</span>
+                  <span class="time-range-badge">1:00 PM - 5:00 PM</span>
+                </div>
+              </td>
+              <td class="p-3">30 min slots</td>
+              <td class="p-3 text-center">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="p-3 text-center">
+                <button class="text-teal-600 hover:text-teal-800 mr-2">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="text-gray-400 hover:text-red-500">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Tuesday -->
+            <tr>
+              <td class="p-3 font-medium">Tuesday</td>
+              <td class="p-3">
+                <div class="flex flex-wrap">
+                  <span class="time-range-badge">8:30 AM - 12:30 PM</span>
+                  <span class="time-range-badge">2:00 PM - 6:00 PM</span>
+                </div>
+              </td>
+              <td class="p-3">45 min slots</td>
+              <td class="p-3 text-center">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="p-3 text-center">
+                <button class="text-teal-600 hover:text-teal-800 mr-2">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="text-gray-400 hover:text-red-500">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Wednesday -->
+            <tr>
+              <td class="p-3 font-medium">Wednesday</td>
+              <td class="p-3">
+                <div class="flex flex-wrap">
+                  <span class="time-range-badge">10:00 AM - 1:00 PM</span>
+                  <span class="time-range-badge">3:00 PM - 7:00 PM</span>
+                </div>
+              </td>
+              <td class="p-3">30 min slots</td>
+              <td class="p-3 text-center">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="p-3 text-center">
+                <button class="text-teal-600 hover:text-teal-800 mr-2">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="text-gray-400 hover:text-red-500">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Thursday -->
+            <tr>
+              <td class="p-3 font-medium">Thursday</td>
+              <td class="p-3">
+                <div class="flex flex-wrap">
+                  <span class="time-range-badge">9:00 AM - 12:00 PM</span>
+                  <span class="time-range-badge">1:00 PM - 5:00 PM</span>
+                </div>
+              </td>
+              <td class="p-3">60 min slots</td>
+              <td class="p-3 text-center">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="p-3 text-center">
+                <button class="text-teal-600 hover:text-teal-800 mr-2">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="text-gray-400 hover:text-red-500">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Friday -->
+            <tr>
+              <td class="p-3 font-medium">Friday</td>
+              <td class="p-3">
+                <div class="flex flex-wrap">
+                  <span class="time-range-badge">8:00 AM - 12:00 PM</span>
+                </div>
+              </td>
+              <td class="p-3">30 min slots</td>
+              <td class="p-3 text-center">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="p-3 text-center">
+                <button class="text-teal-600 hover:text-teal-800 mr-2">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="text-gray-400 hover:text-red-500">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Saturday -->
+            <tr>
+              <td class="p-3 font-medium">Saturday</td>
+              <td class="p-3">
+                <div class="flex flex-wrap">
+                  <span class="time-range-badge">9:00 AM - 1:00 PM</span>
+                </div>
+              </td>
+              <td class="p-3">60 min slots</td>
+              <td class="p-3 text-center">
+                <label class="toggle-switch">
+                  <input type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="p-3 text-center">
+                <button class="text-teal-600 hover:text-teal-800 mr-2">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="text-gray-400 hover:text-red-500">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Sunday -->
+            <tr>
+              <td class="p-3 font-medium">Sunday</td>
+              <td class="p-3">
+                <div class="text-gray-500 italic">No availability</div>
+              </td>
+              <td class="p-3">-</td>
+              <td class="p-3 text-center">
+                <label class="toggle-switch">
+                  <input type="checkbox">
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td class="p-3 text-center">
+                <button class="text-teal-600 hover:text-teal-800">
+                  <i class="fas fa-plus-circle"></i>
+                </button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add New Schedule Button -->
+        <div class="mt-6">
+          <button class="bg-white border-2 border-dashed border-teal-500 text-teal-600 hover:bg-teal-50 w-full py-4 rounded-lg transition-colors flex items-center justify-center">
+            <i class="fas fa-plus-circle mr-2"></i> Add Another Day Schedule
+          </button>
+        </div>
+      </section>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Specific Date Overrides -->
+        <section class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Specific Date Overrides</h2>
+            <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+              <i class="fas fa-plus mr-2"></i> Add Override
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Override 1 -->
+            <div class="override-card availability-card bg-white rounded-lg shadow p-5">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="text-xl font-bold text-gray-800">June 19, 2025</h3>
+                  <p class="text-gray-600">Juneteenth Holiday</p>
+                  <div class="flex flex-wrap mt-3">
+                    <span class="time-range-badge">10:00 AM - 2:00 PM</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">Reduced Hours</span>
+                  <div class="mt-3">
+                    <button class="text-orange-600 hover:text-orange-800 mr-2">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-red-500">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Override 2 -->
+            <div class="override-card availability-card bg-white rounded-lg shadow p-5">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="text-xl font-bold text-gray-800">July 4, 2025</h3>
+                  <p class="text-gray-600">Independence Day</p>
+                  <div class="flex flex-wrap mt-3">
+                    <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">Closed</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">Closed</span>
+                  <div class="mt-3">
+                    <button class="text-orange-600 hover:text-orange-800 mr-2">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-red-500">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Override Form -->
+          <div class="mt-6 p-4 bg-orange-50 rounded-lg">
+            <h3 class="font-bold text-gray-800 mb-3">Add New Date Override</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-gray-700 font-medium mb-2">Select Date</label>
+                <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Select date" id="override-date">
+              </div>
+
+              <div>
+                <label class="block text-gray-700 font-medium mb-2">Availability Type</label>
+                <div class="flex space-x-4">
+                  <label class="inline-flex items-center">
+                    <input type="radio" name="override-type" class="form-radio text-orange-600" checked>
+                    <span class="ml-2">Custom Hours</span>
+                  </label>
+                  <label class="inline-flex items-center">
+                    <input type="radio" name="override-type" class="form-radio text-orange-600">
+                    <span class="ml-2">Closed All Day</span>
+                  </label>
+                </div>
+              </div>
+
+              <div id="custom-hours-section">
+                <label class="block text-gray-700 font-medium mb-2">Time Slots</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Start time" id="override-start-time">
+                  </div>
+                  <div>
+                    <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="End time" id="override-end-time">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-gray-700 font-medium mb-2">Reason (Optional)</label>
+                <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="E.g. Holiday, Training, etc.">
+              </div>
+
+              <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors">
+                Add Override
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Time Off Management -->
+        <section class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Time Off & Vacations</h2>
+            <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+              <i class="fas fa-plus mr-2"></i> Add Time Off
+            </button>
+          </div>
+
+          <div class="space-y-4 mb-6">
+            <!-- Time Off 1 -->
+            <div class="time-off-card availability-card bg-white rounded-lg shadow p-5">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="text-xl font-bold text-gray-800">Summer Vacation</h3>
+                  <p class="text-gray-600">July 10 - July 20, 2025</p>
+                  <div class="mt-2">
+                    <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Approved</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm text-gray-600">10 days</p>
+                  <div class="mt-3">
+                    <button class="text-red-600 hover:text-red-800 mr-2">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-red-500">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Time Off 2 -->
+            <div class="time-off-card availability-card bg-white rounded-lg shadow p-5">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="text-xl font-bold text-gray-800">Medical Leave</h3>
+                  <p class="text-gray-600">August 5 - August 9, 2025</p>
+                  <div class="mt-2">
+                    <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Pending</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm text-gray-600">5 days</p>
+                  <div class="mt-3">
+                    <button class="text-red-600 hover:text-red-800 mr-2">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-red-500">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Time Off Form -->
+          <div class="p-4 bg-red-50 rounded-lg">
+            <h3 class="font-bold text-gray-800 mb-3">Add Time Off Period</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-gray-700 font-medium mb-2">Time Off Type</label>
+                <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                  <option>Vacation</option>
+                  <option>Medical Leave</option>
+                  <option>Personal Day</option>
+                  <option>Training/Conference</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-gray-700 font-medium mb-2">Start Date</label>
+                  <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Start date" id="timeoff-start-date">
+                </div>
+                <div>
+                  <label class="block text-gray-700 font-medium mb-2">End Date</label>
+                  <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="End date" id="timeoff-end-date">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-gray-700 font-medium mb-2">Reason</label>
+                <textarea class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" rows="2" placeholder="Brief reason for time off"></textarea>
+              </div>
+
+              <div class="flex items-center">
+                <label class="inline-flex items-center">
+                  <input type="checkbox" class="form-checkbox text-red-600">
+                  <span class="ml-2">Notify patients about this time off</span>
+                </label>
+              </div>
+
+              <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
+                Request Time Off
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Calendar Preview -->
+      <section class="bg-white rounded-xl shadow-sm p-6 mt-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Calendar Preview</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <div id="availability-calendar" class="bg-gray-50 p-4 rounded-lg"></div>
+          </div>
+          <div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h3 class="font-bold text-gray-800 mb-3">Legend</h3>
+              <div class="space-y-3">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 rounded-full bg-teal-500 mr-2"></div>
+                  <span>Regular Availability</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-4 h-4 rounded-full bg-orange-500 mr-2"></div>
+                  <span>Modified Hours</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-4 h-4 rounded-full bg-red-500 mr-2"></div>
+                  <span>Time Off</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-4 h-4 rounded-full bg-gray-300 mr-2"></div>
+                  <span>No Availability</span>
+                </div>
+              </div>
+
+              <div class="mt-6">
+                <h3 class="font-bold text-gray-800 mb-3">Upcoming Changes</h3>
+                <div class="space-y-3">
+                  <div class="flex justify-between text-sm">
+                    <span class="font-medium">Jun 19</span>
+                    <span>Reduced hours (10am-2pm)</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="font-medium">Jul 4</span>
+                    <span>Closed (Holiday)</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="font-medium">Jul 10-20</span>
+                    <span>Vacation (Time off)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-6">
+                <button class="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 py-3 rounded-lg transition-colors flex items-center justify-center">
+                  <i class="fas fa-download mr-2"></i> Download Schedule PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Initialize date pickers
+  flatpickr("#override-date", {
+      dateFormat: "M j, Y",
+      minDate: "today"
+  });
+
+  flatpickr("#timeoff-start-date", {
+      dateFormat: "M j, Y",
+      minDate: "today"
+  });
+
+  flatpickr("#timeoff-end-date", {
+      dateFormat: "M j, Y",
+      minDate: "today"
+  });
+
+  // Initialize time pickers
+  flatpickr("#override-start-time", {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "h:i K",
+      time_24hr: false
+  });
+
+  flatpickr("#override-end-time", {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "h:i K",
+      time_24hr: false
+  });
+
+  // Initialize calendar
+  document.addEventListener('DOMContentLoaded', function() {
+      const calendarEl = document.getElementById('availability-calendar');
+
+      // For demo purposes, we'll create a simple calendar
+      const today = new Date();
+      const calendarHTML = `
+          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div class="bg-gray-800 text-white py-3 text-center font-bold">June 2025</div>
+              <div class="grid grid-cols-7 gap-px bg-gray-200 border-b border-gray-200">
+                  <div class="py-2 text-center text-xs font-semibold text-gray-600">Sun</div>
+                  <div class="py-2 text-center text-xs font-semibold text-gray-600">Mon</div>
+                  <div class="py-2 text-center text-xs font-semibold text-gray-600">Tue</div>
+                  <div class="py-2 text-center text-xs font-semibold text-gray-600">Wed</div>
+                  <div class="py-2 text-center text-xs font-semibold text-gray-600">Thu</div>
+                  <div class="py-2 text-center text-xs font-semibold text-gray-600">Fri</div>
+                  <div class="py-2 text-center text-xs font-semibold text-gray-600">Sat</div>
+              </div>
+              <div class="grid grid-cols-7 gap-px bg-gray-200">
+                  <!-- Week 1 -->
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right text-gray-400">1</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">2</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">3</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">4</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">5</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">6</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">7</div>
+                  </div>
+
+                  <!-- Week 2 -->
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right text-gray-400">8</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">9</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">10</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">11</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">12</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">13</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right">14</div>
+                  </div>
+
+                  <!-- Week 3 -->
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right text-gray-400">15</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right font-bold">16</div>
+                      <div class="text-xs mt-1">9:00am-5:00pm</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right font-bold">17</div>
+                      <div class="text-xs mt-1">9:00am-5:00pm</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right font-bold">18</div>
+                      <div class="text-xs mt-1">9:00am-5:00pm</div>
+                  </div>
+                  <div class="bg-orange-50 p-2 h-24">
+                      <div class="text-right font-bold">19</div>
+                      <div class="text-xs mt-1 text-orange-600">10:00am-2:00pm</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right font-bold">20</div>
+                      <div class="text-xs mt-1">8:00am-12:00pm</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right font-bold">21</div>
+                      <div class="text-xs mt-1">9:00am-1:00pm</div>
+                  </div>
+
+                  <!-- Week 4 -->
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right text-gray-400">22</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right">23</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right">24</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right">25</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right">26</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right">27</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right">28</div>
+                  </div>
+
+                  <!-- Week 5 -->
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right text-gray-400">29</div>
+                  </div>
+                  <div class="bg-white p-2 h-24 calendar-highlight">
+                      <div class="text-right">30</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right text-gray-400">1</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right text-gray-400">2</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right text-gray-400">3</div>
+                  </div>
+                  <div class="bg-orange-50 p-2 h-24">
+                      <div class="text-right">4</div>
+                      <div class="text-xs mt-1 text-orange-600">Closed</div>
+                  </div>
+                  <div class="bg-white p-2 h-24">
+                      <div class="text-right text-gray-400">5</div>
+                  </div>
+              </div>
+          </div>
+      `;
+
+      calendarEl.innerHTML = calendarHTML;
+  });
+
+  // Toggle custom hours section
+  document.querySelectorAll('input[name="override-type"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+          const customHoursSection = document.getElementById('custom-hours-section');
+          if (this.value === "closed") {
+              customHoursSection.style.display = 'none';
+          } else {
+              customHoursSection.style.display = 'block';
+          }
+      });
+  });
+</script>
+</body>
+</html>

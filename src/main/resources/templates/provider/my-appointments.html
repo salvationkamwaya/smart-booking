@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Appointments - My Appointments</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        :root {
+            --soft-white: #FAFAFA;
+            --charcoal-gray: #333333;
+            --teal-blue: #26A69A;
+            --navy-blue: #1A3C5A;
+            --coral-red: #FF6F61;
+            --mint-green: #A7F3D0;
+            --light-gray: #F5F7FA;
+            --medium-gray: #E4E7EB;
+            --dark-gray: #64748B;
+        }
+
+        .appointment-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--teal-blue);
+        }
+
+        .appointment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .appointment-card.confirmed {
+            border-left-color: var(--teal-blue);
+        }
+
+        .appointment-card.pending {
+            border-left-color: #FFA726;
+        }
+
+        .appointment-card.cancelled {
+            border-left-color: #EF5350;
+        }
+
+        .appointment-card.completed {
+            border-left-color: #66BB6A;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-badge.confirmed {
+            background-color: rgba(38, 166, 154, 0.15);
+            color: var(--teal-blue);
+        }
+
+        .status-badge.pending {
+            background-color: rgba(255, 167, 38, 0.15);
+            color: #FFA726;
+        }
+
+        .status-badge.cancelled {
+            background-color: rgba(239, 83, 80, 0.15);
+            color: #EF5350;
+        }
+
+        .status-badge.completed {
+            background-color: rgba(102, 187, 106, 0.15);
+            color: #66BB6A;
+        }
+
+        .tab-button {
+            position: relative;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            color: var(--dark-gray);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: var(--teal-blue);
+            font-weight: 600;
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--teal-blue);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .filter-btn.active {
+            background-color: var(--teal-blue);
+            color: white;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 11px;
+            height: calc(100% - 24px);
+            width: 2px;
+            background-color: var(--medium-gray);
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .appointment-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+
+        .appointment-details.expanded {
+            max-height: 500px;
+        }
+
+        @media (max-width: 768px) {
+            .appointment-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<!-- Navigation Bar -->
+<nav class="bg-blue-900 text-white p-4 fixed top-0 w-full shadow-lg z-50">
+    <div class="container mx-auto flex justify-between items-center">
+        <button class="md:hidden p-2 text-white rounded-lg hover:bg-teal-700 transition-colors">
+            <i class="fas fa-bars w-5 h-5"></i>
+        </button>
+        <div class="flex items-center">
+            <i class="fas fa-calendar-check text-teal-400 text-xl mr-2"></i>
+            <h1 class="text-xl font-bold">Smart Appointments</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="hidden md:flex items-center">
+                <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold mr-2">P</div>
+                <span class="font-medium">Dr. Sarah Johnson</span>
+            </div>
+            <button class="bg-red-500 hover:bg-teal-700 px-4 py-2 rounded-lg transition-colors duration-300 flex items-center">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                <span class="hidden sm:inline">Logout</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="flex min-h-screen pt-16">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-blue-900 text-white p-6 fixed top-16 h-full hidden md:block transition-all duration-300 z-40 shadow-xl">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-user-md mr-2 text-teal-400"></i>
+                Provider Menu
+            </h2>
+        </div>
+        <nav>
+            <ul class="space-y-3">
+                <li>
+                    <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
+                        <i class="fas fa-tachometer-alt mr-3"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
+                        <i class="fas fa-plus-circle mr-3"></i>
+                        Add Time Slot
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
+                        <i class="fas fa-calendar-alt mr-3"></i>
+                        View Calendar
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="block px-4 py-3 rounded-xl bg-teal-700 text-white transition-colors duration-300 flex items-center">
+                        <i class="fas fa-list mr-3"></i>
+                        My Appointments
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
+                        <i class="fas fa-sliders-h mr-3"></i>
+                        Availability Settings
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
+        <div class="max-w-6xl mx-auto">
+            <!-- Page Header -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">My Appointments</h1>
+                <p class="text-gray-600 mt-2">Manage and review all your scheduled appointments</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Upcoming</p>
+                            <p class="text-2xl font-bold mt-1">8</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-calendar text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Pending</p>
+                            <p class="text-2xl font-bold mt-1">3</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                            <i class="fas fa-clock text-yellow-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Completed</p>
+                            <p class="text-2xl font-bold mt-1">24</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Cancelled</p>
+                            <p class="text-2xl font-bold mt-1">2</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                            <i class="fas fa-times-circle text-red-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Bar -->
+            <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <!-- Tabs -->
+                    <div class="tabs flex border-b border-gray-200">
+                        <button class="tab-button active">Upcoming</button>
+                        <button class="tab-button">Pending</button>
+                        <button class="tab-button">Completed</button>
+                        <button class="tab-button">Cancelled</button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="flex flex-wrap gap-2">
+                        <div class="relative">
+                            <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        <select class="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                            <option>All Services</option>
+                            <option>Consultation</option>
+                            <option>Checkup</option>
+                            <option>Therapy</option>
+                        </select>
+                        <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-filter mr-2"></i>
+                            Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments List -->
+            <div class="appointment-grid grid grid-cols-1 gap-4">
+                <!-- Appointment Card 1 -->
+                <div class="appointment-card confirmed bg-white rounded-xl shadow-sm p-5">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center mr-4 flex-shrink-0">
+                                <i class="fas fa-user-md text-teal-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">John Anderson</h3>
+                                <p class="text-gray-600">Annual Checkup</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="status-badge confirmed mr-2">Confirmed</span>
+                                    <span class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>30 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-gray-800">10:00 AM</p>
+                            <p class="text-gray-600">June 15, 2025</p>
+                            <button class="mt-2 text-teal-600 hover:text-teal-800 toggle-details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Details -->
+                    <div class="appointment-details mt-4">
+                        <div class="border-t border-gray-200 pt-4">
+                            <h4 class="font-bold text-gray-700 mb-3">Appointment Details</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Contact Information</p>
+                                    <p class="font-medium">john.anderson@example.com</p>
+                                    <p class="font-medium">(555) 123-4567</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Notes</p>
+                                    <p>Annual physical exam. Patient requested to discuss lab results from last visit.</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-6">
+                                <h4 class="font-bold text-gray-700 mb-3">Actions</h4>
+                                <div class="flex flex-wrap gap-3">
+                                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-video mr-2"></i> Start Video Call
+                                    </button>
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-edit mr-2"></i> Reschedule
+                                    </button>
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-times mr-2"></i> Cancel
+                                    </button>
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-file-medical mr-2"></i> Add Notes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointment Card 2 -->
+                <div class="appointment-card pending bg-white rounded-xl shadow-sm p-5">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mr-4 flex-shrink-0">
+                                <i class="fas fa-user-injured text-yellow-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">Sarah Mitchell</h3>
+                                <p class="text-gray-600">Follow-up Consultation</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="status-badge pending mr-2">Pending</span>
+                                    <span class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>45 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-gray-800">11:30 AM</p>
+                            <p class="text-gray-600">June 15, 2025</p>
+                            <button class="mt-2 text-yellow-600 hover:text-yellow-800 toggle-details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Details -->
+                    <div class="appointment-details mt-4">
+                        <div class="border-t border-gray-200 pt-4">
+                            <h4 class="font-bold text-gray-700 mb-3">Appointment Details</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Contact Information</p>
+                                    <p class="font-medium">sarah.m@example.com</p>
+                                    <p class="font-medium">(555) 987-6543</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Notes</p>
+                                    <p>Follow-up after knee surgery. Patient is experiencing some discomfort during physical therapy.</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-6">
+                                <h4 class="font-bold text-gray-700 mb-3">Actions</h4>
+                                <div class="flex flex-wrap gap-3">
+                                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-check mr-2"></i> Confirm
+                                    </button>
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-edit mr-2"></i> Reschedule
+                                    </button>
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-times mr-2"></i> Decline
+                                    </button>
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-envelope mr-2"></i> Send Message
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointment Card 3 -->
+                <div class="appointment-card completed bg-white rounded-xl shadow-sm p-5">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4 flex-shrink-0">
+                                <i class="fas fa-user-check text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">Robert Johnson</h3>
+                                <p class="text-gray-600">Initial Consultation</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="status-badge completed mr-2">Completed</span>
+                                    <span class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>60 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-gray-800">9:00 AM</p>
+                            <p class="text-gray-600">June 14, 2025</p>
+                            <button class="mt-2 text-green-600 hover:text-green-800 toggle-details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Details -->
+                    <div class="appointment-details mt-4">
+                        <div class="border-t border-gray-200 pt-4">
+                            <h4 class="font-bold text-gray-700 mb-3">Appointment Details</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Contact Information</p>
+                                    <p class="font-medium">robert.j@example.com</p>
+                                    <p class="font-medium">(555) 456-7890</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Summary</p>
+                                    <p>New patient with chronic back pain. Recommended physical therapy and follow-up in 4 weeks.</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-6">
+                                <h4 class="font-bold text-gray-700 mb-3">Documents</h4>
+                                <div class="flex flex-wrap gap-3">
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-file-medical mr-2"></i> Consultation Notes
+                                    </button>
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-prescription-bottle mr-2"></i> Prescription
+                                    </button>
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-file-invoice mr-2"></i> Invoice
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointment Card 4 -->
+                <div class="appointment-card cancelled bg-white rounded-xl shadow-sm p-5">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4 flex-shrink-0">
+                                <i class="fas fa-user-times text-red-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">Emily Davis</h3>
+                                <p class="text-gray-600">Dental Cleaning</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="status-badge cancelled mr-2">Cancelled</span>
+                                    <span class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>30 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-gray-800">2:00 PM</p>
+                            <p class="text-gray-600">June 13, 2025</p>
+                            <button class="mt-2 text-red-600 hover:text-red-800 toggle-details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Details -->
+                    <div class="appointment-details mt-4">
+                        <div class="border-t border-gray-200 pt-4">
+                            <h4 class="font-bold text-gray-700 mb-3">Cancellation Details</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Reason</p>
+                                    <p>Patient had a scheduling conflict</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Rescheduled To</p>
+                                    <p class="font-medium">June 20, 2025 at 2:00 PM</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-6">
+                                <h4 class="font-bold text-gray-700 mb-3">Actions</h4>
+                                <div class="flex flex-wrap gap-3">
+                                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-calendar-plus mr-2"></i> Reschedule
+                                    </button>
+                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                                        <i class="fas fa-envelope mr-2"></i> Send Follow-up
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-8 flex justify-between items-center">
+                <div class="text-gray-600">Showing 1-4 of 12 appointments</div>
+                <div class="flex space-x-2">
+                    <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="bg-teal-600 text-white w-10 h-10 rounded-lg">1</button>
+                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg">2</button>
+                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg">3</button>
+                    <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Toggle appointment details
+    document.querySelectorAll('.toggle-details').forEach(button => {
+        button.addEventListener('click', function() {
+            const details = this.closest('.appointment-card').querySelector('.appointment-details');
+            details.classList.toggle('expanded');
+
+            // Change icon
+            if (details.classList.contains('expanded')) {
+                this.innerHTML = '<i class="fas fa-chevron-up"></i>';
+            } else {
+                this.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            }
+        });
+    });
+
+    // Tab switching
+    document.querySelectorAll('.tab-button').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            // In a real app, this would filter the appointments
+            const status = this.textContent.toLowerCase();
+            alert(`Showing ${status} appointments`);
+        });
+    });
+
+    // Initialize with one expanded appointment
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstAppointment = document.querySelector('.appointment-card');
+        const firstDetails = firstAppointment.querySelector('.appointment-details');
+        const firstButton = firstAppointment.querySelector('.toggle-details');
+
+        firstDetails.classList.add('expanded');
+        firstButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
+    });
+</script>
+</body>
+</html>

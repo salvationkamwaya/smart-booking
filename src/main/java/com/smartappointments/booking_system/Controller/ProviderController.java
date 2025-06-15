@@ -19,6 +19,23 @@ public class ProviderController {
         return "provider/add-slot";
     }
 
+    @GetMapping("/my-appointments")
+    public String appointments(){
+        return "provider/my-appointments";
+    }
+@GetMapping("/settings")
+    public String settings(){
+        return "provider/settings";
+}
 
+@GetMapping("/profile-settings")
+    public String profileset(){
+        return "provider/profile-settings";
+}
+@GetMapping("/view-calendar")
+    public String viewcalendar(){
+        return "provider/view-calendar";
+
+}
 
 }
