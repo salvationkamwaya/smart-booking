@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Appointments - Manage Users</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                'white-smoke': '#F5F5F5',
+                'black': '#000000',
+                'deep-sky-blue': '#00B7EB',
+                'midnight-blue': '#191970',
+                'crimson': '#DC143C',
+                'sea-green': '#2E8B57',
+                'light-gray': '#EDF2F7',
+                'dark-gray': '#2D3748',
+              },
+              boxShadow: {
+                'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                'sidebar': '5px 0 15px rgba(0, 0, 0, 0.1)'
+              }
+            }
+          }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
+          font-family: 'Poppins', sans-serif;
+        }
+
+        .sidebar-link {
+          transition: all 0.3s ease;
+          border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+          background: rgba(255, 255, 255, 0.1);
+          border-left-color: #00B7EB;
+        }
+
+        .user-card {
+          transition: all 0.3s ease;
+          border-left: 4px solid #00B7EB;
+        }
+
+        .user-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .role-badge {
+          display: inline-block;
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 500;
+        }
+
+        .role-client { background-color: rgba(0, 183, 235, 0.15); color: #00B7EB; }
+        .role-provider { background-color: rgba(25, 25, 112, 0.15); color: #191970; }
+        .role-admin { background-color: rgba(220, 20, 60, 0.15); color: #DC143C; }
+
+        .status-badge {
+          display: inline-block;
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 500;
+        }
+
+        .status-active { background-color: rgba(46, 139, 87, 0.15); color: #2E8B57; }
+        .status-inactive { background-color: rgba(220, 20, 60, 0.15); color: #DC143C; }
+        .status-pending { background-color: rgba(255, 193, 7, 0.15); color: #b08c2a; }
+
+        .action-btn {
+          transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+          transform: scale(1.05);
+        }
+
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .modal-content {
+          animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-button {
+          padding: 0.75rem 1.5rem;
+          border-bottom: 3px solid transparent;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+          border-bottom-color: #00B7EB;
+          color: #00B7EB;
+          font-weight: 600;
+        }
+
+        .search-input:focus {
+          box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
+        }
+
+        @media (max-width: 768px) {
+          #sidebar {
+            position: fixed;
+            left: -100%;
+            top: 0;
+            height: 100vh;
+            z-index: 100;
+            transition: all 0.3s ease;
+          }
+
+          #sidebar.active {
+            left: 0;
+          }
+
+          #content-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+          }
+
+          #sidebar.active + #content-overlay {
+            display: block;
+          }
+        }
+    </style>
+</head>
+<body class="bg-white-smoke">
+<!-- Navigation Bar -->
+<nav class="bg-deep-sky-blue text-white p-4 fixed top-0 w-full z-50 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center">
+            <button id="toggle-sidebar" class="md:hidden mr-4 text-white">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            <div class="flex items-center">
+                <i class="fas fa-calendar-check text-xl mr-2"></i>
+                <h1 class="text-xl font-bold">Smart Appointments</h1>
+            </div>
+        </div>
+        <div id="user-menu" class="flex items-center space-x-4">
+            <div class="relative">
+                <button class="text-white p-2">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="notification-dot">3</span>
+                </button>
+            </div>
+            <div class="hidden md:flex items-center">
+                <div class="user-avatar w-10 h-10 rounded-full bg-white flex items-center justify-center text-deep-sky-blue font-bold mr-2">A</div>
+                <span id="user-name" class="font-medium">Admin User</span>
+            </div>
+            <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                <span class="hidden sm:inline">Logout</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Layout with Sidebar -->
+<div class="flex min-h-screen pt-16">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-midnight-blue text-white p-6 fixed top-16 h-full md:block transition-all duration-300 z-40 shadow-sidebar">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-user-cog mr-2 text-deep-sky-blue"></i>
+                Admin Menu
+            </h2>
+            <button id="close-sidebar" class="md:hidden p-2 text-white rounded-full hover:bg-deep-sky-blue">
+                <i class="fas fa-times w-4 h-4"></i>
+            </button>
+        </div>
+        <nav>
+            <ul class="space-y-2">
+                <li>
+                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-tachometer-alt mr-3 text-deep-sky-blue"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
+                        <i class="fas fa-users mr-3 text-sea-green"></i>
+                        Manage Users
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-calendar-check mr-3 text-deep-sky-blue"></i>
+                        View Appointments
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-cogs mr-3 text-crimson"></i>
+                        System Settings
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-chart-bar mr-3 text-sea-green"></i>
+                        Reports
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-clipboard-list mr-3 text-deep-sky-blue"></i>
+                        Audit Logs
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="mt-8 pt-6 border-t border-deep-sky-blue/30">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-sm opacity-75">System Status</span>
+                <span class="text-sm font-medium text-sea-green">Operational</span>
+            </div>
+            <div class="w-full bg-gray-700 rounded-full h-2 mb-4">
+                <div class="bg-sea-green h-2 rounded-full" style="width: 95%"></div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="content-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
+        <!-- Page Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-dark-gray">User Management</h1>
+            <p class="text-gray-600 mt-2">Manage all users and their permissions</p>
+        </div>
+
+        <!-- User Management Controls -->
+        <div class="bg-white rounded-xl shadow-card p-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <!-- Search Bar -->
+                <div class="relative w-full md:w-1/3">
+                    <input type="text" placeholder="Search users..." class="search-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none transition-colors">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-3 w-full md:w-auto">
+                    <select class="w-full md:w-auto p-2 border border-gray-300 rounded-lg focus:outline-none">
+                        <option value="">All Roles</option>
+                        <option value="client">Client</option>
+                        <option value="provider">Provider</option>
+                        <option value="admin">Admin</option>
+                    </select>
+
+                    <select class="w-full md:w-auto p-2 border border-gray-300 rounded-lg focus:outline-none">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="pending">Pending</option>
+                    </select>
+
+                    <button class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-filter mr-2"></i>
+                        Apply Filters
+                    </button>
+                </div>
+
+                <!-- Add User Button -->
+                <button id="add-user-btn" class="w-full md:w-auto bg-sea-green hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add New User
+                </button>
+            </div>
+        </div>
+
+        <!-- User Tabs -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button class="tab-button active">All Users (1,248)</button>
+            <button class="tab-button">Clients (845)</button>
+            <button class="tab-button">Providers (372)</button>
+            <button class="tab-button">Admins (31)</button>
+            <button class="tab-button">Pending (24)</button>
+        </div>
+
+        <!-- Users Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <!-- User Card 1 -->
+            <div class="user-card bg-white rounded-xl shadow-card p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mr-4">
+                        <i class="fas fa-user text-deep-sky-blue text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-dark-gray">John Smith</h3>
+                        <p class="text-gray-600">john.smith@example.com</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="role-badge role-client">Client</span>
+                    <span class="status-badge status-active">Active</span>
+                </div>
+
+                <div class="text-sm text-gray-600 mb-4">
+                    <p><i class="fas fa-calendar-alt mr-2"></i> Joined: June 15, 2024</p>
+                    <p><i class="fas fa-clock mr-2"></i> Last Active: Today</p>
+                </div>
+
+                <div class="flex justify-between">
+                    <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn bg-crimson text-white px-3 py-2 rounded hover:bg-crimson/90 transition-colors">
+                        <i class="fas fa-ban"></i> Disable
+                    </button>
+                    <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Card 2 -->
+            <div class="user-card bg-white rounded-xl shadow-card p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-midnight-blue/20 flex items-center justify-center mr-4">
+                        <i class="fas fa-user-md text-midnight-blue text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-dark-gray">Dr. Sarah Johnson</h3>
+                        <p class="text-gray-600">sarah.johnson@example.com</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="role-badge role-provider">Provider</span>
+                    <span class="status-badge status-active">Active</span>
+                </div>
+
+                <div class="text-sm text-gray-600 mb-4">
+                    <p><i class="fas fa-calendar-alt mr-2"></i> Joined: May 28, 2024</p>
+                    <p><i class="fas fa-clock mr-2"></i> Last Active: 2 hours ago</p>
+                </div>
+
+                <div class="flex justify-between">
+                    <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn bg-crimson text-white px-3 py-2 rounded hover:bg-crimson/90 transition-colors">
+                        <i class="fas fa-ban"></i> Disable
+                    </button>
+                    <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Card 3 -->
+            <div class="user-card bg-white rounded-xl shadow-card p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-crimson/20 flex items-center justify-center mr-4">
+                        <i class="fas fa-user-shield text-crimson text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-dark-gray">Michael Brown</h3>
+                        <p class="text-gray-600">michael@example.com</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="role-badge role-admin">Admin</span>
+                    <span class="status-badge status-active">Active</span>
+                </div>
+
+                <div class="text-sm text-gray-600 mb-4">
+                    <p><i class="fas fa-calendar-alt mr-2"></i> Joined: April 12, 2024</p>
+                    <p><i class="fas fa-clock mr-2"></i> Last Active: 30 mins ago</p>
+                </div>
+
+                <div class="flex justify-between">
+                    <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn bg-crimson text-white px-3 py-2 rounded hover:bg-crimson/90 transition-colors">
+                        <i class="fas fa-ban"></i> Disable
+                    </button>
+                    <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Card 4 -->
+            <div class="user-card bg-white rounded-xl shadow-card p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center mr-4">
+                        <i class="fas fa-user-clock text-gray-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-dark-gray">Emily Davis</h3>
+                        <p class="text-gray-600">emily.d@example.com</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="role-badge role-client">Client</span>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+
+                <div class="text-sm text-gray-600 mb-4">
+                    <p><i class="fas fa-calendar-alt mr-2"></i> Joined: June 14, 2025</p>
+                    <p><i class="fas fa-clock mr-2"></i> Last Active: Never</p>
+                </div>
+
+                <div class="flex justify-between">
+                    <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn bg-sea-green text-white px-3 py-2 rounded hover:bg-sea-green/90 transition-colors">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Card 5 -->
+            <div class="user-card bg-white rounded-xl shadow-card p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center mr-4">
+                        <i class="fas fa-user-slash text-gray-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-dark-gray">Robert Wilson</h3>
+                        <p class="text-gray-600">robert.w@example.com</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="role-badge role-provider">Provider</span>
+                    <span class="status-badge status-inactive">Inactive</span>
+                </div>
+
+                <div class="text-sm text-gray-600 mb-4">
+                    <p><i class="fas fa-calendar-alt mr-2"></i> Joined: March 3, 2025</p>
+                    <p><i class="fas fa-clock mr-2"></i> Last Active: May 15, 2025</p>
+                </div>
+
+                <div class="flex justify-between">
+                    <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn bg-sea-green text-white px-3 py-2 rounded hover:bg-sea-green/90 transition-colors">
+                        <i class="fas fa-check"></i> Activate
+                    </button>
+                    <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Card 6 -->
+            <div class="user-card bg-white rounded-xl shadow-card p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mr-4">
+                        <i class="fas fa-user text-deep-sky-blue text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-dark-gray">Jennifer Lee</h3>
+                        <p class="text-gray-600">jennifer@example.com</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="role-badge role-client">Client</span>
+                    <span class="status-badge status-active">Active</span>
+                </div>
+
+                <div class="text-sm text-gray-600 mb-4">
+                    <p><i class="fas fa-calendar-alt mr-2"></i> Joined: June 1, 2025</p>
+                    <p><i class="fas fa-clock mr-2"></i> Last Active: Yesterday</p>
+                </div>
+
+                <div class="flex justify-between">
+                    <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn bg-crimson text-white px-3 py-2 rounded hover:bg-crimson/90 transition-colors">
+                        <i class="fas fa-ban"></i> Disable
+                    </button>
+                    <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white rounded-xl shadow-card p-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="text-gray-600 mb-4 md:mb-0">Showing 1-6 of 1,248 users</div>
+                <div class="flex space-x-2">
+                    <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="bg-deep-sky-blue text-white w-10 h-10 rounded-lg">1</button>
+                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg">2</button>
+                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg">3</button>
+                    <span class="flex items-center px-2">...</span>
+                    <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg">24</button>
+                    <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add User Modal -->
+<div id="add-user-modal" class="modal-overlay hidden">
+    <div class="modal-content w-full max-w-md bg-white rounded-xl shadow-card p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-dark-gray">Add New User</h2>
+            <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="add-user-form" class="space-y-4">
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Full Name</label>
+                <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+            </div>
+
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Email Address</label>
+                <input type="email" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+            </div>
+
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Role</label>
+                <select class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                    <option value="">Select Role</option>
+                    <option value="client">Client</option>
+                    <option value="provider">Provider</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Status</label>
+                <select class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-gray-700 font-medium mb-2">Password</label>
+                <input type="password" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+            </div>
+
+            <div class="pt-4 flex justify-end space-x-3">
+                <button type="button" id="cancel-add-user" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-sea-green hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    Add User
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Toggle sidebar for mobile
+    document.getElementById('toggle-sidebar')?.addEventListener('click', () => {
+      document.getElementById('sidebar').classList.add('active');
+    });
+
+    // Close sidebar for mobile
+    document.getElementById('close-sidebar')?.addEventListener('click', () => {
+      document.getElementById('sidebar').classList.remove('active');
+    });
+
+    // Close sidebar when clicking on overlay
+    document.getElementById('content-overlay')?.addEventListener('click', () => {
+      document.getElementById('sidebar').classList.remove('active');
+    });
+
+    // Tab functionality
+    document.querySelectorAll('.tab-button').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Modal functionality
+    const modal = document.getElementById('add-user-modal');
+    const openModalBtn = document.getElementById('add-user-btn');
+    const closeModalBtn = document.getElementById('close-modal');
+    const cancelBtn = document.getElementById('cancel-add-user');
+
+    openModalBtn.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+      }
+    });
+
+    // Form submission
+    document.getElementById('add-user-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('User added successfully!');
+      modal.classList.add('hidden');
+    });
+</script>
+</body>
+</html>
