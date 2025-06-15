@@ -8,11 +8,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/provider")
 public class ProviderController {
+
     @GetMapping
     public String index(){
       return "provider/provider-panel";
+    }
 
-
+    @GetMapping("/add-slot")
+    public String addslot(){
+        return "provider/add-slot";
     }
 
 

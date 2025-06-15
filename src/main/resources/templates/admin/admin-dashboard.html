@@ -3,54 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Appointments Booking System</title>
+  <title>Smart Appointments Booking System - Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FullCalendar for calendar view -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'white-smoke': '#F5F5F5',
+            'black': '#000000',
+            'deep-sky-blue': '#00B7EB',
+            'midnight-blue': '#191970',
+            'crimson': '#DC143C',
+            'sea-green': '#2E8B57',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- FullCalendar for calendar view (retained for potential future use) -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-white-smoke font-sans text-black">
 <!-- Navigation Bar -->
-<nav class="bg-blue-600 text-white p-4">
+<nav class="bg-deep-sky-blue text-white p-4">
   <div class="container mx-auto flex justify-between items-center">
     <h1 class="text-xl font-bold">Smart Appointments</h1>
-    <div id="user-menu" class="hidden">
+    <div id="user-menu" class="flex items-center">
       <span id="user-name" class="mr-4"></span>
-      <button id="logout-btn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
+      <button id="logout-btn" class="bg-crimson hover:bg-deep-sky-blue px-4 py-2 rounded transition-colors">Logout</button>
     </div>
   </div>
 </nav>
-<div class="container mx-auto mt-8">
-<section id="admin-panel" class=" bg-white p-6 rounded shadow-md">
-  <h2 class="text-2xl font-bold mb-4">Admin Dashboard</h2>
-  <div class="mb-4">
-    <h3 class="text-lg font-semibold">Users</h3>
-    <table class="w-full border">
-      <thead>
-      <tr class="bg-gray-200">
-        <th class="p-2">Email</th>
-        <th class="p-2">Role</th>
-        <th class="p-2">Actions</th>
-      </tr>
-      </thead>
-      <tbody id="user-list"></tbody>
-    </table>
-  </div>
-  <div>
-    <h3 class="text-lg font-semibold">Appointment Logs</h3>
-    <table class="w-full border">
-      <thead>
-      <tr class="bg-gray-200">
-        <th class="p-2">Client</th>
-        <th class="p-2">Provider</th>
-        <th class="p-2">Date</th>
-        <th class="p-2">Status</th>
-      </tr>
-      </thead>
-      <tbody id="appointment-logs"></tbody>
-    </table>
-  </div>
-</section>
+
+<!-- Main Layout with Sidebar -->
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-midnight-blue text-white p-6">
+    <h2 class="text-xl font-semibold mb-6">Admin Menu</h2>
+    <nav>
+      <ul class="space-y-2">
+        <li>
+          <a href="#" id="manage-users" class="block px-4 py-2 rounded hover:bg-sea-green transition-colors">Manage Users</a>
+        </li>
+        <li>
+          <a href="#" id="view-appointments" class="block px-4 py-2 rounded hover:bg-sea-green transition-colors">View Appointments</a>
+        </li>
+        <li>
+          <a href="#" id="system-settings" class="block px-4 py-2 rounded hover:bg-sea-green transition-colors">System Settings</a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8">
+    <section id="admin-panel" class="bg-white-smoke p-6 rounded-lg shadow-md border border-gray-200">
+      <h2 class="text-2xl font-bold mb-6">Admin Dashboard</h2>
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold mb-4">Users</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full border border-gray-200">
+            <thead>
+            <tr class="bg-gray-100">
+              <th class="p-3 text-left">Email</th>
+              <th class="p-3 text-left">Role</th>
+              <th class="p-3 text-left">Actions</th>
+            </tr>
+            </thead>
+            <tbody id="user-list" class="divide-y divide-gray-200">
+            <!-- Example row (for visualization) -->
+            <tr>
+              <td class="p-3">user@example.com</td>
+              <td class="p-3">ROLE_CLIENT</td>
+              <td class="p-3">
+                <button class="bg-sea-green text-white px-2 py-1 rounded hover:bg-deep-sky-blue mr-2 transition-colors">Edit</button>
+                <button class="bg-crimson text-white px-2 py-1 rounded hover:bg-deep-sky-blue transition-colors">Delete</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Appointment Logs</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full border border-gray-200">
+            <thead>
+            <tr class="bg-gray-100">
+              <th class="p-3 text-left">Client</th>
+              <th class="p-3 text-left">Provider</th>
+              <th class="p-3 text-left">Date</th>
+              <th class="p-3 text-left">Status</th>
+            </tr>
+            </thead>
+            <tbody id="appointment-logs" class="divide-y divide-gray-200">
+            <!-- Example row (for visualization) -->
+            <tr>
+              <td class="p-3">client@example.com</td>
+              <td class="p-3">provider@example.com</td>
+              <td class="p-3">2025-06-15 10:00</td>
+              <td class="p-3">BOOKED</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
 </div>
+
+<script>
+  // Sidebar navigation
+  document.getElementById('manage-users')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    console.log('Navigating to Manage Users');
+    // TODO: Fetch and display user list via API
+  });
+
+  document.getElementById('view-appointments')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    console.log('Navigating to View Appointments');
+    // TODO: Fetch and display appointment logs via API
+  });
+
+  document.getElementById('system-settings')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    console.log('Navigating to System Settings');
+    // TODO: Load system settings UI
+  });
+
+  // Logout
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+    console.log('Logout');
+    // TODO: Clear JWT and redirect to login page
+  });
+</script>
 </body>
 </html>

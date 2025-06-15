@@ -1,44 +1,192 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Appointments Booking System</title>
+    <title>Smart Appointments Booking System - Client Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'soft-white': '#FAFAFA',
+                        'charcoal-gray': '#333333',
+                        'teal-blue': '#26A69A',
+                        'navy-blue': '#1A3C5A',
+                        'coral-red': '#FF6F61',
+                        'mint-green': '#A7F3D0',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <!-- FullCalendar for calendar view -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-soft-white font-sans text-charcoal-gray min-h-screen">
 <!-- Navigation Bar -->
-<nav class="bg-blue-600 text-white p-4">
-    <div class="container mx-auto flex justify-between items-center">
-        <h1 class="text-xl font-bold">Smart Appointments</h1>
-        <div id="user-menu" class="">
+<nav class="bg-navy-blue text-soft-white p-4 fixed top-0 w-full shadow-md">
+    <div class="container mx-auto flex justify-center items-center relative">
+        <h1 class="text-xl font-bold absolute">Smart Appointments</h1>
+        <div id="user-menu" class="flex items-center absolute right-0">
             <span id="user-name" class="mr-4"></span>
-            <button id="logout-btn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</button>
+            <button id="logout-btn" class="bg-coral-red hover:bg-teal-blue px-4 py-2 rounded transition-colors duration-300">Logout</button>
         </div>
+        <!-- Sidebar Toggle for Mobile -->
+        <button id="toggle-sidebar" class="md:hidden p-2 absolute left-0 text-soft-white">
+            <i class="fas fa-bars w-6 h-6"></i>
+        </button>
     </div>
 </nav>
 
-<!-- Main Content -->
-<div class="container mx-auto mt-8">
-    <section id="client-panel" class=" bg-white p-6 rounded shadow-md">
-        <h2 class="text-2xl font-bold mb-4">Client Panel</h2>
-        <div class="mb-4">
-            <h3 class="text-lg font-semibold">Available Slots</h3>
-            <ul id="available-slots" class="list-disc pl-5"></ul>
-        </div>
-        <div>
-            <h3 class="text-lg font-semibold">Book Appointment</h3>
-            <form id="book-form" class="mt-2">
-                <div class="mb-4">
-                    <label for="slot-id" class="block text-gray-700">Select Slot</label>
-                    <select id="slot-id" class="w-full p-2 border rounded" required></select>
+<!-- Main Layout with Sidebar -->
+<div class="flex min-h-screen pt-16">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-navy-blue text-soft-white p-6 fixed top-16 h-full md:block hidden transition-transform duration-300 -translate-x-full md:translate-x-0">
+        <h2 class="text-xl font-semibold mb-6">Client Menu</h2>
+        <nav>
+            <ul class="space-y-2">
+                <li>
+                    <a href="#" id="view-slots" class="block px-4 py-2 rounded hover:bg-teal-blue transition-colors duration-300">
+                        <i class="fas fa-calendar-alt mr-2"></i>View Available Slots
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="book-appointment" class="block px-4 py-2 rounded hover:bg-teal-blue transition-colors duration-300">
+                        <i class="fas fa-plus-circle mr-2"></i>Book Appointment
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="my-bookings" class="block px-4 py-2 rounded hover:bg-teal-blue transition-colors duration-300">
+                        <i class="fas fa-list mr-2"></i>My Bookings
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 md:ml-64">
+        <section id="client-panel" class="bg-soft-white p-8 rounded-xl shadow-lg animate-fade-in border border-gray-200">
+            <h2 class="text-3xl font-bold mb-6 text-charcoal-gray">Client Panel</h2>
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold mb-4 text-charcoal-gray">Available Slots</h3>
+                <div class="overflow-x-auto">
+                    <ul id="available-slots" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Example slot for visualization -->
+                        <li class="bg-soft-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                            <span class="text-charcoal-gray">2025-06-15 10:00 AM</span> - <span class="text-teal-blue">Dr. Smith</span>
+                        </li>
+                    </ul>
                 </div>
-                <button type="submit" class="bg-green-600 text-white p-2 rounded hover:bg-green-700">Book</button>
-            </form>
-        </div>
-    </section>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold mb-4 text-charcoal-gray">Book Appointment</h3>
+                <form id="book-form" class="space-y-6">
+                    <div>
+                        <label for="slot-id" class="block text-charcoal-gray font-medium mb-2">
+                            <i class="fas fa-clock mr-2 text-teal-blue"></i>Select Slot
+                        </label>
+                        <select id="slot-id" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-blue focus:border-teal-blue transition-colors duration-300" required>
+                            <option value="" disabled selected>Select a time slot</option>
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-teal-blue text-soft-white p-3 rounded-lg hover:bg-mint-green hover:text-charcoal-gray transition-colors duration-300 font-semibold">
+                        <i class="fas fa-check-circle mr-2"></i>Book Appointment
+                    </button>
+                </form>
+                <p id="success-message" class="mt-4 text-center text-mint-green hidden"></p>
+                <p id="error-message" class="mt-4 text-center text-coral-red hidden"></p>
+            </div>
+        </section>
+    </main>
 </div>
 
+<script>
+    // Sidebar toggle for mobile
+    document.getElementById('toggle-sidebar')?.addEventListener('click', () => {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('hidden');
+        sidebar.classList.toggle('-translate-x-full');
+    });
+
+    // Sidebar navigation
+    document.getElementById('view-slots')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('View Available Slots');
+        // TODO: Fetch and display available slots via API
+    });
+
+    document.getElementById('book-appointment')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Book Appointment');
+        // TODO: Scroll to or highlight book form
+    });
+
+    document.getElementById('my-bookings')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('My Bookings');
+        // TODO: Fetch and display user bookings via API
+    });
+
+    // Book appointment form submission
+    document.getElementById('book-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const slotId = document.getElementById('slot-id').value;
+        const successMessage = document.getElementById('success-message');
+        const errorMessage = document.getElementById('error-message');
+
+        try {
+            // Placeholder: Call /api/appointments/book
+            console.log('Book Slot:', { slotId });
+            // Example API call (uncomment when backend is ready)
+            /*
+            const response = await fetch('/api/appointments/book', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+                },
+                body: JSON.stringify({ slotId })
+            });
+            if (!response.ok) throw new Error('Failed to book appointment');
+            successMessage.textContent = 'Appointment booked successfully!';
+            successMessage.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+            */
+        } catch (error) {
+            errorMessage.textContent = error.message || 'Failed to book appointment. Please try again.';
+            errorMessage.classList.remove('hidden');
+            successMessage.classList.add('hidden');
+        }
+    });
+
+    // Logout
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+        console.log('Logout');
+        localStorage.removeItem('jwt');
+        window.location.href = '/login';
+    });
+
+    // Initialize user menu
+    if (localStorage.getItem('jwt')) {
+        document.getElementById('user-menu').classList.remove('hidden');
+        document.getElementById('user-name').textContent = 'Client'; // Replace with actual username from JWT
+    }
+</script>
+</body>
+</html>
