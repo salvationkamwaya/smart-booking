@@ -71,4 +71,22 @@ public class AdminController {
         model.addAttribute("logs", adminService.getAuditLogs(keyword != null ? keyword : ""));
         return "admin/audit-logs";
     }
+    // Add these new endpoints:
+    @GetMapping("/manage-user/search")
+    public String searchUsers(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status,
+            Model model) {
+
+        List<User> filteredUsers = adminService.searchUsers(query, role, status);
+        model.addAttribute("users", filteredUsers);
+        return "admin/manage-user";
+    }
+
+    @ResponseBody // For AJAX calls
+    @GetMapping("/manage-user/api")
+    public List<User> getUsersApi() {
+        return adminService.getAllUsers();
+    }
 }

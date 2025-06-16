@@ -158,6 +158,131 @@
     </style>
 </head>
 <body class="bg-white-smoke">
+    <script>
+        // DOM Ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load initial users
+            loadUsers();
+
+            // Search handler
+            document.querySelector('.search-input').addEventListener('input', (e) => {
+                loadUsers({ search: e.target.value });
+            });
+
+            // Filter handlers
+            document.getElementById('apply-filters').addEventListener('click', () => {
+                const filters = {
+                    role: document.getElementById('role-filter').value,
+                    status: document.getElementById('status-filter').value
+                };
+                loadUsers(filters);
+            });
+
+            // Status toggle handler
+            document.addEventListener('click', async (e) => {
+                if (e.target.classList.contains('status-toggle-btn')) {
+                    const userId = e.target.dataset.userId;
+                    const currentStatus = e.target.dataset.status === 'true';
+
+                    try {
+                        const response = await fetch(`/admin/manage-user/toggle-status/${userId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ active: !currentStatus })
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            e.target.dataset.status = data.newStatus;
+                            e.target.textContent = data.newStatus === 'true' ? 'Disable' : 'Activate';
+                            e.target.classList.toggle('bg-crimson', data.newStatus === 'false');
+                            e.target.classList.toggle('bg-sea-green', data.newStatus === 'true');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                }
+            });
+        });
+
+        // Load users with filters
+        async function loadUsers(filters = {}) {
+            try {
+                const params = new URLSearchParams(filters);
+                const response = await fetch(`/admin/manage-user/api?${params}`);
+                const data = await response.json();
+                renderUsers(data.content);
+                updatePagination(data);
+            } catch (error) {
+                console.error('Failed to load users:', error);
+            }
+        }
+
+        // Render user cards
+        function renderUsers(users) {
+            const container = document.querySelector('.users-grid');
+            container.innerHTML = '';
+
+            users.forEach(user => {
+                const statusClass = user.active ? 'status-active' : 'status-inactive';
+                const roleClass = `role-${user.role.toLowerCase()}`;
+
+                container.innerHTML += `
+                <div class="user-card bg-white rounded-xl shadow-card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-${roleClass.split('-')[1]}/20 flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-${roleClass.split('-')[1]} text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-dark-gray">${user.name}</h3>
+                            <p class="text-gray-600">${user.email}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="role-badge ${roleClass}">${user.role}</span>
+                        <span class="status-badge ${statusClass}">${user.active ? 'Active' : 'Inactive'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="status-toggle-btn action-btn ${user.active ? 'bg-crimson' : 'bg-sea-green'} text-white px-3 py-2 rounded"
+                                data-user-id="${user.id}"
+                                data-status="${user.active}">
+                            ${user.active ? '<i class="fas fa-ban"></i> Disable' : '<i class="fas fa-check"></i> Activate'}
+                        </button>
+                        <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </div>
+                </div>
+                `;
+            });
+        }
+
+        // Update pagination controls
+        function updatePagination(data) {
+            const pagination = document.querySelector('.pagination');
+            if (!pagination) return;
+
+            pagination.innerHTML = `
+                <div class="flex space-x-2">
+                    ${data.number > 0 ?
+                        `<button onclick="loadUsers({page: ${data.number-1}})" class="pagination-btn">Previous</button>` : ''}
+
+                    ${Array.from({length: data.totalPages}, (_, i) =>
+                        `<button onclick="loadUsers({page: ${i}})"
+                         class="pagination-btn ${i === data.number ? 'bg-deep-sky-blue text-white' : ''}">
+                            ${i+1}
+                         </button>`
+                    ).join('')}
+
+                    ${data.number < data.totalPages-1 ?
+                        `<button onclick="loadUsers({page: ${data.number+1}})" class="pagination-btn">Next</button>` : ''}
+                </div>
+            `;
+        }
+    </script>
 <!-- Navigation Bar -->
 <nav class="bg-deep-sky-blue text-white p-4 fixed top-0 w-full z-50 shadow-md">
     <div class="container mx-auto flex justify-between items-center">
