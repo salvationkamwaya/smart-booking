@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Appointments - My Bookings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'white-smoke': '#F5F5F5',
+                        'deep-sky-blue': '#00B7EB',
+                        'midnight-blue': '#191970',
+                        'crimson': '#DC143C',
+                        'sea-green': '#2E8B57',
+                        'light-gray': '#EDF2F7',
+                        'dark-gray': '#2D3748',
+                        'teal-blue': '#26A69A',
+                        'royal-purple': '#7857FE',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'sidebar': '5px 0 15px rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #00B7EB;
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .icon-container {
+            width: 60px;
+            height: 60px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .table-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .user-avatar {
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #DC143C;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-upcoming {
+            background-color: #00B7EB;
+        }
+
+        .status-completed {
+            background-color: #2E8B57;
+        }
+
+        .status-cancelled {
+            background-color: #DC143C;
+        }
+
+        .status-pending {
+            background-color: #FFA500;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+                transition: all 0.3s ease;
+            }
+
+            #sidebar.active {
+                left: 0;
+            }
+
+            #content-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+
+            #sidebar.active + #content-overlay {
+                display: block;
+            }
+
+            .booking-card {
+                padding: 1rem;
+            }
+
+            .booking-details {
+                flex-direction: column;
+            }
+        }
+
+        /* Custom styles for My Bookings page */
+        .booking-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .booking-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .booking-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid #EDF2F7;
+        }
+
+        .booking-details {
+            display: flex;
+            padding: 1.25rem;
+        }
+
+        .booking-info {
+            flex: 1;
+            padding-right: 1.5rem;
+        }
+
+        .booking-actions {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 200px;
+        }
+
+        .filter-btn {
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background-color: #00B7EB;
+            color: white;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: #00B7EB;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: #00B7EB;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #EDF2F7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="bg-white-smoke">
+<!-- Navigation Bar -->
+<nav class="bg-deep-sky-blue text-white p-4 fixed top-0 w-full z-50 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center">
+            <button id="toggle-sidebar" class="md:hidden mr-4 text-white">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            <div class="flex items-center">
+                <i class="fas fa-calendar-check text-xl mr-2"></i>
+                <h1 class="text-xl font-bold">Smart Appointments</h1>
+            </div>
+        </div>
+        <div id="user-menu" class="flex items-center space-x-4">
+            <div class="relative">
+                <button class="text-white p-2">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="notification-dot">2</span>
+                </button>
+            </div>
+            <div class="hidden md:flex items-center">
+                <div class="user-avatar w-10 h-10 rounded-full bg-white flex items-center justify-center text-deep-sky-blue font-bold mr-2">C</div>
+                <span id="user-name" class="font-medium">Client User</span>
+            </div>
+            <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                <span class="hidden sm:inline">Logout</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Layout with Sidebar -->
+<div class="flex min-h-screen pt-16">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-midnight-blue text-white p-6 fixed top-16 h-full md:block transition-all duration-300 z-40 shadow-sidebar">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-user mr-2 text-deep-sky-blue"></i>
+                Client Menu
+            </h2>
+            <button id="close-sidebar" class="md:hidden p-2 text-white rounded-full hover:bg-deep-sky-blue">
+                <i class="fas fa-times w-4 h-4"></i>
+            </button>
+        </div>
+        <nav>
+            <ul class="space-y-2">
+                <li>
+                    <a href="#" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-tachometer-alt mr-3 text-deep-sky-blue"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="view-slots" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-calendar-alt mr-3 text-sea-green"></i>
+                        View Available Slots
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="book-appointment" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-plus-circle mr-3 text-deep-sky-blue"></i>
+                        Book Appointment
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="my-bookings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
+                        <i class="fas fa-list mr-3 text-sea-green"></i>
+                        My Bookings
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="providers" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-user-md mr-3 text-royal-purple"></i>
+                        My Providers
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="history" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-history mr-3 text-crimson"></i>
+                        Appointment History
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="mt-8 pt-6 border-t border-deep-sky-blue/30">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-sm opacity-75">Upcoming Appointments</span>
+                <span class="text-sm font-medium text-sea-green">2</span>
+            </div>
+            <div class="space-y-2">
+                <div class="flex items-center text-sm">
+                    <i class="fas fa-calendar-day mr-2 text-deep-sky-blue"></i>
+                    <span>Today, 2:30 PM</span>
+                </div>
+                <div class="flex items-center text-sm">
+                    <i class="fas fa-calendar-day mr-2 text-deep-sky-blue"></i>
+                    <span>Tomorrow, 10:00 AM</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="content-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-dark-gray">My Bookings</h1>
+            <p class="text-gray-600 mt-2">Manage your appointments and bookings</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card bg-white p-5 rounded-xl shadow-card">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Appointments</p>
+                        <p class="text-2xl font-bold mt-1">14</p>
+                    </div>
+                    <div class="icon-container bg-deep-sky-blue/20">
+                        <i class="fas fa-calendar-alt text-deep-sky-blue text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white p-5 rounded-xl shadow-card">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Upcoming</p>
+                        <p class="text-2xl font-bold mt-1">2</p>
+                    </div>
+                    <div class="icon-container bg-sea-green/20">
+                        <i class="fas fa-clock text-sea-green text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white p-5 rounded-xl shadow-card">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Completed</p>
+                        <p class="text-2xl font-bold mt-1">10</p>
+                    </div>
+                    <div class="icon-container bg-royal-purple/20">
+                        <i class="fas fa-check-circle text-royal-purple text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white p-5 rounded-xl shadow-card">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Cancelled</p>
+                        <p class="text-2xl font-bold mt-1">2</p>
+                    </div>
+                    <div class="icon-container bg-crimson/20">
+                        <i class="fas fa-times-circle text-crimson text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter and Tabs Section -->
+        <div class="bg-white rounded-xl shadow-card p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-xl font-bold text-dark-gray">Appointment List</h2>
+                    <p class="text-gray-600">Filter and manage your appointments</p>
+                </div>
+                <div class="flex space-x-2">
+                    <div class="relative">
+                        <input type="text" placeholder="Search appointments..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 w-full md:w-64">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <button class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-filter mr-2"></i> Filter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Tabs -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button class="tab-btn active" data-tab="all">All Appointments</button>
+                <button class="tab-btn" data-tab="upcoming">Upcoming</button>
+                <button class="tab-btn" data-tab="completed">Completed</button>
+                <button class="tab-btn" data-tab="cancelled">Cancelled</button>
+            </div>
+
+            <!-- Status Filter Chips -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button class="filter-btn active bg-deep-sky-blue text-white px-4 py-1 rounded-full">All</button>
+                <button class="filter-btn bg-white border border-gray-300 text-gray-700 px-4 py-1 rounded-full">Confirmed</button>
+                <button class="filter-btn bg-white border border-gray-300 text-gray-700 px-4 py-1 rounded-full">Pending</button>
+                <button class="filter-btn bg-white border border-gray-300 text-gray-700 px-4 py-1 rounded-full">Rescheduled</button>
+            </div>
+
+            <!-- Bookings List -->
+            <div id="bookings-container">
+                <!-- Upcoming Booking 1 -->
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    <span class="status-indicator status-upcoming"></span>
+                                    Upcoming
+                                </span>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium ml-2">
+                                    Confirmed
+                                </span>
+                            </div>
+                            <span class="text-sm text-gray-600">Booking ID: #SA-2458</span>
+                        </div>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-info">
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mr-4">
+                                    <i class="fas fa-user-md text-deep-sky-blue"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg">Dr. Sarah Johnson</h3>
+                                    <p class="text-gray-600">General Physician</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Date & Time</p>
+                                    <p class="font-medium">June 16, 2024 at 2:30 PM</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Service</p>
+                                    <p class="font-medium">Annual Checkup</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Duration</p>
+                                    <p class="font-medium">45 minutes</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Location</p>
+                                    <p class="font-medium">Main Hospital, Room 205</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="booking-actions">
+                            <button class="action-btn bg-deep-sky-blue text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
+                                <i class="fas fa-calendar-alt mr-2"></i> Reschedule
+                            </button>
+                            <button class="action-btn bg-crimson text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
+                                <i class="fas fa-times mr-2"></i> Cancel
+                            </button>
+                            <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-info-circle mr-2"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Booking 2 -->
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    <span class="status-indicator status-upcoming"></span>
+                                    Upcoming
+                                </span>
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium ml-2">
+                                    Pending
+                                </span>
+                            </div>
+                            <span class="text-sm text-gray-600">Booking ID: #SA-2491</span>
+                        </div>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-info">
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 rounded-full bg-sea-green/20 flex items-center justify-center mr-4">
+                                    <i class="fas fa-user-md text-sea-green"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg">Dr. Robert Brown</h3>
+                                    <p class="text-gray-600">Dentist</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Date & Time</p>
+                                    <p class="font-medium">June 17, 2024 at 10:00 AM</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Service</p>
+                                    <p class="font-medium">Dental Cleaning</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Duration</p>
+                                    <p class="font-medium">30 minutes</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Location</p>
+                                    <p class="font-medium">Dental Clinic, Suite 101</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="booking-actions">
+                            <button class="action-btn bg-deep-sky-blue text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
+                                <i class="fas fa-calendar-alt mr-2"></i> Reschedule
+                            </button>
+                            <button class="action-btn bg-crimson text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
+                                <i class="fas fa-times mr-2"></i> Cancel
+                            </button>
+                            <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-info-circle mr-2"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Completed Booking -->
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    <span class="status-indicator status-completed"></span>
+                                    Completed
+                                </span>
+                            </div>
+                            <span class="text-sm text-gray-600">Booking ID: #SA-2387</span>
+                        </div>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-info">
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 rounded-full bg-royal-purple/20 flex items-center justify-center mr-4">
+                                    <i class="fas fa-user-md text-royal-purple"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg">Dr. Lisa Anderson</h3>
+                                    <p class="text-gray-600">Physical Therapist</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Date & Time</p>
+                                    <p class="font-medium">June 10, 2024 at 2:00 PM</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Service</p>
+                                    <p class="font-medium">Physical Therapy Session</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Duration</p>
+                                    <p class="font-medium">60 minutes</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Location</p>
+                                    <p class="font-medium">Rehabilitation Center</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="booking-actions">
+                            <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
+                                <i class="fas fa-file-medical mr-2"></i> View Notes
+                            </button>
+                            <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-star mr-2"></i> Rate Appointment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cancelled Booking -->
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    <span class="status-indicator status-cancelled"></span>
+                                    Cancelled
+                                </span>
+                            </div>
+                            <span class="text-sm text-gray-600">Booking ID: #SA-2312</span>
+                        </div>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-info">
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                                    <i class="fas fa-user-md text-gray-500"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg">Dr. Michael Chen</h3>
+                                    <p class="text-gray-600">Dermatologist</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Date & Time</p>
+                                    <p class="font-medium">June 5, 2024 at 3:00 PM</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Service</p>
+                                    <p class="font-medium">Skin Checkup</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Cancellation Reason</p>
+                                    <p class="font-medium">Conflict with work schedule</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Cancelled On</p>
+                                    <p class="font-medium">June 3, 2024</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="booking-actions">
+                            <button class="action-btn bg-deep-sky-blue text-white py-2 px-4 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-plus mr-2"></i> Rebook Appointment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State (hidden by default) -->
+            <div id="empty-state" class="empty-state hidden">
+                <div class="empty-icon">
+                    <i class="fas fa-calendar-times text-4xl text-gray-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">No Appointments Found</h3>
+                <p class="text-gray-600 max-w-md mb-6">You don't have any appointments matching your current filters. Try changing your filters or book a new appointment.</p>
+                <button class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-6 py-3 rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-calendar-plus mr-2"></i> Book New Appointment
+                </button>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-6 flex flex-col sm:flex-row justify-between items-center">
+                <div class="text-gray-600 mb-4 sm:mb-0">Showing 1-4 of 14 appointments</div>
+                <div class="flex space-x-2">
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50">
+                        Previous
+                    </button>
+                    <button class="bg-white border border-deep-sky-blue text-deep-sky-blue px-4 py-2 rounded-lg font-medium">
+                        1
+                    </button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50">
+                        2
+                    </button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50">
+                        3
+                    </button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Cancel Appointment Modal -->
+<div id="cancel-modal" class="modal">
+    <div class="modal-content">
+        <div class="text-right">
+            <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Cancel Appointment</h3>
+            <p class="text-gray-600">Are you sure you want to cancel your appointment with Dr. Robert Brown on June 17 at 10:00 AM?</p>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-medium mb-2">Reason for cancellation</label>
+            <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-deep-sky-blue focus:border-transparent">
+                <option>Select a reason</option>
+                <option>Change of plans</option>
+                <option>Found another provider</option>
+                <option>No longer needed</option>
+                <option>Scheduling conflict</option>
+                <option>Other</option>
+            </select>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-medium mb-2">Additional notes (optional)</label>
+            <textarea class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-deep-sky-blue focus:border-transparent" rows="3" placeholder="Provide more details..."></textarea>
+        </div>
+
+        <div class="flex space-x-4">
+            <button class="flex-1 bg-gray-200 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-300 transition-colors">
+                Go Back
+            </button>
+            <button class="flex-1 bg-crimson text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors">
+                Confirm Cancellation
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mobile sidebar toggle
+    document.getElementById('toggle-sidebar').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.add('active');
+    });
+
+    document.getElementById('close-sidebar').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.remove('active');
+    });
+
+    document.getElementById('content-overlay').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.remove('active');
+    });
+
+    // Tab switching functionality
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+        });
+    });
+
+    // Filter chip functionality
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all filter buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+        });
+    });
+
+    // Cancel button functionality
+    const cancelButtons = document.querySelectorAll('.booking-actions .bg-crimson');
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            document.getElementById('cancel-modal').style.display = 'flex';
+        });
+    });
+
+    // Close modal functionality
+    document.getElementById('close-modal').addEventListener('click', function() {
+        document.getElementById('cancel-modal').style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('cancel-modal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

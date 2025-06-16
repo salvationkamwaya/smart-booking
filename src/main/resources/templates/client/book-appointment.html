@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Appointments - Book Appointment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'white-smoke': '#F5F5F5',
+                        'deep-sky-blue': '#00B7EB',
+                        'midnight-blue': '#191970',
+                        'crimson': '#DC143C',
+                        'sea-green': '#2E8B57',
+                        'light-gray': '#EDF2F7',
+                        'dark-gray': '#2D3748',
+                        'teal-blue': '#26A69A',
+                        'royal-purple': '#7857FE',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'sidebar': '5px 0 15px rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #00B7EB;
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .icon-container {
+            width: 60px;
+            height: 60px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .table-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .user-avatar {
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #DC143C;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-upcoming {
+            background-color: #00B7EB;
+        }
+
+        .status-completed {
+            background-color: #2E8B57;
+        }
+
+        .status-cancelled {
+            background-color: #DC143C;
+        }
+
+        .calendar-day {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            text-align: center;
+            padding: 0.75rem 0;
+        }
+
+        .calendar-day:hover {
+            background-color: #EDF2F7;
+            transform: scale(1.05);
+        }
+
+        .calendar-day.selected {
+            background-color: #00B7EB;
+            color: white;
+        }
+
+        .calendar-day.available {
+            background-color: #A7F3D0;
+        }
+
+        .calendar-day.booked {
+            background-color: #FECACA;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.today {
+            border: 2px solid #00B7EB;
+        }
+
+        .time-slot {
+            transition: all 0.2s ease;
+            border-radius: 0.5rem;
+            text-align: center;
+            padding: 0.75rem;
+            cursor: pointer;
+        }
+
+        .time-slot:hover {
+            transform: scale(1.05);
+        }
+
+        .time-slot.available {
+            background-color: #2E8B57;
+            color: white;
+        }
+
+        .time-slot.booked {
+            background-color: #EDF2F7;
+            color: #A0AEC0;
+            cursor: not-allowed;
+        }
+
+        .time-slot.selected {
+            background-color: #00B7EB;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .provider-card {
+            transition: all 0.3s ease;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .provider-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+                transition: all 0.3s ease;
+            }
+
+            #sidebar.active {
+                left: 0;
+            }
+
+            #content-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+
+            #sidebar.active + #content-overlay {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white-smoke">
+<!-- Navigation Bar -->
+<nav class="bg-deep-sky-blue text-white p-4 fixed top-0 w-full z-50 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center">
+            <button id="toggle-sidebar" class="md:hidden mr-4 text-white">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            <div class="flex items-center">
+                <i class="fas fa-calendar-check text-xl mr-2"></i>
+                <h1 class="text-xl font-bold">Smart Appointments</h1>
+            </div>
+        </div>
+        <div id="user-menu" class="flex items-center space-x-4">
+            <div class="relative">
+                <button class="text-white p-2">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="notification-dot">2</span>
+                </button>
+            </div>
+            <div class="hidden md:flex items-center">
+                <div class="user-avatar w-10 h-10 rounded-full bg-white flex items-center justify-center text-deep-sky-blue font-bold mr-2">C</div>
+                <span id="user-name" class="font-medium">Client User</span>
+            </div>
+            <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                <span class="hidden sm:inline">Logout</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Layout with Sidebar -->
+<div class="flex min-h-screen pt-16">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-midnight-blue text-white p-6 fixed top-16 h-full md:block transition-all duration-300 z-40 shadow-sidebar">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-xl font-semibold flex items-center">
+                <i class="fas fa-user mr-2 text-deep-sky-blue"></i>
+                Client Menu
+            </h2>
+            <button id="close-sidebar" class="md:hidden p-2 text-white rounded-full hover:bg-deep-sky-blue">
+                <i class="fas fa-times w-4 h-4"></i>
+            </button>
+        </div>
+        <nav>
+            <ul class="space-y-2">
+                <li>
+                    <a href="#" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-tachometer-alt mr-3 text-deep-sky-blue"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="view-slots" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-calendar-alt mr-3 text-sea-green"></i>
+                        View Available Slots
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="book-appointment" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
+                        <i class="fas fa-plus-circle mr-3 text-deep-sky-blue"></i>
+                        Book Appointment
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="my-bookings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-list mr-3 text-sea-green"></i>
+                        My Bookings
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="providers" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-user-md mr-3 text-royal-purple"></i>
+                        My Providers
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="history" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-history mr-3 text-crimson"></i>
+                        Appointment History
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="mt-8 pt-6 border-t border-deep-sky-blue/30">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-sm opacity-75">Upcoming Appointments</span>
+                <span class="text-sm font-medium text-sea-green">2</span>
+            </div>
+            <div class="space-y-2">
+                <div class="flex items-center text-sm">
+                    <i class="fas fa-calendar-day mr-2 text-deep-sky-blue"></i>
+                    <span>Today, 2:30 PM</span>
+                </div>
+                <div class="flex items-center text-sm">
+                    <i class="fas fa-calendar-day mr-2 text-deep-sky-blue"></i>
+                    <span>Tomorrow, 10:00 AM</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div id="content-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
+        <!-- Book Appointment Section -->
+        <div id="book-appointment-section">
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-dark-gray">Book New Appointment</h1>
+                <p class="text-gray-600 mt-2">Schedule a new appointment with your preferred provider</p>
+            </div>
+
+            <!-- Two-Column Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column - Form -->
+                <div class="lg:col-span-2">
+                    <!-- Step Indicator -->
+                    <div class="bg-white rounded-xl shadow-card p-6 mb-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-deep-sky-blue text-white flex items-center justify-center mr-3">1</div>
+                                <h2 class="text-lg font-semibold">Select Provider & Service</h2>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center mr-3">2</div>
+                                <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center">3</div>
+                            </div>
+                        </div>
+
+                        <!-- Provider Selection -->
+                        <div class="mb-6">
+                            <label class="block text-dark-gray font-medium mb-3">
+                                <i class="fas fa-user-md mr-2 text-deep-sky-blue"></i>
+                                Select Provider
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Provider Card 1 -->
+                                <div class="provider-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 rounded-full bg-deep-sky-blue text-white flex items-center justify-center text-lg font-bold mr-3">RB</div>
+                                        <div>
+                                            <p class="font-medium">Dr. Robert Brown</p>
+                                            <p class="text-gray-600 text-sm">Dentist</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex justify-between">
+                                        <div>
+                                            <div class="flex items-center text-sm mb-1">
+                                                <i class="fas fa-star text-yellow-500 mr-1"></i>
+                                                <span class="font-medium">4.9</span>
+                                                <span class="text-gray-500 ml-1">(92 reviews)</span>
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                <i class="fas fa-map-marker-alt mr-2 text-sea-green"></i>
+                                                2.5 miles away
+                                            </div>
+                                        </div>
+                                        <button class="bg-deep-sky-blue text-white px-3 py-1 rounded-lg text-sm">
+                                            Select
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Provider Card 2 -->
+                                <div class="provider-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 rounded-full bg-sea-green text-white flex items-center justify-center text-lg font-bold mr-3">SJ</div>
+                                        <div>
+                                            <p class="font-medium">Dr. Sarah Johnson</p>
+                                            <p class="text-gray-600 text-sm">General Practitioner</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex justify-between">
+                                        <div>
+                                            <div class="flex items-center text-sm mb-1">
+                                                <i class="fas fa-star text-yellow-500 mr-1"></i>
+                                                <span class="font-medium">4.8</span>
+                                                <span class="text-gray-500 ml-1">(128 reviews)</span>
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                <i class="fas fa-map-marker-alt mr-2 text-sea-green"></i>
+                                                1.2 miles away
+                                            </div>
+                                        </div>
+                                        <button class="bg-deep-sky-blue text-white px-3 py-1 rounded-lg text-sm">
+                                            Select
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Provider Card 3 -->
+                                <div class="provider-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 rounded-full bg-royal-purple text-white flex items-center justify-center text-lg font-bold mr-3">LA</div>
+                                        <div>
+                                            <p class="font-medium">Dr. Lisa Anderson</p>
+                                            <p class="text-gray-600 text-sm">Physical Therapist</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex justify-between">
+                                        <div>
+                                            <div class="flex items-center text-sm mb-1">
+                                                <i class="fas fa-star text-yellow-500 mr-1"></i>
+                                                <span class="font-medium">4.7</span>
+                                                <span class="text-gray-500 ml-1">(76 reviews)</span>
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                <i class="fas fa-map-marker-alt mr-2 text-sea-green"></i>
+                                                3.1 miles away
+                                            </div>
+                                        </div>
+                                        <button class="bg-deep-sky-blue text-white px-3 py-1 rounded-lg text-sm">
+                                            Select
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Selection -->
+                        <div class="mb-6">
+                            <label class="block text-dark-gray font-medium mb-3">
+                                <i class="fas fa-stethoscope mr-2 text-sea-green"></i>
+                                Select Service
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mr-3">
+                                            <i class="fas fa-tooth text-deep-sky-blue"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Dental Cleaning</p>
+                                            <p class="text-gray-600 text-sm">30 min • $85</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-sea-green/20 flex items-center justify-center mr-3">
+                                            <i class="fas fa-heartbeat text-sea-green"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Physical Exam</p>
+                                            <p class="text-gray-600 text-sm">45 min • $120</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-royal-purple/20 flex items-center justify-center mr-3">
+                                            <i class="fas fa-eye text-royal-purple"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium">Vision Test</p>
+                                            <p class="text-gray-600 text-sm">30 min • $75</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date & Time Selection -->
+                    <div class="bg-white rounded-xl shadow-card p-6 mb-6">
+                        <div class="flex items-center mb-6">
+                            <div class="w-8 h-8 rounded-full bg-deep-sky-blue text-white flex items-center justify-center mr-3">2</div>
+                            <h2 class="text-lg font-semibold">Select Date & Time</h2>
+                        </div>
+
+                        <!-- Calendar Navigation -->
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex items-center gap-2">
+                                <button class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition-colors">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="font-medium">June 2025</span>
+                                <button class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition-colors">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <button class="bg-deep-sky-blue text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-sync-alt mr-2"></i> Refresh
+                            </button>
+                        </div>
+
+                        <!-- Calendar -->
+                        <div class="grid grid-cols-7 gap-2 mb-6">
+                            <div class="text-center font-medium py-2 text-gray-500">Sun</div>
+                            <div class="text-center font-medium py-2">Mon</div>
+                            <div class="text-center font-medium py-2">Tue</div>
+                            <div class="text-center font-medium py-2">Wed</div>
+                            <div class="text-center font-medium py-2">Thu</div>
+                            <div class="text-center font-medium py-2">Fri</div>
+                            <div class="text-center font-medium py-2">Sat</div>
+
+                            <!-- Calendar days -->
+                            <div class="calendar-day text-gray-400">25</div>
+                            <div class="calendar-day text-gray-400">26</div>
+                            <div class="calendar-day text-gray-400">27</div>
+                            <div class="calendar-day text-gray-400">28</div>
+                            <div class="calendar-day text-gray-400">29</div>
+                            <div class="calendar-day text-gray-400">30</div>
+                            <div class="calendar-day available">1</div>
+
+                            <div class="calendar-day available">2</div>
+                            <div class="calendar-day available">3</div>
+                            <div class="calendar-day booked">4</div>
+                            <div class="calendar-day available">5</div>
+                            <div class="calendar-day available">6</div>
+                            <div class="calendar-day available">7</div>
+                            <div class="calendar-day available">8</div>
+
+                            <div class="calendar-day available">9</div>
+                            <div class="calendar-day booked">10</div>
+                            <div class="calendar-day booked">11</div>
+                            <div class="calendar-day available">12</div>
+                            <div class="calendar-day available">13</div>
+                            <div class="calendar-day available">14</div>
+                            <div class="calendar-day selected today">15</div>
+
+                            <div class="calendar-day available">16</div>
+                            <div class="calendar-day available">17</div>
+                            <div class="calendar-day available">18</div>
+                            <div class="calendar-day booked">19</div>
+                            <div class="calendar-day available">20</div>
+                            <div class="calendar-day available">21</div>
+                            <div class="calendar-day available">22</div>
+                        </div>
+
+                        <!-- Time Slots -->
+                        <div class="mt-8">
+                            <h3 class="text-lg font-semibold mb-4">Available Time Slots for June 15, 2025</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                <div class="time-slot booked">8:00 AM</div>
+                                <div class="time-slot booked">8:30 AM</div>
+                                <div class="time-slot booked">9:00 AM</div>
+                                <div class="time-slot available">9:30 AM</div>
+                                <div class="time-slot booked">10:00 AM</div>
+                                <div class="time-slot available">10:30 AM</div>
+                                <div class="time-slot available">11:00 AM</div>
+                                <div class="time-slot available">11:30 AM</div>
+                                <div class="time-slot booked">12:00 PM</div>
+                                <div class="time-slot booked">12:30 PM</div>
+                                <div class="time-slot available">1:00 PM</div>
+                                <div class="time-slot available">1:30 PM</div>
+                                <div class="time-slot available selected">2:00 PM</div>
+                                <div class="time-slot available">2:30 PM</div>
+                                <div class="time-slot booked">3:00 PM</div>
+                                <div class="time-slot available">3:30 PM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="bg-white rounded-xl shadow-card p-6">
+                        <div class="flex items-center mb-6">
+                            <div class="w-8 h-8 rounded-full bg-deep-sky-blue text-white flex items-center justify-center mr-3">3</div>
+                            <h2 class="text-lg font-semibold">Additional Information</h2>
+                        </div>
+
+                        <form>
+                            <div class="mb-6">
+                                <label class="block text-dark-gray font-medium mb-2">
+                                    <i class="fas fa-comment-medical mr-2 text-royal-purple"></i>
+                                    Reason for Visit
+                                </label>
+                                <textarea class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-royal-purple focus:border-royal-purple h-32" placeholder="Please describe the reason for your appointment..."></textarea>
+                            </div>
+
+                            <div class="mb-6">
+                                <label class="block text-dark-gray font-medium mb-2">
+                                    <i class="fas fa-file-medical mr-2 text-crimson"></i>
+                                    Upload Documents (Optional)
+                                </label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-3"></i>
+                                    <p class="text-gray-600 mb-2">Drag & drop files here or</p>
+                                    <button type="button" class="bg-deep-sky-blue text-white px-4 py-2 rounded-lg">
+                                        <i class="fas fa-folder-open mr-2"></i> Browse Files
+                                    </button>
+                                    <p class="text-gray-500 text-sm mt-3">Maximum file size: 10MB</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center mb-6">
+                                <input type="checkbox" id="reminder" class="w-5 h-5 text-deep-sky-blue rounded focus:ring-deep-sky-blue">
+                                <label for="reminder" class="ml-2 text-gray-700">
+                                    Send me appointment reminders via email and SMS
+                                </label>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" class="bg-sea-green hover:bg-green-700 text-white px-8 py-3 rounded-lg transition-colors font-semibold flex items-center">
+                                    <i class="fas fa-calendar-check mr-2"></i> Confirm Appointment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Column - Summary -->
+                <div>
+                    <!-- Appointment Summary -->
+                    <div class="bg-white rounded-xl shadow-card p-6 mb-6 sticky top-6">
+                        <h2 class="text-xl font-bold text-dark-gray mb-6">Appointment Summary</h2>
+
+                        <div class="mb-6 p-4 bg-light-gray rounded-lg">
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 rounded-full bg-deep-sky-blue text-white flex items-center justify-center text-lg font-bold mr-3">RB</div>
+                                <div>
+                                    <p class="font-medium">Dr. Robert Brown</p>
+                                    <p class="text-gray-600 text-sm">Dentist</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-sm mb-1">
+                                <i class="fas fa-star text-yellow-500 mr-1"></i>
+                                <span class="font-medium">4.9</span>
+                                <span class="text-gray-500 ml-1">(92 reviews)</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                123 Dental Street, New York, NY
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Service:</span>
+                                <span class="font-medium">Dental Cleaning</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Date:</span>
+                                <span class="font-medium">June 15, 2025</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Time:</span>
+                                <span class="font-medium">2:00 PM</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Duration:</span>
+                                <span class="font-medium">30 minutes</span>
+                            </div>
+                            <div class="flex justify-between border-t border-gray-200 pt-3">
+                                <span class="text-gray-600">Fee:</span>
+                                <span class="font-medium">$85.00</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-sea-green/10 p-4 rounded-lg mb-6">
+                            <h3 class="font-medium text-sea-green mb-2">
+                                <i class="fas fa-shield-alt mr-2"></i> Cancellation Policy
+                            </h3>
+                            <p class="text-sm text-gray-700">
+                                You can cancel or reschedule up to 24 hours before your appointment without any charge.
+                            </p>
+                        </div>
+
+                        <button class="bg-sea-green hover:bg-green-700 text-white w-full py-3 rounded-lg transition-colors font-semibold flex items-center justify-center">
+                            <i class="fas fa-lock mr-2"></i> Confirm & Pay Now
+                        </button>
+                    </div>
+
+                    <!-- Support Card -->
+                    <div class="bg-white rounded-xl shadow-card p-6">
+                        <div class="text-center">
+                            <div class="w-16 h-16 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-headset text-deep-sky-blue text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Need Help?</h3>
+                            <p class="text-gray-600 mb-4">Our support team is available 24/7 to assist you</p>
+                            <button class="bg-light-gray text-dark-gray px-4 py-2 rounded-lg w-full">
+                                <i class="fas fa-comments mr-2"></i> Chat with Support
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Toggle sidebar for mobile
+    document.getElementById('toggle-sidebar')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.add('active');
+    });
+
+    // Close sidebar for mobile
+    document.getElementById('close-sidebar')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('active');
+    });
+
+    // Close sidebar when clicking on overlay
+    document.getElementById('content-overlay')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('active');
+    });
+
+    // Initialize with dashboard visible
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('user-name').textContent = 'Client User';
+
+        // Calendar day selection
+        const calendarDays = document.querySelectorAll('.calendar-day:not(.text-gray-400)');
+        calendarDays.forEach(day => {
+            day.addEventListener('click', function() {
+                // Remove selected class from all days
+                calendarDays.forEach(d => d.classList.remove('selected'));
+
+                // Add selected class to clicked day
+                this.classList.add('selected');
+            });
+        });
+
+        // Time slot selection
+        const timeSlots = document.querySelectorAll('.time-slot.available');
+        timeSlots.forEach(slot => {
+            slot.addEventListener('click', function() {
+                // Remove selected class from all slots
+                timeSlots.forEach(s => s.classList.remove('selected'));
+
+                // Add selected class to clicked slot
+                this.classList.add('selected');
+            });
+        });
+
+        // Provider selection
+        const providerCards = document.querySelectorAll('.provider-card');
+        providerCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove border from all cards
+                providerCards.forEach(c => c.classList.remove('border-deep-sky-blue', 'border-2'));
+
+                // Add border to selected card
+                this.classList.add('border-deep-sky-blue', 'border-2');
+            });
+        });
+
+        // Form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Appointment booked successfully!');
+            // In a real app, this would redirect to confirmation page
+        });
+    });
+</script>
+</body>
+</html>

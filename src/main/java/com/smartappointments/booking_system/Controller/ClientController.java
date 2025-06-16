@@ -14,9 +14,29 @@ public class ClientController {
         return "client/client-panel";
     }
 
+@GetMapping("/available-slots")
+    public String availableslot(){
+        return "client/available-slots";
+}
 
+    @GetMapping("/book-appointment")
+    public String bookappointment(){
+        return "client/book-appointment";
+    }
+    @GetMapping("/my-bookings")
+    public String bookings() {
+        return "client/my-bookings";
+    }
 
+    @GetMapping("/my-provider")
+    public String myprovider() {
+        return "client/my-provider";
+    }
 
+    @GetMapping("/appointment-history")
+    public String appointmenthistory() {
+        return "client/appointment-history";
+    }
 
 }
 
