@@ -7,9 +7,11 @@ import com.smartappointments.booking_system.model.AuditLog;
 import com.smartappointments.booking_system.repository.UserRepository;
 import com.smartappointments.booking_system.repository.AppointmentRepository;
 import com.smartappointments.booking_system.repository.AuditLogRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -17,6 +19,9 @@ import java.util.List;
 
 @Configuration
 public class DataInitializer {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Bean
     CommandLineRunner initDatabase(UserRepository userRepository, 
@@ -27,19 +32,24 @@ public class DataInitializer {
             if (userRepository.count() == 0) {
                 System.out.println("Initializing sample data...");
 
+                // Default password for all sample users
+                String defaultPassword = passwordEncoder.encode("password123");
+
                 // Create Admin Users
                 User admin1 = new User();
-                admin1.setEmail("admin@smartappointments.com");
+                admin1.setEmail("admin@admin.com");
                 admin1.setFirstName("Admin");
                 admin1.setLastName("User");
                 admin1.setRole(User.UserRole.ROLE_ADMIN);
+                admin1.setPassword(defaultPassword);
                 admin1.setActive(true);
 
                 User admin2 = new User();
-                admin2.setEmail("super.admin@smartappointments.com");
+                admin2.setEmail("super@super.com");
                 admin2.setFirstName("Super");
                 admin2.setLastName("Administrator");
                 admin2.setRole(User.UserRole.ROLE_ADMIN);
+                admin2.setPassword(defaultPassword);
                 admin2.setActive(true);
 
                 // Create Provider Users
@@ -48,6 +58,7 @@ public class DataInitializer {
                 provider1.setFirstName("Dr. Sarah");
                 provider1.setLastName("Johnson");
                 provider1.setRole(User.UserRole.ROLE_PROVIDER);
+                provider1.setPassword(defaultPassword);
                 provider1.setActive(true);
 
                 User provider2 = new User();
@@ -55,6 +66,7 @@ public class DataInitializer {
                 provider2.setFirstName("Dr. Michael");
                 provider2.setLastName("Smith");
                 provider2.setRole(User.UserRole.ROLE_PROVIDER);
+                provider2.setPassword(defaultPassword);
                 provider2.setActive(true);
 
                 User provider3 = new User();
@@ -62,6 +74,7 @@ public class DataInitializer {
                 provider3.setFirstName("Dr. Emily");
                 provider3.setLastName("Brown");
                 provider3.setRole(User.UserRole.ROLE_PROVIDER);
+                provider3.setPassword(defaultPassword);
                 provider3.setActive(true);
 
                 User provider4 = new User();
@@ -69,6 +82,7 @@ public class DataInitializer {
                 provider4.setFirstName("Dr. Robert");
                 provider4.setLastName("Wilson");
                 provider4.setRole(User.UserRole.ROLE_PROVIDER);
+                provider4.setPassword(defaultPassword);
                 provider4.setActive(false); // Inactive provider
 
                 // Create Client Users
@@ -77,6 +91,7 @@ public class DataInitializer {
                 client1.setFirstName("John");
                 client1.setLastName("Doe");
                 client1.setRole(User.UserRole.ROLE_CLIENT);
+                client1.setPassword(defaultPassword);
                 client1.setActive(true);
 
                 User client2 = new User();
@@ -84,6 +99,7 @@ public class DataInitializer {
                 client2.setFirstName("Jane");
                 client2.setLastName("Smith");
                 client2.setRole(User.UserRole.ROLE_CLIENT);
+                client2.setPassword(defaultPassword);
                 client2.setActive(true);
 
                 User client3 = new User();
@@ -91,6 +107,7 @@ public class DataInitializer {
                 client3.setFirstName("Alice");
                 client3.setLastName("Johnson");
                 client3.setRole(User.UserRole.ROLE_CLIENT);
+                client3.setPassword(defaultPassword);
                 client3.setActive(true);
 
                 User client4 = new User();
@@ -98,6 +115,7 @@ public class DataInitializer {
                 client4.setFirstName("Bob");
                 client4.setLastName("Williams");
                 client4.setRole(User.UserRole.ROLE_CLIENT);
+                client4.setPassword(defaultPassword);
                 client4.setActive(true);
 
                 User client5 = new User();
@@ -105,6 +123,7 @@ public class DataInitializer {
                 client5.setFirstName("Charlie");
                 client5.setLastName("Davis");
                 client5.setRole(User.UserRole.ROLE_CLIENT);
+                client5.setPassword("dawson123"); // Different password for variety
                 client5.setActive(true);
 
                 User client6 = new User();
@@ -112,6 +131,7 @@ public class DataInitializer {
                 client6.setFirstName("Diana");
                 client6.setLastName("Miller");
                 client6.setRole(User.UserRole.ROLE_CLIENT);
+                client6.setPassword(defaultPassword);
                 client6.setActive(false); // Inactive client
 
                 User client7 = new User();
@@ -119,6 +139,7 @@ public class DataInitializer {
                 client7.setFirstName("Edward");
                 client7.setLastName("Garcia");
                 client7.setRole(User.UserRole.ROLE_CLIENT);
+                client7.setPassword(defaultPassword);
                 client7.setActive(true);
 
                 User client8 = new User();
@@ -126,6 +147,7 @@ public class DataInitializer {
                 client8.setFirstName("Fiona");
                 client8.setLastName("Rodriguez");
                 client8.setRole(User.UserRole.ROLE_CLIENT);
+                client8.setPassword(defaultPassword);
                 client8.setActive(true);
 
                 // Save all users first
