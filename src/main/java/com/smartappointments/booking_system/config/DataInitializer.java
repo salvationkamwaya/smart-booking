@@ -32,14 +32,14 @@ public class DataInitializer {
                 admin1.setEmail("admin@smartappointments.com");
                 admin1.setFirstName("Admin");
                 admin1.setLastName("User");
-                admin1.setRole(UserRole.ROLE_ADMIN);
+                admin1.setRole(User.UserRole.ROLE_ADMIN);
                 admin1.setActive(true);
 
                 User admin2 = new User();
                 admin2.setEmail("super.admin@smartappointments.com");
                 admin2.setFirstName("Super");
                 admin2.setLastName("Administrator");
-                admin2.setRole(UserRole.ROLE_ADMIN);
+                admin2.setRole(User.UserRole.ROLE_ADMIN);
                 admin2.setActive(true);
 
                 // Create Provider Users
@@ -47,28 +47,28 @@ public class DataInitializer {
                 provider1.setEmail("dr.johnson@hospital.com");
                 provider1.setFirstName("Dr. Sarah");
                 provider1.setLastName("Johnson");
-                provider1.setRole(UserRole.ROLE_PROVIDER);
+                provider1.setRole(User.UserRole.ROLE_PROVIDER);
                 provider1.setActive(true);
 
                 User provider2 = new User();
                 provider2.setEmail("dr.smith@clinic.com");
                 provider2.setFirstName("Dr. Michael");
                 provider2.setLastName("Smith");
-                provider2.setRole(UserRole.ROLE_PROVIDER);
+                provider2.setRole(User.UserRole.ROLE_PROVIDER);
                 provider2.setActive(true);
 
                 User provider3 = new User();
                 provider3.setEmail("dr.brown@medical.com");
                 provider3.setFirstName("Dr. Emily");
                 provider3.setLastName("Brown");
-                provider3.setRole(UserRole.ROLE_PROVIDER);
+                provider3.setRole(User.UserRole.ROLE_PROVIDER);
                 provider3.setActive(true);
 
                 User provider4 = new User();
                 provider4.setEmail("dr.wilson@healthcare.com");
                 provider4.setFirstName("Dr. Robert");
                 provider4.setLastName("Wilson");
-                provider4.setRole(UserRole.ROLE_PROVIDER);
+                provider4.setRole(User.UserRole.ROLE_PROVIDER);
                 provider4.setActive(false); // Inactive provider
 
                 // Create Client Users
@@ -76,56 +76,56 @@ public class DataInitializer {
                 client1.setEmail("john.doe@email.com");
                 client1.setFirstName("John");
                 client1.setLastName("Doe");
-                client1.setRole(UserRole.ROLE_CLIENT);
+                client1.setRole(User.UserRole.ROLE_CLIENT);
                 client1.setActive(true);
 
                 User client2 = new User();
                 client2.setEmail("jane.smith@email.com");
                 client2.setFirstName("Jane");
                 client2.setLastName("Smith");
-                client2.setRole(UserRole.ROLE_CLIENT);
+                client2.setRole(User.UserRole.ROLE_CLIENT);
                 client2.setActive(true);
 
                 User client3 = new User();
                 client3.setEmail("alice.johnson@email.com");
                 client3.setFirstName("Alice");
                 client3.setLastName("Johnson");
-                client3.setRole(UserRole.ROLE_CLIENT);
+                client3.setRole(User.UserRole.ROLE_CLIENT);
                 client3.setActive(true);
 
                 User client4 = new User();
                 client4.setEmail("bob.williams@email.com");
                 client4.setFirstName("Bob");
                 client4.setLastName("Williams");
-                client4.setRole(UserRole.ROLE_CLIENT);
+                client4.setRole(User.UserRole.ROLE_CLIENT);
                 client4.setActive(true);
 
                 User client5 = new User();
                 client5.setEmail("charlie.davis@email.com");
                 client5.setFirstName("Charlie");
                 client5.setLastName("Davis");
-                client5.setRole(UserRole.ROLE_CLIENT);
+                client5.setRole(User.UserRole.ROLE_CLIENT);
                 client5.setActive(true);
 
                 User client6 = new User();
                 client6.setEmail("diana.miller@email.com");
                 client6.setFirstName("Diana");
                 client6.setLastName("Miller");
-                client6.setRole(UserRole.ROLE_CLIENT);
+                client6.setRole(User.UserRole.ROLE_CLIENT);
                 client6.setActive(false); // Inactive client
 
                 User client7 = new User();
                 client7.setEmail("edward.garcia@email.com");
                 client7.setFirstName("Edward");
                 client7.setLastName("Garcia");
-                client7.setRole(UserRole.ROLE_CLIENT);
+                client7.setRole(User.UserRole.ROLE_CLIENT);
                 client7.setActive(true);
 
                 User client8 = new User();
                 client8.setEmail("fiona.rodriguez@email.com");
                 client8.setFirstName("Fiona");
                 client8.setLastName("Rodriguez");
-                client8.setRole(UserRole.ROLE_CLIENT);
+                client8.setRole(User.UserRole.ROLE_CLIENT);
                 client8.setActive(true);
 
                 // Save all users first
