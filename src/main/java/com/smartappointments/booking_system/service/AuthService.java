@@ -23,26 +23,24 @@ public class AuthService {
         // Check if user already exists
         if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("User with email " + email + " already exists");
-        }
-
-        // Create new user
+        }        // Create new user
         User user = new User();
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setPassword(passwordEncoder.encode(password));
-        user.setActive(true);
+        user.setStatus(User.Status.ACTIVE);
 
         // Set role based on string input
         switch (role.toLowerCase()) {
             case "client":
-                user.setRole(User.UserRole.ROLE_CLIENT);
+                user.setRole(User.Role.CLIENT);
                 break;
             case "provider":
-                user.setRole(User.UserRole.ROLE_PROVIDER);
+                user.setRole(User.Role.PROVIDER);
                 break;
             case "admin":
-                user.setRole(User.UserRole.ROLE_ADMIN);
+                user.setRole(User.Role.ADMIN);
                 break;
             default:
                 throw new RuntimeException("Invalid role: " + role);

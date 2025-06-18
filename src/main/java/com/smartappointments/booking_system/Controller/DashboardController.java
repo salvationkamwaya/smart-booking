@@ -12,21 +12,26 @@ public class DashboardController {
     @GetMapping("/dashboard")
     public String dashboard() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
-        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetailsService.CustomUserPrincipal) {
+          if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetailsService.CustomUserPrincipal) {
             CustomUserDetailsService.CustomUserPrincipal userPrincipal = 
                 (CustomUserDetailsService.CustomUserPrincipal) authentication.getPrincipal();
             
             String role = userPrincipal.getUser().getRole().name();
             
+            System.out.println("Dashboard accessed by user: " + userPrincipal.getUser().getEmail() + ", Role: " + role);
+            
             switch (role) {
-                case "ROLE_ADMIN":
+                case "ADMIN":
+                    System.out.println("Redirecting to admin dashboard");
                     return "redirect:/admin/dashboard";
-                case "ROLE_PROVIDER":
+                case "PROVIDER":
+                    System.out.println("Redirecting to provider dashboard");
                     return "redirect:/provider";
-                case "ROLE_CLIENT":
+                case "CLIENT":
+                    System.out.println("Redirecting to client dashboard");
                     return "redirect:/client";
                 default:
+                    System.out.println("Unknown role: " + role + ", redirecting to login");
                     return "redirect:/auth/login";
             }
         }

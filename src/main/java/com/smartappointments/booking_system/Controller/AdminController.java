@@ -2,6 +2,7 @@ package com.smartappointments.booking_system.Controller;
 
 import com.smartappointments.booking_system.model.*;
 import com.smartappointments.booking_system.service.AdminService;
+import com.smartappointments.booking_system.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Controller
@@ -20,6 +22,9 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private UserService userService;
 
     // Dashboard remains unchanged
     @GetMapping("/dashboard")
@@ -97,5 +102,76 @@ public class AdminController {
     public String auditLogs(Model model, @RequestParam(required = false) String keyword) {
         // ... existing code ...
         return "admin/audit-logs";
+    }
+
+    @GetMapping("/api/users")
+    @ResponseBody
+    public ResponseEntity<?> getUsers(
+            @RequestParam(required = false) User.Role role,
+            @RequestParam(required = false) User.Status status,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<User> users = userService.getUsers(role, status, search, PageRequest.of(page, size));
+        Map<String, Object> response = new HashMap<>();
+        response.put("users", users.getContent());
+        response.put("totalPages", users.getTotalPages());
+        response.put("totalElements", users.getTotalElements());
+
+        // Add counts for different roles and statuses
+        Map<String, Long> counts = new HashMap<>();
+        counts.put("totalClients", userService.countByRoleAndStatus(User.Role.CLIENT, User.Status.ACTIVE));
+        counts.put("totalProviders", userService.countByRoleAndStatus(User.Role.PROVIDER, User.Status.ACTIVE));
+        counts.put("totalAdmins", userService.countByRoleAndStatus(User.Role.ADMIN, User.Status.ACTIVE));
+        counts.put("totalPending", userService.countByRoleAndStatus(null, User.Status.PENDING));
+
+        response.put("counts", counts);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/users")
+    @ResponseBody
+    public ResponseEntity<?> createUser(@RequestBody User user) {
+        try {
+            User newUser = userService.createUser(user);
+            return ResponseEntity.ok(newUser);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/api/users/{id}")
+    @ResponseBody
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User user) {
+        try {
+            User updatedUser = userService.updateUser(id, user);
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/api/users/{id}/status")
+    @ResponseBody
+    public ResponseEntity<?> updateUserStatus(@PathVariable Long id, @RequestParam User.Status status) {
+        try {
+            User updatedUser = userService.updateUserStatus(id, status);
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/api/users/{id}")
+    @ResponseBody
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

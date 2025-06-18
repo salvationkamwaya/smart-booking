@@ -17,17 +17,24 @@ import java.util.List;
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Override
+    private UserRepository userRepository;    @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        System.out.println("Attempting to load user with email: " + email);
+        
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> {
+                    System.out.println("User not found with email: " + email);
+                    return new UsernameNotFoundException("User not found with email: " + email);
+                });
+
+        System.out.println("Found user: " + user.getEmail() + ", Role: " + user.getRole() + ", Active: " + user.isActive());
 
         if (!user.isActive()) {
+            System.out.println("User account is disabled for: " + email);
             throw new UsernameNotFoundException("User account is disabled");
         }
 
+        System.out.println("Successfully loaded user: " + email);
         return new CustomUserPrincipal(user);
     }
 
@@ -46,11 +53,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         @Override
         public String getPassword() {
             return user.getPassword();
-        }
-
-        @Override
+        }        @Override
         public List<GrantedAuthority> getAuthorities() {
-            return Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()));
+            return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
         }
 
         @Override

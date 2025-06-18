@@ -63,11 +63,120 @@
 
         .user-avatar {
             transition: all 0.3s ease;
-        }
-
-        .user-avatar:hover {
+        }        .user-avatar:hover {
             transform: scale(1.1);
             box-shadow: 0 0 0 3px rgba(38, 166, 154, 0.3);
+        }
+
+        /* Toggle Switch Styles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #26A69A;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Badge Styles */
+        .verification-badge, .security-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            margin: 0.25rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .verification-badge {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: #059669;
+        }
+
+        .security-badge {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        /* Social Icons */
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon.facebook { background-color: #3b5998; }
+        .social-icon.twitter { background-color: #1da1f2; }
+        .social-icon.linkedin { background-color: #0077b5; }
+        .social-icon.instagram { background-color: #e4405f; }
+
+        .social-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Tab Styles */
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #6b7280;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: #26A69A;
+            border-bottom-color: #26A69A;
+        }
+
+        .tab-button:hover {
+            color: #26A69A;
         }
         
         @media (max-width: 768px) {
@@ -191,25 +300,29 @@
             <!-- Profile Header -->
             <div class="profile-card bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex flex-col md:flex-row items-center">
-                    <div class="mb-4 md:mb-0 md:mr-6">
-                        <div class="profile-pic-container">
-                            <div class="w-32 h-32 rounded-full bg-gray-200 border-4 border-white shadow-md flex items-center justify-center">
-                                <i class="fas fa-user-md text-4xl text-gray-400"></i>
+                    <div class="mb-4 md:mb-0 md:mr-6">                        <div class="profile-pic-container">
+                            <div class="w-32 h-32 rounded-full bg-gray-200 border-4 border-white shadow-md overflow-hidden">
+                                <img th:if="${profile != null and profile.profilePicture != null}" 
+                                     th:src="'/' + ${profile.profilePicture}" 
+                                     alt="Profile Picture" 
+                                     class="user-avatar w-full h-full object-cover">
+                                <div th:unless="${profile != null and profile.profilePicture != null}" 
+                                     class="w-full h-full flex items-center justify-center">
+                                    <i class="fas fa-user-md text-4xl text-gray-400"></i>
+                                </div>
                             </div>
                             <div class="profile-overlay">
                                 <i class="fas fa-camera text-white text-2xl"></i>
                             </div>
                         </div>
-                    </div>
-                    <div class="text-center md:text-left flex-1">
-                        <h2 class="text-2xl font-bold text-gray-800">Dr. Sarah Johnson</h2>
-                        <p class="text-gray-600 mb-2">Dermatologist at City Medical Center</p>
+                    </div>                    <div class="text-center md:text-left flex-1">                        <h2 class="text-2xl font-bold text-gray-800" th:text="${profile != null and profile.firstName != null} ? ${profile.firstName + ' ' + (profile.lastName ?: '')} : (${profile != null and profile.user.firstName != null} ? ${profile.user.firstName + ' ' + (profile.user.lastName ?: '')} : 'Provider Name')">Dr. Sarah Johnson</h2>
+                        <p class="text-gray-600 mb-2" th:text="${profile != null and profile.specialization != null} ? ${profile.specialization + ' at ' + (profile.workplace ?: 'Medical Center')} : 'Specialist at Medical Center'">Dermatologist at City Medical Center</p>
 
                         <div class="flex flex-wrap justify-center md:justify-start mb-3">
                             <span class="verification-badge">
                                 <i class="fas fa-shield-alt mr-2"></i> Verified Professional
                             </span>
-                            <span class="security-badge">
+                            <span class="security-badge" th:if="${profile != null and profile.user.status.name() == 'ACTIVE'}">
                                 <i class="fas fa-lock mr-2"></i> Secure Account
                             </span>
                         </div>
@@ -228,9 +341,8 @@
                                 <i class="fab fa-instagram"></i>
                             </a>
                         </div>
-                    </div>
-                    <div class="mt-4 md:mt-0">
-                        <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    </div>                    <div class="mt-4 md:mt-0">
+                        <button id="view-public-profile" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
                             <i class="fas fa-eye mr-2"></i> View Public Profile
                         </button>
                     </div>
@@ -243,106 +355,149 @@
                 <button class="tab-button">Professional Details</button>
                 <button class="tab-button">Security</button>
                 <button class="tab-button">Notifications</button>
-            </div>
-
-            <!-- Personal Information Section -->
+            </div>            <!-- Personal Information Section -->
             <section id="personal-info" class="bg-white rounded-xl shadow-sm p-6 mb-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Personal Information</h2>
-                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    <button type="button" id="save-personal-info" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
                         <i class="fas fa-save mr-2"></i> Save Changes
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">First Name</label>
-                        <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="Sarah">
+                <form id="personal-info-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">First Name</label>
+                            <input type="text" id="firstName" name="firstName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.user.firstName} : ''" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.user.lastName} : ''" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Email Address</label>
+                            <input type="email" id="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.user.email} : ''" required readonly>
+                            <p class="text-sm text-gray-500 mt-1">Email cannot be changed</p>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Phone Number</label>
+                            <input type="tel" id="phoneNumber" name="phoneNumber" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.phoneNumber} : ''">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Date of Birth</label>
+                            <input type="date" id="dateOfBirth" name="dateOfBirth" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.dateOfBirth} : ''">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Gender</label>
+                            <select id="gender" name="gender" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                                <option value="">Select Gender</option>
+                                <option value="MALE" th:selected="${profile != null and profile.gender == 'MALE'}">Male</option>
+                                <option value="FEMALE" th:selected="${profile != null and profile.gender == 'FEMALE'}">Female</option>
+                                <option value="OTHER" th:selected="${profile != null and profile.gender == 'OTHER'}">Prefer not to say</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Last Name</label>
-                        <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="Johnson">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Email Address</label>
-                        <input type="email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="sarah.johnson@example.com">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Phone Number</label>
-                        <input type="tel" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="(555) 123-4567">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Date of Birth</label>
-                        <input type="date" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="1985-06-15">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Gender</label>
-                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
-                            <option>Female</option>
-                            <option>Male</option>
-                            <option>Prefer not to say</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div>
-                    <label class="block text-gray-700 font-medium mb-2">Bio</label>
-                    <textarea class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" rows="4">Board-certified dermatologist with over 10 years of experience. Specializing in cosmetic dermatology and skin cancer prevention. Committed to providing personalized care to all patients.</textarea>
-                </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Bio</label>
+                        <textarea id="bio" name="bio" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" rows="4" th:text="${profile != null} ? ${profile.bio} : ''">Board-certified professional committed to providing personalized care.</textarea>
+                    </div>
+                </form>
             </section>
 
-            <div class="profile-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Professional Details Section -->
-                <section class="section-card bg-white rounded-xl shadow-sm p-6">
+            <div class="profile-grid grid grid-cols-1 lg:grid-cols-2 gap-6">                <!-- Professional Details Section -->
+                <section id="professional-info" class="section-card bg-white rounded-xl shadow-sm p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800">Professional Details</h2>
-                        <button class="text-teal-600 hover:text-teal-800">
+                        <button type="button" id="edit-professional" class="text-teal-600 hover:text-teal-800">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
 
-                    <div class="space-y-5">
+                    <!-- View Mode -->
+                    <div id="professional-view" class="space-y-5">
                         <div>
                             <label class="block text-gray-600 font-medium mb-1">Profession</label>
-                            <p class="text-gray-800 font-medium">Dermatologist</p>
+                            <p class="text-gray-800 font-medium" th:text="${profile != null} ? ${profile.profession} : 'Not specified'">Dermatologist</p>
                         </div>
 
                         <div>
                             <label class="block text-gray-600 font-medium mb-1">Specialization</label>
-                            <p class="text-gray-800 font-medium">Cosmetic Dermatology, Skin Cancer Prevention</p>
+                            <p class="text-gray-800 font-medium" th:text="${profile != null} ? ${profile.specialization} : 'Not specified'">Cosmetic Dermatology, Skin Cancer Prevention</p>
                         </div>
 
                         <div>
                             <label class="block text-gray-600 font-medium mb-1">Medical License Number</label>
-                            <p class="text-gray-800 font-medium">MED-123456789</p>
+                            <p class="text-gray-800 font-medium" th:text="${profile != null} ? ${profile.licenseNumber} : 'Not specified'">MED-123456789</p>
                         </div>
 
                         <div>
                             <label class="block text-gray-600 font-medium mb-1">Clinic/Hospital</label>
-                            <p class="text-gray-800 font-medium">City Medical Center</p>
+                            <p class="text-gray-800 font-medium" th:text="${profile != null} ? ${profile.workplace} : 'Not specified'">City Medical Center</p>
                         </div>
 
                         <div>
                             <label class="block text-gray-600 font-medium mb-1">Years of Experience</label>
-                            <p class="text-gray-800 font-medium">10 years</p>
+                            <p class="text-gray-800 font-medium" th:text="${profile != null} ? ${profile.yearsOfExperience + ' years'} : 'Not specified'">10 years</p>
                         </div>
 
                         <div>
                             <label class="block text-gray-600 font-medium mb-1">Education</label>
-                            <div class="space-y-2">
-                                <p class="text-gray-800 font-medium">MD, Harvard Medical School</p>
-                                <p class="text-gray-800 font-medium">Residency, Johns Hopkins Hospital</p>
-                            </div>
+                            <p class="text-gray-800 font-medium" th:text="${profile != null} ? ${profile.education} : 'Not specified'">MD, Harvard Medical School</p>
                         </div>
 
                         <div>
                             <label class="block text-gray-600 font-medium mb-1">Certifications</label>
-                            <div class="space-y-2">
-                                <p class="text-gray-800 font-medium">American Board of Dermatology</p>
-                                <p class="text-gray-800 font-medium">Fellow of the American Academy of Dermatology</p>
-                            </div>
+                            <p class="text-gray-800 font-medium" th:text="${profile != null} ? ${profile.certifications} : 'Not specified'">American Board of Dermatology</p>
                         </div>
                     </div>
+
+                    <!-- Edit Mode -->
+                    <form id="professional-form" class="space-y-5 hidden">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Profession</label>
+                            <input type="text" id="profession" name="profession" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.profession} : ''">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Specialization</label>
+                            <input type="text" id="specialization" name="specialization" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.specialization} : ''">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Medical License Number</label>
+                            <input type="text" id="licenseNumber" name="licenseNumber" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.licenseNumber} : ''">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Clinic/Hospital</label>
+                            <input type="text" id="workplace" name="workplace" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.workplace} : ''">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Years of Experience</label>
+                            <input type="number" id="yearsOfExperience" name="yearsOfExperience" min="0" max="50" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" th:value="${profile != null} ? ${profile.yearsOfExperience} : ''">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Education</label>
+                            <textarea id="education" name="education" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" rows="3" th:text="${profile != null} ? ${profile.education} : ''"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">Certifications</label>
+                            <textarea id="certifications" name="certifications" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" rows="3" th:text="${profile != null} ? ${profile.certifications} : ''"></textarea>
+                        </div>
+
+                        <div class="flex space-x-3">
+                            <button type="button" id="save-professional" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-save mr-2"></i> Save
+                            </button>
+                            <button type="button" id="cancel-professional" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fas fa-times mr-2"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
                 </section>
 
                 <!-- Security Section -->
@@ -572,9 +727,7 @@
     </div>
 
     <!-- Content Overlay -->
-    <div id="content-overlay"></div>
-
-    <script>
+    <div id="content-overlay"></div>    <script>
         // Mobile sidebar toggle
         document.getElementById('toggle-sidebar').addEventListener('click', () => {
             document.getElementById('sidebar').classList.add('active');
@@ -594,19 +747,473 @@
                 document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
 
-                // In a real app, this would show the corresponding content section
-                const sectionName = this.textContent.toLowerCase().replace(' ', '-');
-                alert(`Showing ${sectionName} section`);
+                // Hide all sections
+                document.querySelectorAll('section').forEach(section => {
+                    section.style.display = 'none';
+                });
+
+                // Show the relevant section based on tab
+                const tabText = this.textContent.toLowerCase().replace(' ', '-');
+                switch(tabText) {
+                    case 'personal-information':
+                        document.getElementById('personal-info').style.display = 'block';
+                        break;
+                    case 'professional-details':
+                        document.getElementById('professional-info').style.display = 'block';
+                        break;
+                    case 'security':
+                        document.querySelectorAll('.section-card').forEach(card => {
+                            if (card.querySelector('h2').textContent.includes('Security')) {
+                                card.style.display = 'block';
+                            }
+                        });
+                        break;
+                    case 'notifications':
+                        document.querySelectorAll('.section-card').forEach(card => {
+                            if (card.querySelector('h2').textContent.includes('Notification')) {
+                                card.style.display = 'block';
+                            }
+                        });
+                        break;
+                }
             });
+        });        // Personal Information Form Submission
+        document.getElementById('save-personal-info').addEventListener('click', async function() {
+            const saveButton = this;
+            const originalText = saveButton.textContent;
+            
+            // Show loading state
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+            
+            const form = document.getElementById('personal-info-form');
+            const formData = new FormData(form);
+            
+            const data = {
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                phoneNumber: formData.get('phoneNumber'),
+                dateOfBirth: formData.get('dateOfBirth'),
+                gender: formData.get('gender'),
+                bio: formData.get('bio')
+            };
+
+            try {
+                const response = await fetch('/provider/profile-settings/personal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const updatedProfile = await response.json();
+                    showNotification('Personal information updated successfully!', 'success');
+                    
+                    // Update the display name in header
+                    const nameDisplay = document.querySelector('h2.text-2xl');
+                    if (nameDisplay) {
+                        nameDisplay.textContent = `${updatedProfile.firstName || ''} ${updatedProfile.lastName || ''}`.trim() || 'Provider Name';
+                    }
+                    
+                    // Update all personal info display elements with fresh data from database
+                    updatePersonalInfoDisplay(updatedProfile);
+                    
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error || 'Failed to update personal information', 'error');
+                }
+            } catch (error) {
+                showNotification('Error updating personal information', 'error');
+                console.error('Error:', error);
+            } finally {
+                // Restore button state
+                saveButton.disabled = false;
+                saveButton.textContent = originalText;
+            }
         });
+
+        // Professional Details Edit/Save functionality
+        document.getElementById('edit-professional').addEventListener('click', function() {
+            document.getElementById('professional-view').classList.add('hidden');
+            document.getElementById('professional-form').classList.remove('hidden');
+        });
+
+        document.getElementById('cancel-professional').addEventListener('click', function() {
+            document.getElementById('professional-view').classList.remove('hidden');
+            document.getElementById('professional-form').classList.add('hidden');
+        });        document.getElementById('save-professional').addEventListener('click', async function() {
+            const saveButton = this;
+            const originalText = saveButton.textContent;
+            
+            // Show loading state
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+            
+            const form = document.getElementById('professional-form');
+            const formData = new FormData(form);
+            
+            const data = {
+                profession: formData.get('profession'),
+                specialization: formData.get('specialization'),
+                licenseNumber: formData.get('licenseNumber'),
+                workplace: formData.get('workplace'),
+                yearsOfExperience: parseInt(formData.get('yearsOfExperience')) || 0,
+                education: formData.get('education'),
+                certifications: formData.get('certifications')
+            };            try {
+                const response = await fetch('/provider/profile-settings/professional', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const updatedProfile = await response.json();
+                    showNotification('Professional details updated successfully!', 'success');
+                    
+                    // Update the view mode with fresh data from database
+                    updateProfessionalView(updatedProfile);
+                    document.getElementById('professional-view').classList.remove('hidden');
+                    document.getElementById('professional-form').classList.add('hidden');
+                } else {
+                    const error = await response.json();
+                    showNotification(error.error || 'Failed to update professional details', 'error');
+                }            } catch (error) {
+                showNotification('Error updating professional details', 'error');
+                console.error('Error:', error);
+            } finally {
+                // Restore button state
+                saveButton.disabled = false;
+                saveButton.textContent = originalText;
+            }
+        });
+
+        // Function to update personal info display with fresh data from database
+        function updatePersonalInfoDisplay(profile) {
+            // Update form fields with fresh data from the nested user object and profile
+            if (profile.user) {
+                if (profile.user.firstName) document.getElementById('firstName').value = profile.user.firstName;
+                if (profile.user.lastName) document.getElementById('lastName').value = profile.user.lastName;
+                if (profile.user.email) document.getElementById('email').value = profile.user.email;
+            }
+            
+            // Update profile-specific fields
+            if (profile.phoneNumber) document.getElementById('phoneNumber').value = profile.phoneNumber;
+            if (profile.dateOfBirth) {
+                const dateInput = document.getElementById('dateOfBirth');
+                // Ensure proper date format
+                const date = new Date(profile.dateOfBirth);
+                dateInput.value = date.toISOString().split('T')[0];
+            }
+            if (profile.gender) document.getElementById('gender').value = profile.gender;
+            if (profile.bio) document.getElementById('bio').value = profile.bio;
+            
+            // Update display elements that show personal info
+            const nameElements = document.querySelectorAll('[data-field="name"]');
+            nameElements.forEach(el => {
+                const fullName = profile.user ? `${profile.user.firstName || ''} ${profile.user.lastName || ''}`.trim() : '';
+                el.textContent = fullName || 'Not specified';
+            });
+            
+            // Update header name display
+            const nameDisplay = document.querySelector('h2.text-2xl');
+            if (nameDisplay && profile.user) {
+                const fullName = `${profile.user.firstName || ''} ${profile.user.lastName || ''}`.trim();
+                nameDisplay.textContent = fullName || 'Provider Name';
+            }
+        }
+
+        // Function to update professional view mode with fresh data from database
+        function updateProfessionalView(profile) {
+            const viewSection = document.getElementById('professional-view');
+            const paragraphs = viewSection.querySelectorAll('p');
+            
+            // Update view mode paragraphs
+            if (paragraphs[0]) paragraphs[0].textContent = profile.profession || 'Not specified';
+            if (paragraphs[1]) paragraphs[1].textContent = profile.specialization || 'Not specified';
+            if (paragraphs[2]) paragraphs[2].textContent = profile.licenseNumber || 'Not specified';
+            if (paragraphs[3]) paragraphs[3].textContent = profile.workplace || 'Not specified';
+            if (paragraphs[4]) paragraphs[4].textContent = profile.yearsOfExperience ? `${profile.yearsOfExperience} years` : 'Not specified';
+            if (paragraphs[5]) paragraphs[5].textContent = profile.education || 'Not specified';
+            if (paragraphs[6]) paragraphs[6].textContent = profile.certifications || 'Not specified';
+            
+            // Update form fields with fresh data (in case user edits again)
+            if (profile.profession) document.getElementById('profession').value = profile.profession;
+            if (profile.specialization) document.getElementById('specialization').value = profile.specialization;
+            if (profile.licenseNumber) document.getElementById('licenseNumber').value = profile.licenseNumber;
+            if (profile.workplace) document.getElementById('workplace').value = profile.workplace;
+            if (profile.yearsOfExperience) document.getElementById('yearsOfExperience').value = profile.yearsOfExperience;
+            if (profile.education) document.getElementById('education').value = profile.education;            if (profile.certifications) document.getElementById('certifications').value = profile.certifications;
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Remove any existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification fixed top-4 right-4 p-4 rounded-lg text-white z-50 shadow-lg transform transition-all duration-300 ease-in-out ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+            notification.style.transform = 'translateX(100%)'; // Start off-screen
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Auto remove after 5 seconds with animation
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }                }, 300);
+            }, 5000);
+        }
 
         // Profile picture change
         document.querySelector('.profile-overlay').addEventListener('click', function() {
-            alert("Open file dialog to upload new profile photo");
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // Validate file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        showNotification('File size must be less than 5MB', 'error');
+                        return;
+                    }
+                    
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        showNotification('Please select a valid image file', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        
+                        const response = await fetch('/provider/profile-settings/upload-picture', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                              // Show preview immediately
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const profileContainer = document.querySelector('.profile-pic-container .w-32');
+                                profileContainer.innerHTML = `<img src="${e.target.result}" alt="Profile Picture" class="user-avatar w-full h-full object-cover">`;
+                            };
+                            reader.readAsDataURL(file);
+                            
+                            showNotification('Profile picture updated successfully!', 'success');
+                        } else {
+                            const error = await response.json();
+                            showNotification(error.error || 'Failed to upload profile picture', 'error');
+                        }
+                    } catch (error) {
+                        showNotification('Error uploading profile picture', 'error');
+                        console.error('Error:', error);
+                    }
+                }
+            };
+            input.click();
         });
 
-        // Initialize with some interactions
-        document.addEventListener('DOMContentLoaded', function() {
+        // Function to refresh all profile data from server
+        async function refreshProfileData() {
+            try {
+                const response = await fetch('/provider/profile-settings/data');
+                if (response.ok) {
+                    const profile = await response.json();
+                    updatePersonalInfoDisplay(profile);
+                    updateProfessionalView(profile);
+                    
+                    // Update profile picture if available
+                    if (profile.profilePicture) {
+                        const profileImg = document.querySelector('.user-avatar');
+                        if (profileImg) {
+                            profileImg.src = profile.profilePicture;
+                        }
+                    }
+                    
+                    return profile;
+                } else {
+                    console.error('Failed to refresh profile data');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error refreshing profile data:', error);
+                return null;            }
+        }
+
+        // View Public Profile functionality
+        function showPublicProfile() {
+            // Create a modal to show the public profile preview
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800">Public Profile Preview</h3>
+                            <button class="close-modal text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times text-2xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="text-center mb-6">
+                            <div class="w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden bg-gradient-to-br from-teal-400 to-royal-purple flex items-center justify-center">
+                                <i class="fas fa-user-md text-white text-4xl"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-800" id="modal-name">Loading...</h2>
+                            <p class="text-gray-600 mb-2" id="modal-specialization">Loading...</p>
+                            <p class="text-sm text-gray-500" id="modal-experience">Loading...</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 mb-2">Contact Information</h4>
+                                    <p class="text-gray-600" id="modal-workplace">Loading...</p>
+                                    <p class="text-gray-600" id="modal-phone">Loading...</p>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 mb-2">Professional Details</h4>
+                                    <p class="text-gray-600" id="modal-license">Loading...</p>
+                                    <p class="text-gray-600" id="modal-education">Loading...</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 mb-2">About</h4>
+                                    <p class="text-gray-600" id="modal-bio">Loading...</p>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 mb-2">Certifications</h4>
+                                    <p class="text-gray-600" id="modal-certifications">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-center">
+                            <button class="close-modal bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg transition-colors">
+                                Close Preview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close modal functionality
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal || e.target.classList.contains('close-modal')) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            // Populate modal with current profile data
+            populateModalWithProfileData();
+        }
+
+        async function populateModalWithProfileData() {
+            try {
+                const response = await fetch('/provider/profile-settings/data');
+                if (response.ok) {
+                    const profile = await response.json();
+                    
+                    // Update modal content with profile data
+                    const modalName = document.getElementById('modal-name');
+                    const modalSpecialization = document.getElementById('modal-specialization');
+                    const modalExperience = document.getElementById('modal-experience');
+                    const modalWorkplace = document.getElementById('modal-workplace');
+                    const modalPhone = document.getElementById('modal-phone');
+                    const modalLicense = document.getElementById('modal-license');
+                    const modalEducation = document.getElementById('modal-education');
+                    const modalBio = document.getElementById('modal-bio');
+                    const modalCertifications = document.getElementById('modal-certifications');
+                    
+                    if (modalName) {
+                        const fullName = profile.user ? `${profile.user.firstName || ''} ${profile.user.lastName || ''}`.trim() : '';
+                        modalName.textContent = fullName || 'Provider Name';
+                    }
+                    
+                    if (modalSpecialization) {
+                        modalSpecialization.textContent = profile.specialization || 'Specialist';
+                    }
+                    
+                    if (modalExperience) {
+                        modalExperience.textContent = profile.yearsOfExperience ? 
+                            `${profile.yearsOfExperience} years of experience` : 'Experience not specified';
+                    }
+                    
+                    if (modalWorkplace) {
+                        modalWorkplace.textContent = profile.workplace || 'Workplace not specified';
+                    }
+                    
+                    if (modalPhone) {
+                        modalPhone.textContent = profile.phoneNumber || 'Phone not specified';
+                    }
+                    
+                    if (modalLicense) {
+                        modalLicense.textContent = profile.licenseNumber ? 
+                            `License: ${profile.licenseNumber}` : 'License not specified';
+                    }
+                    
+                    if (modalEducation) {
+                        modalEducation.textContent = profile.education || 'Education not specified';
+                    }
+                    
+                    if (modalBio) {
+                        modalBio.textContent = profile.bio || 'Bio not specified';
+                    }
+                    
+                    if (modalCertifications) {
+                        modalCertifications.textContent = profile.certifications || 'Certifications not specified';
+                    }
+                    
+                } else {
+                    console.error('Failed to fetch profile data for modal');
+                }
+            } catch (error) {
+                console.error('Error fetching profile data for modal:', error);
+            }        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Show personal info section by default
+            document.querySelectorAll('section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById('personal-info').style.display = 'block';
+
+            // Refresh profile data on page load
+            await refreshProfileData();
+
             // Add hover effect to all cards
             const cards = document.querySelectorAll('.section-card');
             cards.forEach(card => {
@@ -614,10 +1221,25 @@
                     this.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
                 });
 
-                card.addEventListener('mouseleave', function() {
-                    this.style.boxShadow = '';
+                card.addEventListener('mouseleave', function() {                    this.style.boxShadow = '';
                 });
             });
+
+            // Toggle switches functionality
+            document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const label = this.closest('.flex').querySelector('h3, h4').textContent;
+                    showNotification(`${label} ${this.checked ? 'enabled' : 'disabled'}`, 'info');
+                });
+            });
+
+            // View Public Profile button functionality
+            const viewProfileButton = document.getElementById('view-public-profile');
+            if (viewProfileButton) {
+                viewProfileButton.addEventListener('click', function() {
+                    showPublicProfile();
+                });
+            }
         });
     </script>
 </body>

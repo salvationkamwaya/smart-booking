@@ -1,22 +1,36 @@
 package com.smartappointments.booking_system.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User {    // Define the Role enum as an inner class
+    public enum Role {
+        CLIENT,
+        PROVIDER,
+        ADMIN;
 
-    // Define the UserRole enum as an inner class
-    public enum UserRole {
-        ROLE_ADMIN,
-        ROLE_PROVIDER,
-        ROLE_CLIENT;
-
-        public static UserRole fromString(String role) {
+        public static Role fromString(String role) {
             try {
-                return UserRole.valueOf(role.toUpperCase());
+                return Role.valueOf(role.toUpperCase());
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Invalid role: " + role);
+            }
+        }
+    }
+
+    // Define the Status enum
+    public enum Status {
+        ACTIVE,
+        INACTIVE,
+        PENDING;
+
+        public static Status fromString(String status) {
+            try {
+                return Status.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid status: " + status);
             }
         }
     }
@@ -32,30 +46,45 @@ public class User {
     private String firstName;
 
     @Column(name = "last_name", nullable = false)
-    private String lastName;
+    private String lastName;    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole role;
-
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private Status status = Status.PENDING;
 
     @Column(nullable = false)
     private String password;
 
-    // Constructors
+    private LocalDateTime lastLoginDate;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;    // Constructors
     public User() {
     }
 
     public User(String email, String firstName, String lastName,
-                UserRole role, String password) {
+                Role role, String password) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.role = role;
         this.password = password;
-        this.isActive = true;
+        this.status = Status.ACTIVE;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (status == null) {
+            status = Status.PENDING;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     // Getters and Setters
@@ -85,27 +114,29 @@ public class User {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public UserRole getRole() {
+    }    public Role getRole() {
         return role;
     }
 
-    public void setRole(UserRole role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
     // Convenience method for string roles
     public void setRoleFromString(String role) {
-        this.role = UserRole.fromString(role);
+        this.role = Role.fromString(role);
     }
 
-    public Boolean isActive() {
-        return isActive;
+    public Status getStatus() {
+        return status;
     }
 
-    public void setActive(Boolean active) {
-        isActive = active;
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public void setStatusFromString(String status) {
+        this.status = Status.fromString(status);
     }
 
     public String getPassword() {
@@ -116,16 +147,32 @@ public class User {
         this.password = password;
     }
 
-    // Helper methods
+    public LocalDateTime getLastLoginDate() {
+        return lastLoginDate;
+    }
+
+    public void setLastLoginDate(LocalDateTime lastLoginDate) {
+        this.lastLoginDate = lastLoginDate;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public boolean isActive() {
+        return status == Status.ACTIVE;
+    }    // Helper methods
     public String getFullName() {
         return firstName + " " + lastName;
     }
 
-    public boolean hasRole(UserRole role) {
+    public boolean hasRole(Role role) {
         return this.role == role;
-    }
-
-    @Override
+    }    @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
@@ -133,7 +180,7 @@ public class User {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", role=" + role +
-                ", isActive=" + isActive +
+                ", status=" + status +
                 '}';
     }
 }

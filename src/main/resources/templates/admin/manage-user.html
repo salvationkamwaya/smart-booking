@@ -28,8 +28,7 @@
                 }
             }
         }
-    </script>
-    <style>
+    </script>    <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         * {
             font-family: 'Poppins', sans-serif;
@@ -44,6 +43,158 @@
         .sidebar-link.active {
             background: rgba(255, 255, 255, 0.1);
             border-left-color: #00B7EB;
+        }
+
+        /* Role badges */
+        .role-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .role-badge.role-client {
+            background-color: rgba(0, 183, 235, 0.2);
+            color: #00B7EB;
+        }
+        
+        .role-badge.role-provider {
+            background-color: rgba(25, 25, 112, 0.2);
+            color: #191970;
+        }
+        
+        .role-badge.role-admin {
+            background-color: rgba(220, 20, 60, 0.2);
+            color: #DC143C;
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.status-active {
+            background-color: rgba(46, 139, 87, 0.2);
+            color: #2E8B57;
+        }
+        
+        .status-badge.status-inactive {
+            background-color: rgba(220, 20, 60, 0.2);
+            color: #DC143C;
+        }
+        
+        .status-badge.status-pending {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #D97706;
+        }
+
+        /* Tab buttons */
+        .tab-button {
+            padding: 0.5rem 1rem;
+            color: #4B5563;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button:hover {
+            color: #00B7EB;
+            border-bottom-color: #00B7EB;
+        }
+        
+        .tab-button.active {
+            color: #00B7EB;
+            border-bottom-color: #00B7EB;
+        }
+
+        /* Action buttons */
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 28rem;
+            width: 100%;
+            margin: 0 1rem;
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .modal-overlay.hidden .modal-content {
+            transform: scale(0.95);
+        }
+
+        /* Form controls */
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #00B7EB;
+            box-shadow: 0 0 0 2px rgba(0, 183, 235, 0.2);
+        }
+
+        /* User card */
+        .user-card {
+            transition: all 0.3s ease;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .pagination button {
+            transition: all 0.2s ease;
+        }
+
+        /* Search bar */
+        .search-input {
+            transition: all 0.2s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #00B7EB;
+            box-shadow: 0 0 0 2px rgba(0, 183, 235, 0.2);
+            outline: none;
         }
         
         .notification-dot {
@@ -87,6 +238,107 @@
             #sidebar.active+#content-overlay {
                 display: block;
             }
+        }
+
+        /* Role badges */
+        .role-badge {
+            @apply px-2 py-1 rounded-full text-sm font-medium;
+        }
+        
+        .role-badge.role-client {
+            @apply bg-deep-sky-blue/20 text-deep-sky-blue;
+        }
+        
+        .role-badge.role-provider {
+            @apply bg-midnight-blue/20 text-midnight-blue;
+        }
+        
+        .role-badge.role-admin {
+            @apply bg-crimson/20 text-crimson;
+        }
+
+        /* Status badges */
+        .status-badge {
+            @apply px-2 py-1 rounded-full text-sm font-medium;
+        }
+        
+        .status-badge.status-active {
+            @apply bg-sea-green/20 text-sea-green;
+        }
+        
+        .status-badge.status-inactive {
+            @apply bg-crimson/20 text-crimson;
+        }
+        
+        .status-badge.status-pending {
+            @apply bg-yellow-500/20 text-yellow-600;
+        }
+
+        /* Tab buttons */
+        .tab-button {
+            @apply px-4 py-2 text-gray-600 border-b-2 border-transparent hover:text-deep-sky-blue hover:border-deep-sky-blue transition-colors;
+        }
+        
+        .tab-button.active {
+            @apply text-deep-sky-blue border-deep-sky-blue;
+        }
+
+        /* Action buttons hover effects */
+        .action-btn {
+            @apply transition-all duration-200 hover:shadow-md transform hover:-translate-y-0.5;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+        }
+        
+        .modal-content {
+            @apply bg-white rounded-xl shadow-xl max-w-md w-full mx-4 transform transition-all duration-300;
+        }
+        
+        .modal-overlay.hidden {
+            @apply opacity-0 pointer-events-none;
+        }
+        
+        .modal-overlay.hidden .modal-content {
+            @apply scale-95;
+        }
+
+        /* Form controls */
+        .form-input {
+            @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-sky-blue focus:border-deep-sky-blue transition-colors;
+        }
+        
+        .form-select {
+            @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-sky-blue focus:border-deep-sky-blue transition-colors appearance-none bg-white;
+        }
+
+        /* User card hover effect */
+        .user-card {
+            @apply transition-all duration-300;
+        }
+        
+        .user-card:hover {
+            @apply transform -translate-y-1 shadow-lg;
+        }
+
+        /* Pagination */
+        .pagination {
+            @apply flex items-center space-x-2;
+        }
+        
+        .pagination button {
+            @apply transition-colors duration-200;
+        }
+
+        /* Search bar */
+        .search-input {
+            @apply transition-all duration-200;
+        }
+        
+        .search-input:focus {
+            @apply ring-2 ring-deep-sky-blue border-deep-sky-blue shadow-md;
         }
     </style>
 </head>
@@ -162,6 +414,11 @@
                             <i class="fas fa-chart-bar mr-3 text-sea-green"></i> Reports
                         </a>
                     </li>
+                    <li>
+                        <a th:href="@{/logout}" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center text-crimson">
+                            <i class="fas fa-sign-out-alt mr-3"></i> Logout
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </aside>
@@ -185,21 +442,21 @@
 
                     <!-- Filters -->
                     <div class="flex flex-wrap gap-3 w-full md:w-auto">
-                        <select class="w-full md:w-auto p-2 border border-gray-300 rounded-lg focus:outline-none">
+                        <select name="role" class="w-full md:w-auto p-2 border border-gray-300 rounded-lg focus:outline-none">
                             <option value="">All Roles</option>
                             <option value="client">Client</option>
                             <option value="provider">Provider</option>
                             <option value="admin">Admin</option>
                         </select>
 
-                        <select class="w-full md:w-auto p-2 border border-gray-300 rounded-lg focus:outline-none">
+                        <select name="status" class="w-full md:w-auto p-2 border border-gray-300 rounded-lg focus:outline-none">
                             <option value="">All Statuses</option>
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                             <option value="pending">Pending</option>
                         </select>
 
-                        <button class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                        <button id="apply-filters" class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
                             <i class="fas fa-filter mr-2"></i>
                             Apply Filters
                         </button>
@@ -223,234 +480,16 @@
             </div>
 
             <!-- Users Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                <!-- User Card 1 -->
-                <div class="user-card bg-white rounded-xl shadow-card p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="w-16 h-16 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mr-4">
-                            <i class="fas fa-user text-deep-sky-blue text-2xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-dark-gray">John Smith</h3>
-                            <p class="text-gray-600">john.smith@example.com</p>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="role-badge role-client">Client</span>
-                        <span class="status-badge status-active">Active</span>
-                    </div>
-
-                    <div class="text-sm text-gray-600 mb-4">
-                        <p><i class="fas fa-calendar-alt mr-2"></i> Joined: June 15, 2024</p>
-                        <p><i class="fas fa-clock mr-2"></i> Last Active: Today</p>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="action-btn bg-crimson text-white px-3 py-2 rounded hover:bg-crimson/90 transition-colors">
-                            <i class="fas fa-ban"></i> Disable
-                        </button>
-                        <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </div>
-                </div>
-
-                <!-- User Card 2 -->
-                <div class="user-card bg-white rounded-xl shadow-card p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="w-16 h-16 rounded-full bg-midnight-blue/20 flex items-center justify-center mr-4">
-                            <i class="fas fa-user-md text-midnight-blue text-2xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-dark-gray">Dr. Sarah Johnson</h3>
-                            <p class="text-gray-600">sarah.johnson@example.com</p>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="role-badge role-provider">Provider</span>
-                        <span class="status-badge status-active">Active</span>
-                    </div>
-
-                    <div class="text-sm text-gray-600 mb-4">
-                        <p><i class="fas fa-calendar-alt mr-2"></i> Joined: May 28, 2024</p>
-                        <p><i class="fas fa-clock mr-2"></i> Last Active: 2 hours ago</p>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="action-btn bg-crimson text-white px-3 py-2 rounded hover:bg-crimson/90 transition-colors">
-                            <i class="fas fa-ban"></i> Disable
-                        </button>
-                        <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </div>
-                </div>
-
-                <!-- User Card 3 -->
-                <div class="user-card bg-white rounded-xl shadow-card p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="w-16 h-16 rounded-full bg-crimson/20 flex items-center justify-center mr-4">
-                            <i class="fas fa-user-shield text-crimson text-2xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-dark-gray">Michael Brown</h3>
-                            <p class="text-gray-600">michael@example.com</p>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="role-badge role-admin">Admin</span>
-                        <span class="status-badge status-active">Active</span>
-                    </div>
-
-                    <div class="text-sm text-gray-600 mb-4">
-                        <p><i class="fas fa-calendar-alt mr-2"></i> Joined: April 12, 2024</p>
-                        <p><i class="fas fa-clock mr-2"></i> Last Active: 30 mins ago</p>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="action-btn bg-crimson text-white px-3 py-2 rounded hover:bg-crimson/90 transition-colors">
-                            <i class="fas fa-ban"></i> Disable
-                        </button>
-                        <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </div>
-                </div>
-
-                <!-- User Card 4 -->
-                <div class="user-card bg-white rounded-xl shadow-card p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center mr-4">
-                            <i class="fas fa-user-clock text-gray-600 text-2xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-dark-gray">Emily Davis</h3>
-                            <p class="text-gray-600">emily.d@example.com</p>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="role-badge role-client">Client</span>
-                        <span class="status-badge status-pending">Pending</span>
-                    </div>
-
-                    <div class="text-sm text-gray-600 mb-4">
-                        <p><i class="fas fa-calendar-alt mr-2"></i> Joined: June 14, 2025</p>
-                        <p><i class="fas fa-clock mr-2"></i> Last Active: Never</p>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="action-btn bg-sea-green text-white px-3 py-2 rounded hover:bg-sea-green/90 transition-colors">
-                            <i class="fas fa-check"></i> Approve
-                        </button>
-                        <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </div>
-                </div>
-
-                <!-- User Card 5 -->
-                <div class="user-card bg-white rounded-xl shadow-card p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center mr-4">
-                            <i class="fas fa-user-slash text-gray-600 text-2xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-dark-gray">Robert Wilson</h3>
-                            <p class="text-gray-600">robert.w@example.com</p>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="role-badge role-provider">Provider</span>
-                        <span class="status-badge status-inactive">Inactive</span>
-                    </div>
-
-                    <div class="text-sm text-gray-600 mb-4">
-                        <p><i class="fas fa-calendar-alt mr-2"></i> Joined: March 3, 2025</p>
-                        <p><i class="fas fa-clock mr-2"></i> Last Active: May 15, 2025</p>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="action-btn bg-sea-green text-white px-3 py-2 rounded hover:bg-sea-green/90 transition-colors">
-                            <i class="fas fa-check"></i> Activate
-                        </button>
-                        <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </div>
-                </div>
-
-                <!-- User Card 6 -->
-                <div class="user-card bg-white rounded-xl shadow-card p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="w-16 h-16 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mr-4">
-                            <i class="fas fa-user text-deep-sky-blue text-2xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-dark-gray">Jennifer Lee</h3>
-                            <p class="text-gray-600">jennifer@example.com</p>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="role-badge role-client">Client</span>
-                        <span class="status-badge status-active">Active</span>
-                    </div>
-
-                    <div class="text-sm text-gray-600 mb-4">
-                        <p><i class="fas fa-calendar-alt mr-2"></i> Joined: June 1, 2025</p>
-                        <p><i class="fas fa-clock mr-2"></i> Last Active: Yesterday</p>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <button class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="action-btn bg-crimson text-white px-3 py-2 rounded hover:bg-crimson/90 transition-colors">
-                            <i class="fas fa-ban"></i> Disable
-                        </button>
-                        <button class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                    </div>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6 users-grid">
+                <!-- User cards will be populated by JavaScript -->
             </div>
 
             <!-- Pagination -->
             <div class="bg-white rounded-xl shadow-card p-6">
                 <div class="flex flex-col md:flex-row justify-between items-center">
                     <div class="text-gray-600 mb-4 md:mb-0">Showing 1-6 of 1,248 users</div>
-                    <div class="flex space-x-2">
-                        <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button class="bg-deep-sky-blue text-white w-10 h-10 rounded-lg">1</button>
-                        <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg">2</button>
-                        <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg">3</button>
-                        <span class="flex items-center px-2">...</span>
-                        <button class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg">24</button>
-                        <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
+                    <div class="flex space-x-2 pagination">
+                        <!-- Pagination buttons will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
@@ -460,6 +499,67 @@
     <!-- Content Overlay -->
     <div id="content-overlay"></div>
 
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="modal-overlay hidden">
+        <div class="modal-content w-full max-w-md bg-white rounded-xl shadow-card p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-dark-gray">Edit User</h2>
+                <button id="close-edit-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>            <form id="edit-user-form" class="space-y-4">
+                <input type="hidden" name="userId">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">First Name</label>
+                    <input type="text" name="firstName" class="form-input" required>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Last Name</label>
+                    <input type="text" name="lastName" class="form-input" required>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Email Address</label>
+                    <input type="email" name="email" class="form-input" required>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Role</label>
+                    <select name="role" class="form-select" required>
+                        <option value="">Select Role</option>
+                        <option value="CLIENT">Client</option>
+                        <option value="PROVIDER">Provider</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Status</label>
+                    <select name="status" class="form-select" required>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                        <option value="PENDING">Pending</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Password (leave blank to keep current)</label>
+                    <input type="password" name="password" class="form-input">
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3">
+                    <button type="button" id="cancel-edit-user" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Add User Modal -->
     <div id="add-user-modal" class="modal-overlay hidden">
         <div class="modal-content w-full max-w-md bg-white rounded-xl shadow-card p-6">
@@ -468,41 +568,44 @@
                 <button id="close-modal" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times"></i>
                 </button>
-            </div>
-
-            <form id="add-user-form" class="space-y-4">
+            </div>            <form id="add-user-form" class="space-y-4">
                 <div>
-                    <label class="block text-gray-700 font-medium mb-2">Full Name</label>
-                    <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                    <label class="block text-gray-700 font-medium mb-2">First Name</label>
+                    <input type="text" name="firstName" class="form-input" required>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Last Name</label>
+                    <input type="text" name="lastName" class="form-input" required>
                 </div>
 
                 <div>
                     <label class="block text-gray-700 font-medium mb-2">Email Address</label>
-                    <input type="email" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                    <input type="email" name="email" class="form-input" required>
                 </div>
 
                 <div>
                     <label class="block text-gray-700 font-medium mb-2">Role</label>
-                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                    <select name="role" class="form-select" required>
                         <option value="">Select Role</option>
-                        <option value="client">Client</option>
-                        <option value="provider">Provider</option>
-                        <option value="admin">Admin</option>
+                        <option value="CLIENT">Client</option>
+                        <option value="PROVIDER">Provider</option>
+                        <option value="ADMIN">Admin</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-gray-700 font-medium mb-2">Status</label>
-                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="pending">Pending</option>
+                    <select name="status" class="form-select" required>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                        <option value="PENDING">Pending</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-gray-700 font-medium mb-2">Password</label>
-                    <input type="password" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                    <input type="password" name="password" class="form-input" required>
                 </div>
 
                 <div class="pt-4 flex justify-end space-x-3">
@@ -564,12 +667,324 @@
             }
         });
 
-        // Form submission
-        document.getElementById('add-user-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('User added successfully!');
-            modal.classList.add('hidden');
+        // User Management Functions
+        const UserAPI = {
+            getUsers: async (search, role, status, page = 0) => {
+                const response = await fetch(`/admin/api/users?search=${search || ''}&role=${role || ''}&status=${status || ''}&page=${page}`);
+                return await response.json();
+            },
+
+            createUser: async (userData) => {
+                const response = await fetch('/admin/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+                return await response.json();
+            },
+
+            updateUser: async (id, userData) => {
+                const response = await fetch(`/admin/api/users/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData)
+                });
+                return await response.json();
+            },
+
+            updateUserStatus: async (id, status) => {
+                const response = await fetch(`/admin/api/users/${id}/status?status=${status}`, {
+                    method: 'PUT'
+                });
+                return await response.json();
+            },
+
+            deleteUser: async (id) => {
+                const response = await fetch(`/admin/api/users/${id}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to delete user');
+                }
+            }
+        };
+
+        // UI Event Handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.querySelector('.search-input');
+            const roleSelect = document.querySelector('select[name="role"]');
+            const statusSelect = document.querySelector('select[name="status"]');
+            const applyFiltersBtn = document.querySelector('#apply-filters');
+            const addUserForm = document.getElementById('add-user-form');
+            const editUserForm = document.getElementById('edit-user-form');
+
+            // Load initial data
+            loadUsers();
+
+            // Search and filter handlers
+            let searchTimeout;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    loadUsers();
+                }, 500);
+            });
+
+            roleSelect.addEventListener('change', loadUsers);
+            statusSelect.addEventListener('change', loadUsers);
+            applyFiltersBtn.addEventListener('click', loadUsers);
+
+            // Add user form handler
+            addUserForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(addUserForm);
+                const userData = {
+                    email: formData.get('email'),
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    password: formData.get('password'),
+                    role: formData.get('role'),
+                    status: formData.get('status')
+                };
+
+                try {
+                    await UserAPI.createUser(userData);
+                    modal.classList.add('hidden');
+                    loadUsers();
+                    alert('User created successfully!');
+                } catch (error) {
+                    alert('Error creating user: ' + error.message);
+                }
+            });            // Edit user functionality
+            window.editUser = async (userId) => {
+                try {
+                    // Get user details by ID
+                    const response = await fetch(`/admin/api/users?search=&role=&status=&page=0&size=1000`);
+                    const data = await response.json();
+                    const currentUser = data.users.find(u => u.id === userId);
+
+                    if (currentUser) {
+                        const form = editUserForm;
+                        form.querySelector('input[name="userId"]').value = currentUser.id;
+                        form.querySelector('input[name="firstName"]').value = currentUser.firstName;
+                        form.querySelector('input[name="lastName"]').value = currentUser.lastName;
+                        form.querySelector('input[name="email"]').value = currentUser.email;
+                        form.querySelector('select[name="role"]').value = currentUser.role;
+                        form.querySelector('select[name="status"]').value = currentUser.status;
+
+                        document.getElementById('edit-user-modal').classList.remove('hidden');
+                    } else {
+                        alert('User not found');
+                    }
+                } catch (error) {
+                    alert('Error loading user details: ' + error.message);
+                }
+            }
+
+            // Close edit modal
+            document.getElementById('close-edit-modal').addEventListener('click', () => {
+                document.getElementById('edit-user-modal').classList.add('hidden');
+            });
+
+            // Cancel edit user
+            document.getElementById('cancel-edit-user').addEventListener('click', () => {
+                document.getElementById('edit-user-modal').classList.add('hidden');
+            });            // Save changes in edit user form
+            editUserForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(editUserForm);
+                const userId = formData.get('userId');
+                const userData = {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    email: formData.get('email'),
+                    role: formData.get('role'),
+                    status: formData.get('status')
+                };
+
+                // Only include password if it's provided
+                const password = formData.get('password');
+                if (password && password.trim() !== '') {
+                    userData.password = password;
+                }
+
+                try {
+                    await UserAPI.updateUser(userId, userData);
+                    document.getElementById('edit-user-modal').classList.add('hidden');
+                    loadUsers();
+                    alert('User updated successfully!');
+                    editUserForm.reset();
+                } catch (error) {
+                    alert('Error updating user: ' + error.message);
+                }
+            });
         });
+
+        async function loadUsers(page = 0) {
+            const searchInput = document.querySelector('.search-input');
+            const roleSelect = document.querySelector('select[name="role"]');
+            const statusSelect = document.querySelector('select[name="status"]');
+
+            try {
+                const data = await UserAPI.getUsers(
+                    searchInput.value,
+                    roleSelect.value,
+                    statusSelect.value,
+                    page
+                );
+                updateUsersGrid(data.users);
+                updatePagination(data.totalPages, page);
+                updateCounts(data.counts);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                alert('Error loading users. Please try again.');
+            }
+        }
+
+        function updateUsersGrid(users) {
+            const grid = document.querySelector('.users-grid');
+            grid.innerHTML = users.map(user => `
+                <div class="user-card bg-white rounded-xl shadow-card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 rounded-full ${getRoleBackgroundClass(user.role)} flex items-center justify-center mr-4">
+                            <i class="${getRoleIconClass(user.role)} text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-dark-gray">${user.firstName} ${user.lastName}</h3>
+                            <p class="text-gray-600">${user.email}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="role-badge role-${user.role.toLowerCase()}">${formatRole(user.role)}</span>
+                        <span class="status-badge status-${user.status.toLowerCase()}">${formatStatus(user.status)}</span>
+                    </div>
+
+                    <div class="text-sm text-gray-600 mb-4">
+                        <p><i class="fas fa-calendar-alt mr-2"></i> Joined: ${formatDate(user.createdAt)}</p>
+                        <p><i class="fas fa-clock mr-2"></i> Last Active: ${formatDate(user.lastLoginDate) || 'Never'}</p>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <button onclick="editUser(${user.id})" class="action-btn bg-deep-sky-blue text-white px-3 py-2 rounded hover:bg-deep-sky-blue/90 transition-colors">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        ${getStatusButton(user)}
+                        <button onclick="viewUser(${user.id})" class="action-btn bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300 transition-colors">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getRoleBackgroundClass(role) {
+            const classes = {
+                'ROLE_ADMIN': 'bg-crimson/20',
+                'ROLE_PROVIDER': 'bg-midnight-blue/20',
+                'ROLE_CLIENT': 'bg-deep-sky-blue/20'
+            };
+            return classes[role] || 'bg-gray-200';
+        }
+
+        function getRoleIconClass(role) {
+            const icons = {
+                'ROLE_ADMIN': 'fas fa-user-shield text-crimson',
+                'ROLE_PROVIDER': 'fas fa-user-md text-midnight-blue',
+                'ROLE_CLIENT': 'fas fa-user text-deep-sky-blue'
+            };
+            return icons[role] || 'fas fa-user text-gray-600';
+        }
+
+        function getStatusButton(user) {
+            if (user.status === 'PENDING') {
+                return `
+                    <button onclick="updateUserStatus(${user.id}, 'ACTIVE')" class="action-btn bg-sea-green text-white px-3 py-2 rounded hover:bg-sea-green/90 transition-colors">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                `;
+            } else if (user.status === 'ACTIVE') {
+                return `
+                    <button onclick="updateUserStatus(${user.id}, 'INACTIVE')" class="action-btn bg-crimson text-white px-3 py-2 rounded hover:bg-crimson/90 transition-colors">
+                        <i class="fas fa-ban"></i> Disable
+                    </button>
+                `;
+            } else {
+                return `
+                    <button onclick="updateUserStatus(${user.id}, 'ACTIVE')" class="action-btn bg-sea-green text-white px-3 py-2 rounded hover:bg-sea-green/90 transition-colors">
+                        <i class="fas fa-check"></i> Activate
+                    </button>
+                `;
+            }
+        }
+
+        function formatRole(role) {
+            return role.replace('ROLE_', '').charAt(0) + role.replace('ROLE_', '').slice(1).toLowerCase();
+        }
+
+        function formatStatus(status) {
+            return status.charAt(0) + status.slice(1).toLowerCase();
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return null;
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function updatePagination(totalPages, currentPage) {
+            const pagination = document.querySelector('.pagination');
+            let html = '';
+
+            if (currentPage > 0) {
+                html += `<button onclick="loadUsers(${currentPage - 1})" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors">
+                    <i class="fas fa-chevron-left"></i>
+                </button>`;
+            }
+
+            for (let i = 0; i < totalPages; i++) {
+                if (i === currentPage) {
+                    html += `<button class="bg-deep-sky-blue text-white w-10 h-10 rounded-lg">${i + 1}</button>`;
+                } else {
+                    html += `<button onclick="loadUsers(${i})" class="bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg">${i + 1}</button>`;
+                }
+            }
+
+            if (currentPage < totalPages - 1) {
+                html += `<button onclick="loadUsers(${currentPage + 1})" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors">
+                    <i class="fas fa-chevron-right"></i>
+                </button>`;
+            }
+
+            pagination.innerHTML = html;
+        }
+
+        function updateCounts(counts) {
+            document.querySelector('[data-count="all"]').textContent = `All Users (${counts.totalClients + counts.totalProviders + counts.totalAdmins})`;
+            document.querySelector('[data-count="clients"]').textContent = `Clients (${counts.totalClients})`;
+            document.querySelector('[data-count="providers"]').textContent = `Providers (${counts.totalProviders})`;
+            document.querySelector('[data-count="admins"]').textContent = `Admins (${counts.totalAdmins})`;
+            document.querySelector('[data-count="pending"]').textContent = `Pending (${counts.totalPending})`;
+        }        async function viewUser(userId) {
+            // Implementation for viewing user details
+            console.log('View user:', userId);
+        }
+
+        async function updateUserStatus(userId, newStatus) {
+            try {
+                await UserAPI.updateUserStatus(userId, newStatus);
+                loadUsers();
+            } catch (error) {
+                alert('Error updating user status: ' + error.message);
+            }
+        }
     </script>
 </body>
 
