@@ -63,11 +63,65 @@
 
         .user-avatar {
             transition: all 0.3s ease;
-        }
-
-        .user-avatar:hover {
+        }        .user-avatar:hover {
             transform: scale(1.1);
             box-shadow: 0 0 0 3px rgba(38, 166, 154, 0.3);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.pending {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+
+        .status-badge.confirmed {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-badge.completed {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .status-badge.cancelled {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .appointment-details {
+            display: none;
+        }
+
+        .appointment-details.expanded {
+            display: block;
+        }
+
+        .tab-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: #6B7280;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: #0D9488;
+            border-bottom-color: #0D9488;
+        }
+
+        .tab-button:hover:not(.active) {
+            color: #374151;
         }
         
         @media (max-width: 768px) {
@@ -186,15 +240,13 @@
             <div class="mb-6">
                 <h1 class="text-3xl font-bold text-gray-800">My Appointments</h1>
                 <p class="text-gray-600 mt-2">Manage and review all your scheduled appointments</p>
-            </div>
-
-            <!-- Stats Cards -->
+            </div>            <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-gray-500 text-sm">Upcoming</p>
-                            <p class="text-2xl font-bold mt-1">8</p>
+                            <p id="upcoming-count" class="text-2xl font-bold mt-1">-</p>
                         </div>
                         <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
                             <i class="fas fa-calendar text-blue-500 text-xl"></i>
@@ -206,7 +258,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-gray-500 text-sm">Pending</p>
-                            <p class="text-2xl font-bold mt-1">3</p>
+                            <p id="pending-count" class="text-2xl font-bold mt-1">-</p>
                         </div>
                         <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
                             <i class="fas fa-clock text-yellow-500 text-xl"></i>
@@ -218,7 +270,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-gray-500 text-sm">Completed</p>
-                            <p class="text-2xl font-bold mt-1">24</p>
+                            <p id="completed-count" class="text-2xl font-bold mt-1">-</p>
                         </div>
                         <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
                             <i class="fas fa-check-circle text-green-500 text-xl"></i>
@@ -230,285 +282,74 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-gray-500 text-sm">Cancelled</p>
-                            <p class="text-2xl font-bold mt-1">2</p>
+                            <p id="cancelled-count" class="text-2xl font-bold mt-1">-</p>
                         </div>
                         <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
                             <i class="fas fa-times-circle text-red-500 text-xl"></i>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Control Bar -->
+            </div>            <!-- Control Bar -->
             <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <!-- Tabs -->
                     <div class="tabs flex border-b border-gray-200">
-                        <button class="tab-button active">Upcoming</button>
-                        <button class="tab-button">Pending</button>
-                        <button class="tab-button">Completed</button>
-                        <button class="tab-button">Cancelled</button>
+                        <button class="tab-button active" data-status="all">All</button>
+                        <button class="tab-button" data-status="pending">Pending</button>
+                        <button class="tab-button" data-status="confirmed">Confirmed</button>
+                        <button class="tab-button" data-status="completed">Completed</button>
+                        <button class="tab-button" data-status="cancelled">Cancelled</button>
                     </div>
 
                     <!-- Filters -->
                     <div class="flex flex-wrap gap-2">
                         <div class="relative">
-                            <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                            <input id="search-input" type="text" placeholder="Search by client name..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
                             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                         </div>
-                        <select class="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
-                            <option>All Services</option>
-                            <option>Consultation</option>
-                            <option>Checkup</option>
-                            <option>Therapy</option>
-                        </select>
-                        <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
-                            <i class="fas fa-filter mr-2"></i>
-                            Filter
+                        <button id="clear-search" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-times mr-2"></i>
+                            Clear
+                        </button>
+                        <button id="refresh-appointments" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Refresh
                         </button>
                     </div>
+                </div>
+            </div>            <!-- Loading State -->
+            <div id="loading-state" class="hidden">
+                <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+                    <i class="fas fa-spinner fa-spin text-3xl text-teal-600 mb-4"></i>
+                    <p class="text-gray-600">Loading appointments...</p>
+                </div>
+            </div>
+
+            <!-- No Results State -->
+            <div id="no-results-state" class="hidden">
+                <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+                    <i class="fas fa-calendar-times text-4xl text-gray-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No appointments found</h3>
+                    <p class="text-gray-500">No appointments match your current filters.</p>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="hidden">
+                <div class="bg-white rounded-xl shadow-sm p-8 text-center border-l-4 border-red-500">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-red-600 mb-2">Error Loading Appointments</h3>
+                    <p id="error-message" class="text-gray-600 mb-4">Failed to load appointments. Please try again.</p>
+                    <button id="retry-load" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-retry mr-2"></i>
+                        Retry
+                    </button>
                 </div>
             </div>
 
             <!-- Appointments List -->
-            <div class="appointment-grid grid grid-cols-1 gap-4">
-                <!-- Appointment Card 1 -->
-                <div class="appointment-card confirmed bg-white rounded-xl shadow-sm p-5">
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-start">
-                            <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center mr-4 flex-shrink-0">
-                                <i class="fas fa-user-md text-teal-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">John Anderson</h3>
-                                <p class="text-gray-600">Annual Checkup</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="status-badge confirmed mr-2">Confirmed</span>
-                                    <span class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>30 min</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-lg font-bold text-gray-800">10:00 AM</p>
-                            <p class="text-gray-600">June 15, 2025</p>
-                            <button class="mt-2 text-teal-600 hover:text-teal-800 toggle-details">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Appointment Details -->
-                    <div class="appointment-details mt-4">
-                        <div class="border-t border-gray-200 pt-4">
-                            <h4 class="font-bold text-gray-700 mb-3">Appointment Details</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-sm text-gray-500">Contact Information</p>
-                                    <p class="font-medium">john.anderson@example.com</p>
-                                    <p class="font-medium">(555) 123-4567</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">Notes</p>
-                                    <p>Annual physical exam. Patient requested to discuss lab results from last visit.</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-6">
-                                <h4 class="font-bold text-gray-700 mb-3">Actions</h4>
-                                <div class="flex flex-wrap gap-3">
-                                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-video mr-2"></i> Start Video Call
-                                    </button>
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-edit mr-2"></i> Reschedule
-                                    </button>
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-times mr-2"></i> Cancel
-                                    </button>
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-file-medical mr-2"></i> Add Notes
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Appointment Card 2 -->
-                <div class="appointment-card pending bg-white rounded-xl shadow-sm p-5">
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-start">
-                            <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mr-4 flex-shrink-0">
-                                <i class="fas fa-user-injured text-yellow-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">Sarah Mitchell</h3>
-                                <p class="text-gray-600">Follow-up Consultation</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="status-badge pending mr-2">Pending</span>
-                                    <span class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>45 min</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-lg font-bold text-gray-800">11:30 AM</p>
-                            <p class="text-gray-600">June 15, 2025</p>
-                            <button class="mt-2 text-yellow-600 hover:text-yellow-800 toggle-details">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Appointment Details -->
-                    <div class="appointment-details mt-4">
-                        <div class="border-t border-gray-200 pt-4">
-                            <h4 class="font-bold text-gray-700 mb-3">Appointment Details</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-sm text-gray-500">Contact Information</p>
-                                    <p class="font-medium">sarah.m@example.com</p>
-                                    <p class="font-medium">(555) 987-6543</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">Notes</p>
-                                    <p>Follow-up after knee surgery. Patient is experiencing some discomfort during physical therapy.</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-6">
-                                <h4 class="font-bold text-gray-700 mb-3">Actions</h4>
-                                <div class="flex flex-wrap gap-3">
-                                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-check mr-2"></i> Confirm
-                                    </button>
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-edit mr-2"></i> Reschedule
-                                    </button>
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-times mr-2"></i> Decline
-                                    </button>
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-envelope mr-2"></i> Send Message
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Appointment Card 3 -->
-                <div class="appointment-card completed bg-white rounded-xl shadow-sm p-5">
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-start">
-                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4 flex-shrink-0">
-                                <i class="fas fa-user-check text-green-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">Robert Johnson</h3>
-                                <p class="text-gray-600">Initial Consultation</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="status-badge completed mr-2">Completed</span>
-                                    <span class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>60 min</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-lg font-bold text-gray-800">9:00 AM</p>
-                            <p class="text-gray-600">June 14, 2025</p>
-                            <button class="mt-2 text-green-600 hover:text-green-800 toggle-details">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Appointment Details -->
-                    <div class="appointment-details mt-4">
-                        <div class="border-t border-gray-200 pt-4">
-                            <h4 class="font-bold text-gray-700 mb-3">Appointment Details</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-sm text-gray-500">Contact Information</p>
-                                    <p class="font-medium">robert.j@example.com</p>
-                                    <p class="font-medium">(555) 456-7890</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">Summary</p>
-                                    <p>New patient with chronic back pain. Recommended physical therapy and follow-up in 4 weeks.</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-6">
-                                <h4 class="font-bold text-gray-700 mb-3">Documents</h4>
-                                <div class="flex flex-wrap gap-3">
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-file-medical mr-2"></i> Consultation Notes
-                                    </button>
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-prescription-bottle mr-2"></i> Prescription
-                                    </button>
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-file-invoice mr-2"></i> Invoice
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Appointment Card 4 -->
-                <div class="appointment-card cancelled bg-white rounded-xl shadow-sm p-5">
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-start">
-                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4 flex-shrink-0">
-                                <i class="fas fa-user-times text-red-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">Emily Davis</h3>
-                                <p class="text-gray-600">Dental Cleaning</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="status-badge cancelled mr-2">Cancelled</span>
-                                    <span class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>30 min</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-lg font-bold text-gray-800">2:00 PM</p>
-                            <p class="text-gray-600">June 13, 2025</p>
-                            <button class="mt-2 text-red-600 hover:text-red-800 toggle-details">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Appointment Details -->
-                    <div class="appointment-details mt-4">
-                        <div class="border-t border-gray-200 pt-4">
-                            <h4 class="font-bold text-gray-700 mb-3">Cancellation Details</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-sm text-gray-500">Reason</p>
-                                    <p>Patient had a scheduling conflict</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500">Rescheduled To</p>
-                                    <p class="font-medium">June 20, 2025 at 2:00 PM</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-6">
-                                <h4 class="font-bold text-gray-700 mb-3">Actions</h4>
-                                <div class="flex flex-wrap gap-3">
-                                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-calendar-plus mr-2"></i> Reschedule
-                                    </button>
-                                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
-                                        <i class="fas fa-envelope mr-2"></i> Send Follow-up
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div id="appointments-container" class="appointment-grid grid grid-cols-1 gap-4">
+                <!-- Dynamic appointment cards will be inserted here -->
             </div>
 
             <!-- Pagination -->
@@ -530,57 +371,421 @@
     </div>
 
     <!-- Content Overlay -->
-    <div id="content-overlay"></div>
+    <div id="content-overlay"></div>    <script>
+        // Global state
+        let currentStatus = 'all';
+        let currentSearch = '';
+        let appointments = [];
+        let appointmentStats = {};
 
-    <script>
-        // Mobile sidebar toggle
-        document.getElementById('toggle-sidebar').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.add('active');
-        });
+        // Utility functions
+        function formatDateTime(dateTime) {
+            const date = new Date(dateTime);
+            const timeOptions = { hour: '2-digit', minute: '2-digit' };
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            return {
+                time: date.toLocaleTimeString('en-US', timeOptions),
+                date: date.toLocaleDateString('en-US', dateOptions)
+            };
+        }
 
-        document.getElementById('close-sidebar').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.remove('active');
-        });
+        function getStatusColor(status) {
+            const colors = {
+                'PENDING': { bg: 'bg-yellow-100', text: 'text-yellow-600', icon: 'fas fa-clock' },
+                'CONFIRMED': { bg: 'bg-teal-100', text: 'text-teal-600', icon: 'fas fa-check' },
+                'COMPLETED': { bg: 'bg-green-100', text: 'text-green-600', icon: 'fas fa-check-circle' },
+                'CANCELLED': { bg: 'bg-red-100', text: 'text-red-600', icon: 'fas fa-times-circle' }
+            };
+            return colors[status] || { bg: 'bg-gray-100', text: 'text-gray-600', icon: 'fas fa-question' };
+        }
 
-        document.getElementById('content-overlay').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.remove('active');
-        });
+        function showNotification(message, type = 'success') {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            } text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
 
-        // Toggle appointment details
-        document.querySelectorAll('.toggle-details').forEach(button => {
-            button.addEventListener('click', function() {
-                const details = this.closest('.appointment-card').querySelector('.appointment-details');
-                details.classList.toggle('expanded');
-
-                // Change icon
-                if (details.classList.contains('expanded')) {
-                    this.innerHTML = '<i class="fas fa-chevron-up"></i>';
-                } else {
-                    this.innerHTML = '<i class="fas fa-chevron-down"></i>';
+        // API functions
+        async function fetchAppointments(status = 'all', search = '') {
+            try {
+                let url = `/provider/appointments/data?status=${status}`;
+                if (search) {
+                    url += `&search=${encodeURIComponent(search)}`;
                 }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch appointments');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching appointments:', error);
+                throw error;
+            }
+        }
+
+        async function fetchAppointmentStats() {
+            try {
+                const response = await fetch('/provider/appointments/stats');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch stats');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                throw error;
+            }
+        }
+
+        async function updateAppointmentStatus(appointmentId, status) {
+            try {
+                const response = await fetch(`/provider/appointments/${appointmentId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: status })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to update appointment');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error updating appointment:', error);
+                throw error;
+            }
+        }
+
+        // UI functions
+        function showState(stateName) {
+            const states = ['loading-state', 'no-results-state', 'error-state'];
+            states.forEach(state => {
+                document.getElementById(state).classList.add('hidden');
             });
-        });
+            document.getElementById('appointments-container').classList.add('hidden');
+            
+            if (stateName) {
+                document.getElementById(stateName).classList.remove('hidden');
+            } else {
+                document.getElementById('appointments-container').classList.remove('hidden');
+            }
+        }
 
-        // Tab switching
-        document.querySelectorAll('.tab-button').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
+        function updateStats(stats) {
+            appointmentStats = stats;
+            document.getElementById('upcoming-count').textContent = stats.upcoming || 0;
+            document.getElementById('pending-count').textContent = stats.pending || 0;
+            document.getElementById('completed-count').textContent = stats.completed || 0;
+            document.getElementById('cancelled-count').textContent = stats.cancelled || 0;
+        }
 
-                // In a real app, this would filter the appointments
-                const status = this.textContent.toLowerCase();
-                alert(`Showing ${status} appointments`);
+        function renderAppointment(appointment) {
+            const { time, date } = formatDateTime(appointment.appointmentTime);
+            const statusColor = getStatusColor(appointment.status);
+            const clientName = appointment.clientFullName || 'Unknown Client';
+            const serviceType = appointment.serviceType || 'Consultation';
+            const duration = appointment.durationMinutes || 30;
+            const notes = appointment.notes || '';
+            const clientNotes = appointment.clientNotes || '';
+
+            return `
+                <div class="appointment-card ${appointment.status.toLowerCase()} bg-white rounded-xl shadow-sm p-5" data-appointment-id="${appointment.id}">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 rounded-full ${statusColor.bg} flex items-center justify-center mr-4 flex-shrink-0">
+                                <i class="${statusColor.icon} ${statusColor.text} text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">${clientName}</h3>
+                                <p class="text-gray-600">${serviceType}</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="status-badge ${appointment.status.toLowerCase()} mr-2">${appointment.status}</span>
+                                    <span class="text-sm text-gray-500"><i class="fas fa-clock mr-1"></i>${duration} min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-gray-800">${time}</p>
+                            <p class="text-gray-600">${date}</p>
+                            <button class="mt-2 ${statusColor.text} hover:${statusColor.text.replace('600', '800')} toggle-details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Details -->
+                    <div class="appointment-details mt-4">
+                        <div class="border-t border-gray-200 pt-4">
+                            <h4 class="font-bold text-gray-700 mb-3">Appointment Details</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Contact Information</p>
+                                    <p class="font-medium">${appointment.client?.email || 'No email'}</p>
+                                    <p class="font-medium">${appointment.client?.phone || 'No phone'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Notes</p>
+                                    <p class="appointment-notes">${notes || 'No notes available'}</p>
+                                    ${clientNotes ? `<p class="text-sm text-gray-500 mt-2">Client Notes: ${clientNotes}</p>` : ''}
+                                </div>
+                            </div>
+
+                            <div class="mt-6">
+                                <h4 class="font-bold text-gray-700 mb-3">Actions</h4>
+                                <div class="flex flex-wrap gap-3">
+                                    ${renderAppointmentActions(appointment)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAppointmentActions(appointment) {
+            const actions = [];
+            
+            if (appointment.status === 'PENDING') {
+                actions.push(`
+                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center confirm-btn">
+                        <i class="fas fa-check mr-2"></i> Confirm
+                    </button>
+                    <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center cancel-btn">
+                        <i class="fas fa-times mr-2"></i> Decline
+                    </button>
+                `);
+            }
+            
+            if (appointment.status === 'CONFIRMED') {
+                actions.push(`
+                    <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center complete-btn">
+                        <i class="fas fa-check-circle mr-2"></i> Complete
+                    </button>
+                    <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center cancel-btn">
+                        <i class="fas fa-times mr-2"></i> Cancel
+                    </button>
+                `);
+            }
+            
+            if (['PENDING', 'CONFIRMED'].includes(appointment.status)) {
+                actions.push(`
+                    <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center reschedule-btn">
+                        <i class="fas fa-edit mr-2"></i> Reschedule
+                    </button>
+                `);
+            }
+            
+            actions.push(`
+                <button class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center notes-btn">
+                    <i class="fas fa-file-medical mr-2"></i> ${appointment.notes ? 'Edit Notes' : 'Add Notes'}
+                </button>
+            `);
+            
+            return actions.join('');
+        }
+
+        function renderAppointments() {
+            const container = document.getElementById('appointments-container');
+            
+            if (appointments.length === 0) {
+                showState('no-results-state');
+                return;
+            }
+            
+            container.innerHTML = appointments.map(appointment => renderAppointment(appointment)).join('');
+            showState(null);
+            
+            // Attach event listeners to appointment actions
+            attachAppointmentEventListeners();
+        }
+
+        function attachAppointmentEventListeners() {
+            // Toggle details
+            document.querySelectorAll('.toggle-details').forEach(button => {
+                button.addEventListener('click', function() {
+                    const details = this.closest('.appointment-card').querySelector('.appointment-details');
+                    details.classList.toggle('expanded');
+
+                    // Change icon
+                    if (details.classList.contains('expanded')) {
+                        this.innerHTML = '<i class="fas fa-chevron-up"></i>';
+                    } else {
+                        this.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                    }
+                });
             });
-        });
 
-        // Initialize with one expanded appointment
+            // Appointment actions
+            document.querySelectorAll('.confirm-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => handleAppointmentAction(e, 'CONFIRMED'));
+            });
+
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => handleAppointmentAction(e, 'CANCELLED'));
+            });
+
+            document.querySelectorAll('.complete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => handleAppointmentAction(e, 'COMPLETED'));
+            });
+
+            // Notes functionality
+            document.querySelectorAll('.notes-btn').forEach(btn => {
+                btn.addEventListener('click', handleNotesEdit);
+            });
+        }
+
+        async function handleAppointmentAction(event, status) {
+            const card = event.target.closest('.appointment-card');
+            const appointmentId = card.dataset.appointmentId;
+            
+            try {
+                await updateAppointmentStatus(appointmentId, status);
+                showNotification(`Appointment ${status.toLowerCase()} successfully!`);
+                await loadAppointments();
+                await loadStats();
+            } catch (error) {
+                showNotification(`Failed to update appointment: ${error.message}`, 'error');
+            }
+        }
+
+        function handleNotesEdit(event) {
+            const card = event.target.closest('.appointment-card');
+            const appointmentId = card.dataset.appointmentId;
+            const notesElement = card.querySelector('.appointment-notes');
+            const currentNotes = notesElement.textContent.trim();
+            
+            const newNotes = prompt('Enter notes for this appointment:', 
+                currentNotes === 'No notes available' ? '' : currentNotes);
+                
+            if (newNotes !== null) {
+                updateAppointmentNotes(appointmentId, newNotes);
+            }
+        }
+
+        async function updateAppointmentNotes(appointmentId, notes) {
+            try {
+                const response = await fetch(`/provider/appointments/${appointmentId}/notes`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ notes: notes })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to update notes');
+                }
+                
+                showNotification('Notes updated successfully!');
+                await loadAppointments();
+            } catch (error) {
+                showNotification(`Failed to update notes: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadAppointments() {
+            try {
+                showState('loading-state');
+                appointments = await fetchAppointments(currentStatus, currentSearch);
+                renderAppointments();
+            } catch (error) {
+                showState('error-state');
+                document.getElementById('error-message').textContent = error.message;
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const stats = await fetchAppointmentStats();
+                updateStats(stats);
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
-            const firstAppointment = document.querySelector('.appointment-card');
-            const firstDetails = firstAppointment.querySelector('.appointment-details');
-            const firstButton = firstAppointment.querySelector('.toggle-details');
+            // Load initial data
+            loadAppointments();
+            loadStats();
 
-            firstDetails.classList.add('expanded');
-            firstButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
+            // Mobile sidebar toggle
+            document.getElementById('toggle-sidebar').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.add('active');
+            });
+
+            document.getElementById('close-sidebar').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.remove('active');
+            });
+
+            document.getElementById('content-overlay').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.remove('active');
+            });
+
+            // Tab switching
+            document.querySelectorAll('.tab-button').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    currentStatus = this.dataset.status;
+                    loadAppointments();
+                });
+            });
+
+            // Search functionality
+            let searchTimeout;
+            document.getElementById('search-input').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentSearch = this.value;
+                    loadAppointments();
+                }, 500);
+            });
+
+            // Clear search
+            document.getElementById('clear-search').addEventListener('click', function() {
+                document.getElementById('search-input').value = '';
+                currentSearch = '';
+                loadAppointments();
+            });
+
+            // Refresh button
+            document.getElementById('refresh-appointments').addEventListener('click', function() {
+                loadAppointments();
+                loadStats();
+            });
+
+            // Retry button
+            document.getElementById('retry-load').addEventListener('click', function() {
+                loadAppointments();
+            });
         });
     </script>
 </body>

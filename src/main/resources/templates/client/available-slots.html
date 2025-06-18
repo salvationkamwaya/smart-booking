@@ -64,11 +64,79 @@
 
         .user-avatar {
             transition: all 0.3s ease;
-        }
-
-        .user-avatar:hover {
+        }        .user-avatar:hover {
             transform: scale(1.1);
             box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
+        }
+
+        .time-slot {
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .time-slot.available {
+            border-color: #10B981;
+            color: #059669;
+            background: #ECFDF5;
+        }
+
+        .time-slot.available:hover {
+            background: #D1FAE5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .time-slot.booked {
+            border-color: #D1D5DB;
+            color: #9CA3AF;
+            background: #F9FAFB;
+            cursor: not-allowed;
+        }
+
+        .time-slot.selected {
+            border-color: #0EA5E9;
+            background: #0EA5E9;
+            color: white;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }
+
+        .calendar-day {
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .calendar-day.available {
+            background: #ECFDF5;
+            color: #059669;
+        }
+
+        .calendar-day.available:hover {
+            background: #D1FAE5;
+            transform: scale(1.05);
+        }
+
+        .calendar-day.booked {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .calendar-day.selected {
+            background: #0EA5E9;
+            color: white;
+        }
+
+        .calendar-day.today {
+            border: 2px solid #0EA5E9;
         }
 
         @media (max-width: 768px) {
@@ -190,9 +258,7 @@
             <div class="mb-6">
                 <h1 class="text-3xl font-bold text-dark-gray">Available Appointment Slots</h1>
                 <p class="text-gray-600 mt-2">Browse and select available time slots with your providers</p>
-            </div>
-
-            <!-- Provider and Service Selection -->
+            </div>            <!-- Provider and Service Selection -->
             <div class="bg-white rounded-xl shadow-card p-6 mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -200,12 +266,9 @@
                             <i class="fas fa-user-md mr-2 text-deep-sky-blue"></i>
                             Select Provider
                         </label>
-                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-sky-blue focus:border-deep-sky-blue">
+                        <select id="provider-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-sky-blue focus:border-deep-sky-blue">
                             <option value="">All Providers</option>
-                            <option value="1">Dr. Sarah Johnson</option>
-                            <option value="2" selected>Dr. Robert Brown</option>
-                            <option value="3">Dr. Lisa Anderson</option>
-                            <option value="4">Dr. James Miller</option>
+                            <!-- Dynamic provider options will be populated here -->
                         </select>
                     </div>
 
@@ -214,22 +277,29 @@
                             <i class="fas fa-stethoscope mr-2 text-sea-green"></i>
                             Select Service
                         </label>
-                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sea-green focus:border-sea-green">
+                        <select id="service-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sea-green focus:border-sea-green">
                             <option value="">All Services</option>
-                            <option value="1">General Checkup</option>
-                            <option value="2" selected>Dental Cleaning</option>
-                            <option value="3">Physical Therapy</option>
-                            <option value="4">Vision Test</option>
+                            <option value="General Checkup">General Checkup</option>
+                            <option value="Consultation">Consultation</option>
+                            <option value="Physical Therapy">Physical Therapy</option>
+                            <option value="Dental Cleaning">Dental Cleaning</option>
+                            <option value="Vision Test">Vision Test</option>
                         </select>
                     </div>
 
                     <div>
                         <label class="block text-dark-gray font-medium mb-2">
                             <i class="fas fa-calendar mr-2 text-royal-purple"></i>
-                            Select Date Range
+                            Select Date
                         </label>
-                        <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-royal-purple focus:border-royal-purple" placeholder="June 15 - June 22, 2025">
+                        <input id="date-picker" type="date" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-royal-purple focus:border-royal-purple">
                     </div>
+                </div>
+                
+                <div class="mt-4 flex justify-end">
+                    <button id="search-slots-btn" class="bg-deep-sky-blue hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-search mr-2"></i> Search Slots
+                    </button>
                 </div>
             </div>
 
@@ -309,12 +379,10 @@
                     <div class="calendar-day text-gray-400">28</div>
                     <div class="calendar-day text-gray-400">29</div>
                 </div>
-            </div>
-
-            <!-- Time Slots Section -->
+            </div>            <!-- Time Slots Section -->
             <div class="bg-white rounded-xl shadow-card p-6 mb-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-dark-gray">Available Time Slots for June 15, 2025</h2>
+                    <h2 id="slots-title" class="text-xl font-bold text-dark-gray">Available Time Slots</h2>
                     <div class="flex items-center">
                         <span class="text-sea-green font-medium mr-4">
                             <i class="fas fa-circle text-sea-green mr-1"></i> Available
@@ -325,48 +393,62 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    <div class="time-slot booked">8:00 AM</div>
-                    <div class="time-slot booked">8:30 AM</div>
-                    <div class="time-slot booked">9:00 AM</div>
-                    <div class="time-slot available">9:30 AM</div>
-                    <div class="time-slot booked">10:00 AM</div>
-                    <div class="time-slot available">10:30 AM</div>
-                    <div class="time-slot available">11:00 AM</div>
-                    <div class="time-slot available">11:30 AM</div>
-                    <div class="time-slot booked">12:00 PM</div>
-                    <div class="time-slot booked">12:30 PM</div>
-                    <div class="time-slot available">1:00 PM</div>
-                    <div class="time-slot available">1:30 PM</div>
-                    <div class="time-slot available selected">2:00 PM</div>
-                    <div class="time-slot available">2:30 PM</div>
-                    <div class="time-slot booked">3:00 PM</div>
-                    <div class="time-slot available">3:30 PM</div>
-                    <div class="time-slot available">4:00 PM</div>
-                    <div class="time-slot available">4:30 PM</div>
+                <!-- Loading State -->
+                <div id="slots-loading" class="hidden text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-3xl text-deep-sky-blue mb-4"></i>
+                    <p class="text-gray-600">Loading available slots...</p>
                 </div>
 
-                <div class="mt-8 flex justify-between items-center">
-                    <div>
-                        <h3 class="font-medium mb-2">Selected Appointment</h3>
-                        <p class="text-lg">
-                            <i class="fas fa-calendar-day text-deep-sky-blue mr-2"></i>
-                            June 15, 2025 at 2:00 PM
-                        </p>
-                        <p class="text-gray-600 mt-1">
-                            <i class="fas fa-user-md text-royal-purple mr-2"></i>
-                            Dr. Robert Brown - Dental Cleaning
-                        </p>
+                <!-- No Slots State -->
+                <div id="no-slots" class="hidden text-center py-8">
+                    <i class="fas fa-calendar-times text-4xl text-gray-400 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No Available Slots</h3>
+                    <p class="text-gray-500">No time slots available for the selected criteria.</p>
+                </div>
+
+                <!-- Time Slots Grid -->
+                <div id="time-slots-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    <!-- Dynamic time slots will be populated here -->
+                </div>
+
+                <!-- Selected Appointment Info -->
+                <div id="selected-appointment" class="mt-8 hidden">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium mb-2">Selected Appointment</h3>
+                            <p id="selected-info" class="text-lg">
+                                <i class="fas fa-calendar-day text-deep-sky-blue mr-2"></i>
+                                <!-- Dynamic info will be populated here -->
+                            </p>
+                            <p id="selected-provider" class="text-gray-600 mt-1">
+                                <i class="fas fa-user-md text-royal-purple mr-2"></i>
+                                <!-- Dynamic provider info will be populated here -->
+                            </p>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button id="book-appointment-btn" class="bg-sea-green hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold flex items-center">
+                                <i class="fas fa-calendar-check mr-2"></i> Book Appointment
+                            </button>
+                            <button id="add-notes-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors font-medium flex items-center">
+                                <i class="fas fa-sticky-note mr-2"></i> Add Notes
+                            </button>
+                        </div>
                     </div>
-                    <button class="bg-sea-green hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold flex items-center">
-                        <i class="fas fa-calendar-check mr-2"></i> Book Appointment
+                </div>
+            </div>            <!-- Provider Availability -->
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-dark-gray">Provider Availability</h2>
+                    <button id="refresh-availability" class="bg-deep-sky-blue text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i> Refresh
                     </button>
                 </div>
-            </div>
 
-            <!-- Provider Availability -->
-            <div class="bg-white rounded-xl shadow-card p-6">
-                <h2 class="text-xl font-bold text-dark-gray mb-6">Provider Availability</h2>
+                <!-- Loading State -->
+                <div id="availability-loading" class="hidden text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-2xl text-deep-sky-blue"></i>
+                    <p class="text-gray-600 mt-2">Loading provider availability...</p>
+                </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full">
@@ -380,103 +462,8 @@
                             <th class="p-3 text-left text-dark-gray font-semibold">Actions</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
-                        <tr class="table-row">
-                            <td class="p-3">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full bg-deep-sky-blue text-white flex items-center justify-center text-lg font-bold mr-3">RB</div>
-                                    <div>
-                                        <p class="font-medium">Dr. Robert Brown</p>
-                                        <p class="text-gray-600 text-sm">Dentist</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-3">Dental Care</td>
-                            <td class="p-3">
-                                    <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        2 slots
-                                    </span>
-                            </td>
-                            <td class="p-3">
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        8 slots
-                                    </span>
-                            </td>
-                            <td class="p-3">
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        15 slots
-                                    </span>
-                            </td>
-                            <td class="p-3">
-                                <button class="text-deep-sky-blue hover:text-midnight-blue">
-                                    <i class="fas fa-eye mr-1"></i> View
-                                </button>
-                            </td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-3">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full bg-sea-green text-white flex items-center justify-center text-lg font-bold mr-3">SJ</div>
-                                    <div>
-                                        <p class="font-medium">Dr. Sarah Johnson</p>
-                                        <p class="text-gray-600 text-sm">General Practitioner</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-3">Primary Care</td>
-                            <td class="p-3">
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        5 slots
-                                    </span>
-                            </td>
-                            <td class="p-3">
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        7 slots
-                                    </span>
-                            </td>
-                            <td class="p-3">
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        22 slots
-                                    </span>
-                            </td>
-                            <td class="p-3">
-                                <button class="text-deep-sky-blue hover:text-midnight-blue">
-                                    <i class="fas fa-eye mr-1"></i> View
-                                </button>
-                            </td>
-                        </tr>
-                        <tr class="table-row">
-                            <td class="p-3">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 rounded-full bg-royal-purple text-white flex items-center justify-center text-lg font-bold mr-3">LA</div>
-                                    <div>
-                                        <p class="font-medium">Dr. Lisa Anderson</p>
-                                        <p class="text-gray-600 text-sm">Physical Therapist</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-3">Rehabilitation</td>
-                            <td class="p-3">
-                                    <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        0 slots
-                                    </span>
-                            </td>
-                            <td class="p-3">
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        4 slots
-                                    </span>
-                            </td>
-                            <td class="p-3">
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        12 slots
-                                    </span>
-                            </td>
-                            <td class="p-3">
-                                <button class="text-deep-sky-blue hover:text-midnight-blue">
-                                    <i class="fas fa-eye mr-1"></i> View
-                                </button>
-                            </td>
-                        </tr>
+                        <tbody id="availability-table-body" class="divide-y divide-gray-200">
+                            <!-- Dynamic availability data will be populated here -->
                         </tbody>
                     </table>
                 </div>
@@ -489,17 +476,450 @@
 <div id="content-overlay"></div>
 
 <script>
-    // Mobile sidebar toggle
-    document.getElementById('toggle-sidebar').addEventListener('click', () => {
-        document.getElementById('sidebar').classList.add('active');
-    });
+    // Global state
+    let providers = [];
+    let availableSlots = [];
+    let selectedSlot = null;
+    let selectedProvider = null;
+    let clientNotes = '';
 
-    document.getElementById('close-sidebar').addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('active');
-    });
+    // Utility functions
+    function formatTime(timeString) {
+        const time = new Date('2000-01-01T' + timeString);
+        return time.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit', 
+            hour12: true 
+        });
+    }
 
-    document.getElementById('content-overlay').addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('active');
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    function getInitials(name) {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    }
+
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+            type === 'success' ? 'bg-green-500' : 
+            type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+        } text-white`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'} mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // API functions
+    async function fetchProviders() {
+        try {
+            const response = await fetch('/client/api/providers');
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to fetch providers');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Error fetching providers:', error);
+            throw error;
+        }
+    }
+
+    async function fetchAvailableSlots(providerId = null, date = null) {
+        try {
+            let url = '/client/api/available-slots';
+            const params = new URLSearchParams();
+            
+            if (providerId) params.append('providerId', providerId);
+            if (date) params.append('date', date);
+            
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to fetch slots');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Error fetching slots:', error);
+            throw error;
+        }
+    }
+
+    async function fetchSlotsByDate(date, providerId = null) {
+        try {
+            let url = `/client/api/slots-by-date?date=${date}`;
+            if (providerId) {
+                url += `&providerId=${providerId}`;
+            }
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to fetch slots');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Error fetching slots by date:', error);
+            throw error;
+        }
+    }
+
+    async function fetchProviderAvailability() {
+        try {
+            const response = await fetch('/client/api/provider-availability');
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to fetch availability');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Error fetching availability:', error);
+            throw error;
+        }
+    }
+
+    async function bookAppointment(timeSlotId, serviceType, clientNotes) {
+        try {
+            const response = await fetch('/client/api/book-appointment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    timeSlotId: timeSlotId,
+                    serviceType: serviceType,
+                    clientNotes: clientNotes
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to book appointment');
+            }
+            
+            return data;
+        } catch (error) {
+            console.error('Error booking appointment:', error);
+            throw error;
+        }
+    }
+
+    // UI functions
+    function populateProviders() {
+        const select = document.getElementById('provider-select');
+        select.innerHTML = '<option value="">All Providers</option>';
+        
+        providers.forEach(provider => {
+            const option = document.createElement('option');
+            option.value = provider.id;
+            option.textContent = provider.name + ' - ' + provider.specialty;
+            select.appendChild(option);
+        });
+    }
+
+    function renderTimeSlots(slots) {
+        const grid = document.getElementById('time-slots-grid');
+        const slotsTitle = document.getElementById('slots-title');
+        
+        if (slots.length === 0) {
+            document.getElementById('no-slots').classList.remove('hidden');
+            grid.classList.add('hidden');
+            return;
+        }
+        
+        document.getElementById('no-slots').classList.add('hidden');
+        grid.classList.remove('hidden');
+        
+        // Update title
+        const selectedDate = document.getElementById('date-picker').value;
+        if (selectedDate) {
+            slotsTitle.textContent = `Available Time Slots for ${formatDate(selectedDate)}`;
+        } else {
+            slotsTitle.textContent = 'Available Time Slots';
+        }
+        
+        grid.innerHTML = '';
+        
+        slots.forEach(slot => {
+            const slotElement = document.createElement('div');
+            const isAvailable = slot.isAvailable && slot.currentAttendees < slot.maxAttendees;
+            
+            slotElement.className = `time-slot ${isAvailable ? 'available' : 'booked'}`;
+            slotElement.textContent = formatTime(slot.startTime);
+            slotElement.dataset.slotId = slot.id;
+            
+            if (isAvailable) {
+                slotElement.addEventListener('click', () => selectTimeSlot(slot, slotElement));
+            }
+            
+            grid.appendChild(slotElement);
+        });
+    }
+
+    function selectTimeSlot(slot, element) {
+        // Clear previous selection
+        document.querySelectorAll('.time-slot.selected').forEach(el => {
+            el.classList.remove('selected');
+        });
+        
+        // Select new slot
+        element.classList.add('selected');
+        selectedSlot = slot;
+        
+        // Update selected appointment info
+        updateSelectedAppointmentInfo();
+        
+        // Show selected appointment section
+        document.getElementById('selected-appointment').classList.remove('hidden');
+    }
+
+    function updateSelectedAppointmentInfo() {
+        if (!selectedSlot) return;
+        
+        const selectedInfo = document.getElementById('selected-info');
+        const selectedProviderInfo = document.getElementById('selected-provider');
+        const serviceType = document.getElementById('service-select').value || 'Consultation';
+        
+        const provider = providers.find(p => p.id === selectedSlot.provider.id);
+        
+        selectedInfo.innerHTML = `
+            <i class="fas fa-calendar-day text-deep-sky-blue mr-2"></i>
+            ${formatDate(selectedSlot.date)} at ${formatTime(selectedSlot.startTime)}
+        `;
+        
+        selectedProviderInfo.innerHTML = `
+            <i class="fas fa-user-md text-royal-purple mr-2"></i>
+            ${provider ? provider.name : selectedSlot.provider.firstName + ' ' + selectedSlot.provider.lastName} - ${serviceType}
+        `;
+    }
+
+    function renderProviderAvailability(availability) {
+        const tbody = document.getElementById('availability-table-body');
+        tbody.innerHTML = '';
+        
+        availability.forEach(provider => {
+            const row = document.createElement('tr');
+            row.className = 'table-row hover:bg-gray-50';
+            
+            const initials = getInitials(provider.name);
+            const colors = ['bg-deep-sky-blue', 'bg-sea-green', 'bg-royal-purple', 'bg-teal-blue'];
+            const colorClass = colors[provider.id % colors.length];
+            
+            row.innerHTML = `
+                <td class="p-3">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full ${colorClass} text-white flex items-center justify-center text-lg font-bold mr-3">${initials}</div>
+                        <div>
+                            <p class="font-medium">${provider.name}</p>
+                            <p class="text-gray-600 text-sm">${provider.specialty}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-3">${provider.specialty}</td>
+                <td class="p-3">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium ${
+                        provider.todaySlots > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }">
+                        ${provider.todaySlots} slots
+                    </span>
+                </td>
+                <td class="p-3">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium ${
+                        provider.tomorrowSlots > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }">
+                        ${provider.tomorrowSlots} slots
+                    </span>
+                </td>
+                <td class="p-3">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium ${
+                        provider.weekSlots > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }">
+                        ${provider.weekSlots} slots
+                    </span>
+                </td>
+                <td class="p-3">
+                    <button class="text-deep-sky-blue hover:text-midnight-blue view-provider-btn" data-provider-id="${provider.id}">
+                        <i class="fas fa-eye mr-1"></i> View
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+        
+        // Attach event listeners to view buttons
+        document.querySelectorAll('.view-provider-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const providerId = e.target.closest('.view-provider-btn').dataset.providerId;
+                document.getElementById('provider-select').value = providerId;
+                searchSlots();
+            });
+        });
+    }
+
+    function showSlotsLoading(show) {
+        const loading = document.getElementById('slots-loading');
+        const grid = document.getElementById('time-slots-grid');
+        const noSlots = document.getElementById('no-slots');
+        
+        if (show) {
+            loading.classList.remove('hidden');
+            grid.classList.add('hidden');
+            noSlots.classList.add('hidden');
+        } else {
+            loading.classList.add('hidden');
+        }
+    }
+
+    function showAvailabilityLoading(show) {
+        const loading = document.getElementById('availability-loading');
+        const table = loading.nextElementSibling;
+        
+        if (show) {
+            loading.classList.remove('hidden');
+            table.classList.add('hidden');
+        } else {
+            loading.classList.add('hidden');
+            table.classList.remove('hidden');
+        }
+    }
+
+    // Event handlers
+    async function searchSlots() {
+        const providerId = document.getElementById('provider-select').value || null;
+        const selectedDate = document.getElementById('date-picker').value || null;
+        
+        try {
+            showSlotsLoading(true);
+            
+            let slots;
+            if (selectedDate) {
+                slots = await fetchSlotsByDate(selectedDate, providerId);
+            } else {
+                slots = await fetchAvailableSlots(providerId);
+            }
+            
+            availableSlots = slots;
+            renderTimeSlots(slots);
+        } catch (error) {
+            showNotification(`Error loading slots: ${error.message}`, 'error');
+        } finally {
+            showSlotsLoading(false);
+        }
+    }
+
+    async function handleBookAppointment() {
+        if (!selectedSlot) {
+            showNotification('Please select a time slot first', 'error');
+            return;
+        }
+        
+        const serviceType = document.getElementById('service-select').value || 'Consultation';
+        
+        try {
+            const result = await bookAppointment(selectedSlot.id, serviceType, clientNotes);
+            showNotification(result.message || 'Appointment booked successfully!');
+            
+            // Reset selection and refresh slots
+            selectedSlot = null;
+            document.getElementById('selected-appointment').classList.add('hidden');
+            searchSlots();
+            loadProviderAvailability();
+        } catch (error) {
+            showNotification(`Booking failed: ${error.message}`, 'error');
+        }
+    }
+
+    function handleAddNotes() {
+        const notes = prompt('Add any notes for your appointment:', clientNotes);
+        if (notes !== null) {
+            clientNotes = notes;
+            showNotification('Notes added successfully!');
+        }
+    }
+
+    async function loadProviders() {
+        try {
+            providers = await fetchProviders();
+            populateProviders();
+        } catch (error) {
+            showNotification(`Error loading providers: ${error.message}`, 'error');
+        }
+    }
+
+    async function loadProviderAvailability() {
+        try {
+            showAvailabilityLoading(true);
+            const availability = await fetchProviderAvailability();
+            renderProviderAvailability(availability);
+        } catch (error) {
+            showNotification(`Error loading availability: ${error.message}`, 'error');
+        } finally {
+            showAvailabilityLoading(false);
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date-picker').value = today;
+        
+        // Load initial data
+        loadProviders();
+        loadProviderAvailability();
+        searchSlots(); // Load today's slots by default
+        
+        // Event listeners
+        document.getElementById('search-slots-btn').addEventListener('click', searchSlots);
+        document.getElementById('book-appointment-btn').addEventListener('click', handleBookAppointment);
+        document.getElementById('add-notes-btn').addEventListener('click', handleAddNotes);
+        document.getElementById('refresh-availability').addEventListener('click', loadProviderAvailability);
+        
+        // Auto-search when filters change
+        document.getElementById('provider-select').addEventListener('change', searchSlots);
+        document.getElementById('date-picker').addEventListener('change', searchSlots);
+        
+        // Mobile sidebar toggle
+        document.getElementById('toggle-sidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('active');
+        });
+
+        document.getElementById('close-sidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+        });
+
+        document.getElementById('content-overlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+        });
     });
 </script>
 </body>

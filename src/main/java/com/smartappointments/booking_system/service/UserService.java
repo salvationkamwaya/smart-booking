@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -95,5 +96,15 @@ public class UserService {
 
     public boolean isEmailAvailable(String email) {
         return !userRepository.existsByEmail(email);
+    }
+
+    // Find users by role
+    public List<User> findByRole(User.Role role) {
+        return userRepository.findByRole(role);
+    }
+
+    // Find user by ID
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
     }
 }
