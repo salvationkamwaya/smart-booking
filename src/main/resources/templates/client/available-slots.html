@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Appointments - View Available Slots</title>
+    <title>Smart Appointments - Available Slots</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script>
@@ -46,47 +46,6 @@
             border-left-color: #00B7EB;
         }
 
-        .stat-card {
-            transition: all 0.3s ease;
-            border-radius: 0.75rem;
-            overflow: hidden;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card .icon-container {
-            width: 60px;
-            height: 60px;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .table-row:hover {
-            background-color: #f8f9fa;
-        }
-
-        .action-btn {
-            transition: all 0.2s ease;
-        }
-
-        .action-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .user-avatar {
-            transition: all 0.3s ease;
-        }
-
-        .user-avatar:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
-        }
-
         .notification-dot {
             position: absolute;
             top: -5px;
@@ -103,85 +62,13 @@
             font-weight: bold;
         }
 
-        /* Status indicators */
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
+        .user-avatar {
+            transition: all 0.3s ease;
         }
 
-        .status-upcoming {
-            background-color: #00B7EB;
-        }
-
-        .status-completed {
-            background-color: #2E8B57;
-        }
-
-        .status-cancelled {
-            background-color: #DC143C;
-        }
-
-        .calendar-day {
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border-radius: 0.5rem;
-            text-align: center;
-            padding: 0.75rem 0;
-        }
-
-        .calendar-day:hover {
-            background-color: #EDF2F7;
-            transform: scale(1.05);
-        }
-
-        .calendar-day.selected {
-            background-color: #00B7EB;
-            color: white;
-        }
-
-        .calendar-day.available {
-            background-color: #A7F3D0;
-        }
-
-        .calendar-day.booked {
-            background-color: #FECACA;
-            cursor: not-allowed;
-        }
-
-        .calendar-day.today {
-            border: 2px solid #00B7EB;
-        }
-
-        .time-slot {
-            transition: all 0.2s ease;
-            border-radius: 0.5rem;
-            text-align: center;
-            padding: 0.75rem;
-            cursor: pointer;
-        }
-
-        .time-slot:hover {
-            transform: scale(1.05);
-        }
-
-        .time-slot.available {
-            background-color: #2E8B57;
-            color: white;
-        }
-
-        .time-slot.booked {
-            background-color: #EDF2F7;
-            color: #A0AEC0;
-            cursor: not-allowed;
-        }
-
-        .time-slot.selected {
-            background-color: #00B7EB;
-            color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
         }
 
         @media (max-width: 768px) {
@@ -263,67 +150,41 @@
         <nav>
             <ul class="space-y-2">
                 <li>
-                    <a href="#" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                    <a th:href="@{/client/client-panel}" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
                         <i class="fas fa-tachometer-alt mr-3 text-deep-sky-blue"></i>
                         Dashboard
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="view-slots" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
-                        <i class="fas fa-calendar-alt mr-3 text-sea-green"></i>
-                        View Available Slots
-                    </a>
-                </li>
-                <li>
-                    <a href="#" id="book-appointment" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-plus-circle mr-3 text-deep-sky-blue"></i>
+                    <a th:href="@{/client/book-appointment}" id="book-appointment" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-calendar-plus mr-3 text-sea-green"></i>
                         Book Appointment
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="my-bookings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-list mr-3 text-sea-green"></i>
+                    <a th:href="@{/client/my-bookings}" id="my-bookings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-calendar mr-3 text-teal-blue"></i>
                         My Bookings
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="providers" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-user-md mr-3 text-royal-purple"></i>
-                        My Providers
+                    <a th:href="@{/client/appointment-history}" id="appointment-history" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-history mr-3 text-royal-purple"></i>
+                        Appointment History
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="history" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-history mr-3 text-crimson"></i>
-                        Appointment History
+                    <a th:href="@{/client/my-provider}" id="my-provider" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-user-md mr-3 text-deep-sky-blue"></i>
+                        My Provider
                     </a>
                 </li>
             </ul>
         </nav>
-
-        <div class="mt-8 pt-6 border-t border-deep-sky-blue/30">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm opacity-75">Upcoming Appointments</span>
-                <span class="text-sm font-medium text-sea-green">2</span>
-            </div>
-            <div class="space-y-2">
-                <div class="flex items-center text-sm">
-                    <i class="fas fa-calendar-day mr-2 text-deep-sky-blue"></i>
-                    <span>Today, 2:30 PM</span>
-                </div>
-                <div class="flex items-center text-sm">
-                    <i class="fas fa-calendar-day mr-2 text-deep-sky-blue"></i>
-                    <span>Tomorrow, 10:00 AM</span>
-                </div>
-            </div>
-        </div>
     </aside>
 
-    <!-- Overlay for mobile sidebar -->
-    <div id="content-overlay"></div>
-
     <!-- Main Content -->
-    <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
+    <main class="flex-1 ml-64 p-8">
         <!-- View Slots Section -->
         <div id="view-slots-section">
             <div class="mb-6">
@@ -624,79 +485,21 @@
     </main>
 </div>
 
+<!-- Content Overlay -->
+<div id="content-overlay"></div>
+
 <script>
-    // Toggle sidebar for mobile
-    document.getElementById('toggle-sidebar')?.addEventListener('click', () => {
+    // Mobile sidebar toggle
+    document.getElementById('toggle-sidebar').addEventListener('click', () => {
         document.getElementById('sidebar').classList.add('active');
     });
 
-    // Close sidebar for mobile
-    document.getElementById('close-sidebar')?.addEventListener('click', () => {
+    document.getElementById('close-sidebar').addEventListener('click', () => {
         document.getElementById('sidebar').classList.remove('active');
     });
 
-    // Close sidebar when clicking on overlay
-    document.getElementById('content-overlay')?.addEventListener('click', () => {
+    document.getElementById('content-overlay').addEventListener('click', () => {
         document.getElementById('sidebar').classList.remove('active');
-    });
-
-    // Calendar and time slot interactions
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize with dashboard visible
-        document.getElementById('user-name').textContent = 'Client User';
-
-        // Calendar day selection
-        const calendarDays = document.querySelectorAll('.calendar-day:not(.text-gray-400)');
-        calendarDays.forEach(day => {
-            day.addEventListener('click', function() {
-                // Remove selected class from all days
-                calendarDays.forEach(d => d.classList.remove('selected'));
-
-                // Add selected class to clicked day
-                this.classList.add('selected');
-
-                // Update the selected date in the time slots section
-                const dateText = this.textContent + ' June, 2025';
-                document.querySelector('.selected-appointment-date').textContent = dateText;
-            });
-        });
-
-        // Time slot selection
-        const timeSlots = document.querySelectorAll('.time-slot.available');
-        timeSlots.forEach(slot => {
-            slot.addEventListener('click', function() {
-                // Remove selected class from all slots
-                timeSlots.forEach(s => s.classList.remove('selected'));
-
-                // Add selected class to clicked slot
-                this.classList.add('selected');
-
-                // Update the selected time in the appointment summary
-                const time = this.textContent;
-                document.querySelector('.selected-appointment-time').textContent = time;
-            });
-        });
-
-        // Book appointment button
-        document.querySelector('.book-appointment-btn').addEventListener('click', function() {
-            const selectedDate = document.querySelector('.calendar-day.selected');
-            const selectedTime = document.querySelector('.time-slot.selected');
-
-            if (!selectedDate) {
-                alert('Please select a date');
-                return;
-            }
-
-            if (!selectedTime) {
-                alert('Please select a time slot');
-                return;
-            }
-
-            const date = selectedDate.textContent + ' June, 2025';
-            const time = selectedTime.textContent;
-
-            alert(`Appointment booked for ${date} at ${time}`);
-        });
     });
 </script>
 </body>

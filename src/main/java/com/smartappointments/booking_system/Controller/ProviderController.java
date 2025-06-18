@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/provider")
 public class ProviderController {
 
-    @GetMapping
+    @GetMapping("/provider-panel")
     public String index(){
       return "provider/provider-panel";
     }

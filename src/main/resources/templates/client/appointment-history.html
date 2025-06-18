@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,43 +46,6 @@
             border-left-color: #00B7EB;
         }
 
-        .stat-card {
-            transition: all 0.3s ease;
-            border-radius: 0.75rem;
-            overflow: hidden;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card .icon-container {
-            width: 60px;
-            height: 60px;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .action-btn {
-            transition: all 0.2s ease;
-        }
-
-        .action-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .user-avatar {
-            transition: all 0.3s ease;
-        }
-
-        .user-avatar:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
-        }
-
         .notification-dot {
             position: absolute;
             top: -5px;
@@ -99,169 +62,13 @@
             font-weight: bold;
         }
 
-        /* Status indicators */
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-
-        .status-upcoming {
-            background-color: #00B7EB;
-        }
-
-        .status-completed {
-            background-color: #2E8B57;
-        }
-
-        .status-cancelled {
-            background-color: #DC143C;
-        }
-
-        .status-pending {
-            background-color: #FFA500;
-        }
-
-        .history-card {
-            background: white;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 1.5rem;
-            overflow: hidden;
+        .user-avatar {
             transition: all 0.3s ease;
         }
 
-        .history-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .history-header {
-            padding: 1.25rem;
-            border-bottom: 1px solid #EDF2F7;
-        }
-
-        .history-details {
-            display: flex;
-            padding: 1.25rem;
-        }
-
-        .history-info {
-            flex: 1;
-            padding-right: 1.5rem;
-        }
-
-        .history-actions {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-width: 200px;
-        }
-
-        .filter-btn {
-            transition: all 0.2s ease;
-        }
-
-        .filter-btn.active {
-            background-color: #00B7EB;
-            color: white;
-        }
-
-        .tab-btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-weight: 500;
-            position: relative;
-        }
-
-        .tab-btn.active {
-            color: #00B7EB;
-        }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background-color: #00B7EB;
-        }
-
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 3rem;
-            text-align: center;
-        }
-
-        .empty-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #EDF2F7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .timeline {
-            position: relative;
-            padding-left: 30px;
-            margin-top: 1.5rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 10px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background-color: #00B7EB;
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -30px;
-            top: 8px;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background-color: #00B7EB;
-            border: 3px solid white;
-        }
-
-        .timeline-date {
-            font-weight: 600;
-            color: #00B7EB;
-            margin-bottom: 0.25rem;
-        }
-
-        .chart-bar {
-            height: 10px;
-            border-radius: 5px;
-            background-color: #EDF2F7;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-
-        .chart-fill {
-            height: 100%;
-            border-radius: 5px;
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
         }
 
         @media (max-width: 768px) {
@@ -292,21 +99,6 @@
             #sidebar.active + #content-overlay {
                 display: block;
             }
-
-            .history-details {
-                flex-direction: column;
-            }
-
-            .history-actions {
-                margin-top: 1rem;
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -327,7 +119,7 @@
             <div class="relative">
                 <button class="text-white p-2">
                     <i class="fas fa-bell text-xl"></i>
-                    <span class="notification-dot">3</span>
+                    <span class="notification-dot">2</span>
                 </button>
             </div>
             <div class="hidden md:flex items-center">
@@ -358,67 +150,39 @@
         <nav>
             <ul class="space-y-2">
                 <li>
-                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-tachometer-alt mr-3 text-deep-sky-blue"></i>
-                        Dashboard
+                    <a th:href="@{/client/client-panel}" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-tachometer-alt mr-3 text-deep-sky-blue"></i> Dashboard
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-calendar-alt mr-3 text-sea-green"></i>
-                        View Available Slots
+                    <a th:href="@{/client/book-appointment}" id="book-appointment" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-calendar-plus mr-3 text-sea-green"></i> Book Appointment
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-plus-circle mr-3 text-deep-sky-blue"></i>
-                        Book Appointment
+                    <a th:href="@{/client/my-bookings}" id="my-bookings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-calendar mr-3 text-teal-blue"></i> My Bookings
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-list mr-3 text-sea-green"></i>
-                        My Bookings
+                    <a th:href="@{/client/appointment-history}" id="appointment-history" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
+                        <i class="fas fa-history mr-3 text-royal-purple"></i> Appointment History
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                        <i class="fas fa-user-md mr-3 text-royal-purple"></i>
-                        My Providers
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
-                        <i class="fas fa-history mr-3 text-crimson"></i>
-                        Appointment History
+                    <a th:href="@{/client/my-provider}" id="my-provider" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-user-md mr-3 text-deep-sky-blue"></i> My Provider
                     </a>
                 </li>
             </ul>
         </nav>
-
-        <div class="mt-8 pt-6 border-t border-deep-sky-blue/30">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm opacity-75">Upcoming Appointments</span>
-                <span class="text-sm font-medium text-sea-green">2</span>
-            </div>
-            <div class="space-y-2">
-                <div class="flex items-center text-sm">
-                    <i class="fas fa-calendar-day mr-2 text-deep-sky-blue"></i>
-                    <span>Today, 2:30 PM</span>
-                </div>
-                <div class="flex items-center text-sm">
-                    <i class="fas fa-calendar-day mr-2 text-deep-sky-blue"></i>
-                    <span>Tomorrow, 10:00 AM</span>
-                </div>
-            </div>
-        </div>
     </aside>
 
-    <!-- Overlay for mobile sidebar -->
+    <!-- Content Overlay -->
     <div id="content-overlay"></div>
 
     <!-- Main Content -->
-    <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
+    <main class="flex-1 ml-64 p-8">
         <!-- Header -->
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-dark-gray">Appointment History</h1>

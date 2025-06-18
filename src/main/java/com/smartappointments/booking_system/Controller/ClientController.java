@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/client")
 public class ClientController {
 
-    @GetMapping
+    @GetMapping("/client-panel")
     public String client(){
         return "client/client-panel";
     }

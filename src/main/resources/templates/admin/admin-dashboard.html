@@ -133,100 +133,66 @@
 </head>
 
 <body class="bg-white-smoke">
-    <!-- Navigation Bar -->
+    <!-- Navigation -->
     <nav class="bg-deep-sky-blue text-white p-4 fixed top-0 w-full z-50 shadow-md">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center">
-                <button id="toggle-sidebar" class="md:hidden mr-4 text-white">
-        <i class="fas fa-bars text-xl"></i>
-      </button>
-                <div class="flex items-center">
-                    <i class="fas fa-calendar-check text-xl mr-2"></i>
-                    <h1 class="text-xl font-bold">Smart Appointments</h1>
-                </div>
+            <div class="flex items-center space-x-4">
+                <button id="toggle-sidebar" class="md:hidden">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+                <h1 class="text-2xl font-bold">Smart Appointments</h1>
             </div>
-            <div id="user-menu" class="flex items-center space-x-4">
+            <div class="flex items-center space-x-4">
                 <div class="relative">
-                    <button class="text-white p-2">
-          <i class="fas fa-bell text-xl"></i>
-          <span class="notification-dot">3</span>
-        </button>
+                    <button class="text-xl">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute -top-1 -right-1 bg-crimson text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">3</span>
+                    </button>
                 </div>
-                <div class="hidden md:flex items-center">
-                    <div class="user-avatar w-10 h-10 rounded-full bg-white flex items-center justify-center text-deep-sky-blue font-bold mr-2">A</div>
-                    <span id="user-name" class="font-medium">Admin User</span>
+                <div class="flex items-center space-x-2">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="Admin" class="w-8 h-8 rounded-full">
+                    <span class="hidden md:block">Admin</span>
                 </div>
-                <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
-        <i class="fas fa-sign-out-alt mr-2"></i>
-        <span class="hidden sm:inline">Logout</span>
-      </button>
             </div>
         </div>
     </nav>
 
-    <!-- Main Layout with Sidebar -->
-    <div class="flex min-h-screen pt-16">
-        <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-midnight-blue text-white p-6 fixed top-16 h-full md:block transition-all duration-300 z-40 shadow-sidebar">
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-xl font-semibold flex items-center">
-                    <i class="fas fa-user-cog mr-2 text-deep-sky-blue"></i> Admin Menu
-                </h2>
-                <button id="close-sidebar" class="md:hidden p-2 text-white rounded-full hover:bg-deep-sky-blue">
-        <i class="fas fa-times w-4 h-4"></i>
-      </button>
-            </div>
-            <nav>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="#" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
-                            <i class="fas fa-tachometer-alt mr-3 text-deep-sky-blue"></i> Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/admin/manage-user}" id="manage-users" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                            <i class="fas fa-users mr-3 text-sea-green"></i> Manage Users
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/admin/view-appointments}" id="view-appointments" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                            <i class="fas fa-calendar-check mr-3 text-deep-sky-blue"></i> View Appointments
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/admin/system-settings}" id="system-settings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                            <i class="fas fa-cogs mr-3 text-crimson"></i> System Settings
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/admin/report}" id="reports" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                            <i class="fas fa-chart-bar mr-3 text-sea-green"></i> Reports
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="@{/admin/audit-logs}" id="audit-logs" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
-                            <i class="fas fa-clipboard-list mr-3 text-deep-sky-blue"></i> Audit Logs
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-midnight-blue text-white p-6 fixed top-16 h-full md:block transition-all duration-300 z-40 shadow-sidebar">
+        <div class="space-y-4">
+            <a href="/admin/dashboard" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg active">
+                <i class="fas fa-chart-line w-6"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/manage-user" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg">
+                <i class="fas fa-users w-6"></i>
+                <span>Manage Users</span>
+            </a>
+            <a href="/admin/view-appointments" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg">
+                <i class="fas fa-calendar-check w-6"></i>
+                <span>View Appointments</span>
+            </a>
+            <a href="/admin/audit-logs" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg">
+                <i class="fas fa-history w-6"></i>
+                <span>Audit Logs</span>
+            </a>
+            <a href="/admin/report" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg">
+                <i class="fas fa-chart-bar w-6"></i>
+                <span>Reports</span>
+            </a>
+            <a href="/logout" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg text-crimson">
+                <i class="fas fa-sign-out-alt w-6"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
 
-            <div class="mt-8 pt-6 border-t border-deep-sky-blue/30">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-sm opacity-75">System Status</span>
-                    <span class="text-sm font-medium text-sea-green">Operational</span>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2 mb-4">
-                    <div class="bg-sea-green h-2 rounded-full" style="width: 95%"></div>
-                </div>
-            </div>
-        </aside>
+    <!-- Overlay for mobile sidebar -->
+    <div id="content-overlay"></div>
 
-        <!-- Overlay for mobile sidebar -->
-        <div id="content-overlay"></div>
-
-        <!-- Main Content -->
-        <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
+    <!-- Main Content -->
+    <main class="md:ml-64 pt-20 min-h-screen">
+        <div class="container mx-auto px-6">
             <!-- Dashboard Header -->
             <div class="mb-6">
                 <h1 class="text-3xl font-bold text-dark-gray">Admin Dashboard</h1>
@@ -450,8 +416,8 @@
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 
     <script>
         // Toggle sidebar for mobile
@@ -480,6 +446,23 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('user-name').textContent = 'Admin User';
+        });
+
+        document.getElementById('toggle-sidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('md:translate-x-0');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleButton = document.getElementById('toggle-sidebar');
+            
+            if (!sidebar.contains(event.target) && !toggleButton.contains(event.target)) {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.add('md:translate-x-0');
+            }
         });
     </script>
 </body>

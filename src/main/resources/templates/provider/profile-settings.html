@@ -1,692 +1,624 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Appointments - Profile Settings</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-    * {
-        font-family: 'Poppins', sans-serif;
-    }
-
-    :root {
-        --soft-white: #FAFAFA;
-        --charcoal-gray: #333333;
-        --teal-blue: #26A69A;
-        --navy-blue: #1A3C5A;
-        --coral-red: #FF6F61;
-        --mint-green: #A7F3D0;
-        --light-gray: #F5F7FA;
-        --medium-gray: #E4E7EB;
-        --dark-gray: #64748B;
-    }
-
-    .profile-card {
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    }
-
-    .tab-button {
-        position: relative;
-        padding: 0.75rem 1.5rem;
-        font-weight: 500;
-        color: var(--dark-gray);
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .tab-button.active {
-        color: var(--teal-blue);
-        font-weight: 600;
-    }
-
-    .tab-button.active::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background-color: var(--teal-blue);
-        border-radius: 3px 3px 0 0;
-    }
-
-    .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 24px;
-    }
-
-    .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        transition: .4s;
-        border-radius: 24px;
-    }
-
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 16px;
-        width: 16px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-
-    input:checked + .slider {
-        background-color: var(--teal-blue);
-    }
-
-    input:checked + .slider:before {
-        transform: translateX(26px);
-    }
-
-    .profile-pic-container {
-        position: relative;
-        display: inline-block;
-    }
-
-    .profile-pic-container:hover .profile-overlay {
-        opacity: 1;
-    }
-
-    .profile-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        cursor: pointer;
-    }
-
-    .security-badge {
-        background-color: rgba(38, 166, 154, 0.15);
-        color: var(--teal-blue);
-        border-radius: 20px;
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-        display: inline-flex;
-        align-items: center;
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .verification-badge {
-        background-color: rgba(102, 187, 106, 0.15);
-        color: #66BB6A;
-        border-radius: 20px;
-        padding: 0.5rem 1rem;
-        font-size: 0.85rem;
-        display: inline-flex;
-        align-items: center;
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .section-card {
-        border-left: 4px solid var(--teal-blue);
-        transition: all 0.3s ease;
-    }
-
-    .section-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    .social-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-    .social-icon:hover {
-        transform: translateY(-3px);
-    }
-
-    .facebook { background-color: #3b5998; color: white; }
-    .twitter { background-color: #1da1f2; color: white; }
-    .linkedin { background-color: #0077b5; color: white; }
-    .instagram { background-color: #e1306c; color: white; }
-
-    @media (max-width: 768px) {
-        .profile-grid {
-            grid-template-columns: 1fr;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Appointments - Profile Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'white-smoke': '#F5F5F5',
+                        'deep-sky-blue': '#00B7EB',
+                        'midnight-blue': '#191970',
+                        'crimson': '#DC143C',
+                        'sea-green': '#2E8B57',
+                        'light-gray': '#EDF2F7',
+                        'dark-gray': '#2D3748',
+                        'teal-blue': '#26A69A',
+                        'royal-purple': '#7857FE',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'sidebar': '5px 0 15px rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
         }
-    }
-  </style>
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #26A69A;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #DC143C;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .user-avatar {
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(38, 166, 154, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+                transition: all 0.3s ease;
+            }
+            #sidebar.active {
+                left: 0;
+            }
+            #content-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+            #sidebar.active + #content-overlay {
+                display: block;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-<!-- Navigation Bar -->
-<nav class="bg-blue-900 text-white p-4 fixed top-0 w-full shadow-lg z-50">
-  <div class="container mx-auto flex justify-between items-center">
-    <button class="md:hidden p-2 text-white rounded-lg hover:bg-teal-700 transition-colors">
-      <i class="fas fa-bars w-5 h-5"></i>
-    </button>
-    <div class="flex items-center">
-      <i class="fas fa-calendar-check text-teal-400 text-xl mr-2"></i>
-      <h1 class="text-xl font-bold">Smart Appointments</h1>
-    </div>
-    <div class="flex items-center space-x-4">
-      <div class="hidden md:flex items-center">
-        <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold mr-2">S</div>
-        <span class="font-medium">Dr. Sarah Johnson</span>
-      </div>
-      <button class="bg-red-500 hover:bg-teal-700 px-4 py-2 rounded-lg transition-colors duration-300 flex items-center">
-        <i class="fas fa-sign-out-alt mr-2"></i>
-        <span class="hidden sm:inline">Logout</span>
-      </button>
-    </div>
-  </div>
-</nav>
-
-<!-- Main Content -->
-<div class="flex min-h-screen pt-16">
-  <!-- Sidebar -->
-  <aside class="w-64 bg-blue-900 text-white p-6 fixed top-16 h-full hidden md:block transition-all duration-300 z-40 shadow-xl">
-    <div class="flex items-center justify-between mb-8">
-      <h2 class="text-xl font-semibold flex items-center">
-        <i class="fas fa-user-md mr-2 text-teal-400"></i>
-        Provider Menu
-      </h2>
-    </div>
-    <nav>
-      <ul class="space-y-3">
-        <li>
-          <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
-            <i class="fas fa-tachometer-alt mr-3"></i>
-            Dashboard
-          </a>
-        </li>
-        <li>
-          <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
-            <i class="fas fa-plus-circle mr-3"></i>
-            Add Time Slot
-          </a>
-        </li>
-        <li>
-          <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
-            <i class="fas fa-calendar-alt mr-3"></i>
-            View Calendar
-          </a>
-        </li>
-        <li>
-          <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
-            <i class="fas fa-list mr-3"></i>
-            My Appointments
-          </a>
-        </li>
-        <li>
-          <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
-            <i class="fas fa-sliders-h mr-3"></i>
-            Availability Settings
-          </a>
-        </li>
-        <li>
-          <a href="#" class="block px-4 py-3 rounded-xl bg-teal-700 text-white transition-colors duration-300 flex items-center">
-            <i class="fas fa-user-cog mr-3"></i>
-            Profile Settings
-          </a>
-        </li>
-      </ul>
+<body class="bg-white-smoke">
+    <!-- Navigation Bar -->
+    <nav class="bg-teal-blue text-white p-4 fixed top-0 w-full z-50 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <button id="toggle-sidebar" class="md:hidden mr-4 text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-check text-xl mr-2"></i>
+                    <h1 class="text-xl font-bold">Smart Appointments</h1>
+                </div>
+            </div>
+            <div id="user-menu" class="flex items-center space-x-4">
+                <div class="relative">
+                    <button class="text-white p-2">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="notification-dot">2</span>
+                    </button>
+                </div>
+                <div class="hidden md:flex items-center">
+                    <div class="user-avatar w-10 h-10 rounded-full bg-white flex items-center justify-center text-teal-blue font-bold mr-2">P</div>
+                    <span id="user-name" class="font-medium">Provider</span>
+                </div>
+                <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
+            </div>
+        </div>
     </nav>
-  </aside>
 
-  <!-- Main Content Area -->
-  <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
-    <div class="max-w-6xl mx-auto">
-      <!-- Page Header -->
-      <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Profile Settings</h1>
-        <p class="text-gray-600 mt-2">Manage your personal and professional information</p>
-      </div>
-
-      <!-- Profile Header -->
-      <div class="profile-card bg-white rounded-xl shadow-sm p-6 mb-6">
-        <div class="flex flex-col md:flex-row items-center">
-          <div class="mb-4 md:mb-0 md:mr-6">
-            <div class="profile-pic-container">
-              <div class="w-32 h-32 rounded-full bg-gray-200 border-4 border-white shadow-md flex items-center justify-center">
-                <i class="fas fa-user-md text-4xl text-gray-400"></i>
-              </div>
-              <div class="profile-overlay">
-                <i class="fas fa-camera text-white text-2xl"></i>
-              </div>
-            </div>
-          </div>
-          <div class="text-center md:text-left flex-1">
-            <h2 class="text-2xl font-bold text-gray-800">Dr. Sarah Johnson</h2>
-            <p class="text-gray-600 mb-2">Dermatologist at City Medical Center</p>
-
-            <div class="flex flex-wrap justify-center md:justify-start mb-3">
-                                <span class="verification-badge">
-                                    <i class="fas fa-shield-alt mr-2"></i> Verified Professional
-                                </span>
-              <span class="security-badge">
-                                    <i class="fas fa-lock mr-2"></i> Secure Account
-                                </span>
-            </div>
-
-            <div class="flex justify-center md:justify-start space-x-2">
-              <a href="#" class="social-icon facebook">
-                <i class="fab fa-facebook-f"></i>
-              </a>
-              <a href="#" class="social-icon twitter">
-                <i class="fab fa-twitter"></i>
-              </a>
-              <a href="#" class="social-icon linkedin">
-                <i class="fab fa-linkedin-in"></i>
-              </a>
-              <a href="#" class="social-icon instagram">
-                <i class="fab fa-instagram"></i>
-              </a>
-            </div>
-          </div>
-          <div class="mt-4 md:mt-0">
-            <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
-              <i class="fas fa-eye mr-2"></i> View Public Profile
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab Navigation -->
-      <div class="tabs flex border-b border-gray-200 mb-6">
-        <button class="tab-button active">Personal Information</button>
-        <button class="tab-button">Professional Details</button>
-        <button class="tab-button">Security</button>
-        <button class="tab-button">Notifications</button>
-      </div>
-
-      <!-- Personal Information Section -->
-      <section id="personal-info" class="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-800">Personal Information</h2>
-          <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
-            <i class="fas fa-save mr-2"></i> Save Changes
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label class="block text-gray-700 font-medium mb-2">First Name</label>
-            <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="Sarah">
-          </div>
-          <div>
-            <label class="block text-gray-700 font-medium mb-2">Last Name</label>
-            <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="Johnson">
-          </div>
-          <div>
-            <label class="block text-gray-700 font-medium mb-2">Email Address</label>
-            <input type="email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="sarah.johnson@example.com">
-          </div>
-          <div>
-            <label class="block text-gray-700 font-medium mb-2">Phone Number</label>
-            <input type="tel" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="(555) 123-4567">
-          </div>
-          <div>
-            <label class="block text-gray-700 font-medium mb-2">Date of Birth</label>
-            <input type="date" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="1985-06-15">
-          </div>
-          <div>
-            <label class="block text-gray-700 font-medium mb-2">Gender</label>
-            <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
-              <option>Female</option>
-              <option>Male</option>
-              <option>Prefer not to say</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-gray-700 font-medium mb-2">Bio</label>
-          <textarea class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" rows="4">Board-certified dermatologist with over 10 years of experience. Specializing in cosmetic dermatology and skin cancer prevention. Committed to providing personalized care to all patients.</textarea>
-        </div>
-      </section>
-
-      <div class="profile-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Professional Details Section -->
-        <section class="section-card bg-white rounded-xl shadow-sm p-6">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Professional Details</h2>
-            <button class="text-teal-600 hover:text-teal-800">
-              <i class="fas fa-edit"></i>
-            </button>
-          </div>
-
-          <div class="space-y-5">
-            <div>
-              <label class="block text-gray-600 font-medium mb-1">Profession</label>
-              <p class="text-gray-800 font-medium">Dermatologist</p>
-            </div>
-
-            <div>
-              <label class="block text-gray-600 font-medium mb-1">Specialization</label>
-              <p class="text-gray-800 font-medium">Cosmetic Dermatology, Skin Cancer Prevention</p>
-            </div>
-
-            <div>
-              <label class="block text-gray-600 font-medium mb-1">Medical License Number</label>
-              <p class="text-gray-800 font-medium">MED-123456789</p>
-            </div>
-
-            <div>
-              <label class="block text-gray-600 font-medium mb-1">Clinic/Hospital</label>
-              <p class="text-gray-800 font-medium">City Medical Center</p>
-            </div>
-
-            <div>
-              <label class="block text-gray-600 font-medium mb-1">Years of Experience</label>
-              <p class="text-gray-800 font-medium">10 years</p>
-            </div>
-
-            <div>
-              <label class="block text-gray-600 font-medium mb-1">Education</label>
-              <div class="space-y-2">
-                <p class="text-gray-800 font-medium">MD, Harvard Medical School</p>
-                <p class="text-gray-800 font-medium">Residency, Johns Hopkins Hospital</p>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-gray-600 font-medium mb-1">Certifications</label>
-              <div class="space-y-2">
-                <p class="text-gray-800 font-medium">American Board of Dermatology</p>
-                <p class="text-gray-800 font-medium">Fellow of the American Academy of Dermatology</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Security Section -->
-        <section class="section-card bg-white rounded-xl shadow-sm p-6">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Security</h2>
-            <button class="text-teal-600 hover:text-teal-800">
-              <i class="fas fa-shield-alt"></i>
-            </button>
-          </div>
-
-          <div class="space-y-5">
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">Password</h3>
-                <p class="text-gray-600 text-sm">Last changed 3 months ago</p>
-              </div>
-              <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
-                Change Password
-              </button>
-            </div>
-
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">Two-Factor Authentication</h3>
-                <p class="text-gray-600 text-sm">Add an extra layer of security</p>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">Login Activity</h3>
-                <p class="text-gray-600 text-sm">Last login: Today at 9:30 AM from New York</p>
-              </div>
-              <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
-                View History
-              </button>
-            </div>
-
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">Active Sessions</h3>
-                <p class="text-gray-600 text-sm">2 active sessions</p>
-              </div>
-              <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
-                Manage Sessions
-              </button>
-            </div>
-
-            <div class="pt-4 border-t border-gray-200">
-              <h3 class="font-bold text-gray-800 mb-3">Security Tips</h3>
-              <ul class="space-y-2 text-sm text-gray-600">
-                <li class="flex items-start">
-                  <i class="fas fa-check-circle text-teal-500 mt-1 mr-2"></i>
-                  <span>Use a strong, unique password that you don't use elsewhere</span>
-                </li>
-                <li class="flex items-start">
-                  <i class="fas fa-check-circle text-teal-500 mt-1 mr-2"></i>
-                  <span>Enable two-factor authentication for extra security</span>
-                </li>
-                <li class="flex items-start">
-                  <i class="fas fa-check-circle text-teal-500 mt-1 mr-2"></i>
-                  <span>Regularly review your active sessions</span>
-                </li>
-                <li class="flex items-start">
-                  <i class="fas fa-check-circle text-teal-500 mt-1 mr-2"></i>
-                  <span>Be cautious of suspicious emails or messages</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <!-- Notification Preferences -->
-        <section class="section-card bg-white rounded-xl shadow-sm p-6">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Notification Preferences</h2>
-            <button class="text-teal-600 hover:text-teal-800">
-              <i class="fas fa-bell"></i>
-            </button>
-          </div>
-
-          <div class="space-y-5">
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">Email Notifications</h3>
-                <p class="text-gray-600 text-sm">Receive notifications via email</p>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">SMS Notifications</h3>
-                <p class="text-gray-600 text-sm">Receive notifications via text message</p>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox">
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">App Notifications</h3>
-                <p class="text-gray-600 text-sm">Receive in-app notifications</p>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="pt-4">
-              <h3 class="font-bold text-gray-800 mb-3">Notification Types</h3>
-              <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                  <div>
-                    <h4 class="font-medium text-gray-800">New Appointment Requests</h4>
-                    <p class="text-gray-600 text-sm">Notify me when I receive new appointment requests</p>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                  </label>
-                </div>
-
-                <div class="flex justify-between items-center">
-                  <div>
-                    <h4 class="font-medium text-gray-800">Appointment Reminders</h4>
-                    <p class="text-gray-600 text-sm">Remind me about upcoming appointments</p>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                  </label>
-                </div>
-
-                <div class="flex justify-between items-center">
-                  <div>
-                    <h4 class="font-medium text-gray-800">Cancellations</h4>
-                    <p class="text-gray-600 text-sm">Notify me when appointments are cancelled</p>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                  </label>
-                </div>
-
-                <div class="flex justify-between items-center">
-                  <div>
-                    <h4 class="font-medium text-gray-800">New Reviews</h4>
-                    <p class="text-gray-600 text-sm">Notify me when I receive new patient reviews</p>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox">
-                    <span class="slider"></span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Account Preferences -->
-        <section class="section-card bg-white rounded-xl shadow-sm p-6">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Account Preferences</h2>
-            <button class="text-teal-600 hover:text-teal-800">
-              <i class="fas fa-cog"></i>
-            </button>
-          </div>
-
-          <div class="space-y-5">
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">Language Preference</h3>
-                <p class="text-gray-600 text-sm">English (US)</p>
-              </div>
-              <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
-                Change
-              </button>
-            </div>
-
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">Time Zone</h3>
-                <p class="text-gray-600 text-sm">Eastern Time (ET)</p>
-              </div>
-              <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
-                Change
-              </button>
-            </div>
-
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-medium text-gray-800">Calendar Sync</h3>
-                <p class="text-gray-600 text-sm">Not connected</p>
-              </div>
-              <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
-                Connect
-              </button>
-            </div>
-
-            <div class="pt-4 border-t border-gray-200">
-              <h3 class="font-bold text-gray-800 mb-3">Danger Zone</h3>
-              <div class="space-y-3">
-                <button class="w-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 py-3 rounded-lg transition-colors flex items-center justify-center">
-                  <i class="fas fa-ban mr-2"></i> Deactivate Account
+    <!-- Main Layout with Sidebar -->
+    <div class="flex min-h-screen pt-16">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-midnight-blue text-white p-6 fixed top-16 h-full md:block transition-all duration-300 z-40 shadow-sidebar">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-user-md mr-2 text-teal-blue"></i>
+                    Provider Menu
+                </h2>
+                <button id="close-sidebar" class="md:hidden p-2 text-white rounded-full hover:bg-teal-blue">
+                    <i class="fas fa-times w-4 h-4"></i>
                 </button>
-                <button class="w-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 py-3 rounded-lg transition-colors flex items-center justify-center">
-                  <i class="fas fa-trash-alt mr-2"></i> Delete Account Permanently
-                </button>
-              </div>
             </div>
-          </div>
-        </section>
-      </div>
+            <nav>
+                <ul class="space-y-2">
+                    <li>
+                        <a th:href="@{/provider/provider-panel}" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-tachometer-alt mr-3 text-teal-blue"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/my-appointments}" id="my-appointments" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-calendar-alt mr-3 text-sea-green"></i> My Appointments
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/view-calendar}" id="view-calendar" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-calendar mr-3 text-deep-sky-blue"></i> View Calendar
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/add-slot}" id="add-slot" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-plus-circle mr-3 text-royal-purple"></i> Add Time Slot
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/profile-settings}" id="profile-settings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
+                            <i class="fas fa-user-cog mr-3 text-teal-blue"></i> Profile Settings
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/settings}" id="settings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-cogs mr-3 text-sea-green"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Your existing profile settings content here -->
+            <!-- Page Header -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Profile Settings</h1>
+                <p class="text-gray-600 mt-2">Manage your personal and professional information</p>
+            </div>
+
+            <!-- Profile Header -->
+            <div class="profile-card bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="flex flex-col md:flex-row items-center">
+                    <div class="mb-4 md:mb-0 md:mr-6">
+                        <div class="profile-pic-container">
+                            <div class="w-32 h-32 rounded-full bg-gray-200 border-4 border-white shadow-md flex items-center justify-center">
+                                <i class="fas fa-user-md text-4xl text-gray-400"></i>
+                            </div>
+                            <div class="profile-overlay">
+                                <i class="fas fa-camera text-white text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center md:text-left flex-1">
+                        <h2 class="text-2xl font-bold text-gray-800">Dr. Sarah Johnson</h2>
+                        <p class="text-gray-600 mb-2">Dermatologist at City Medical Center</p>
+
+                        <div class="flex flex-wrap justify-center md:justify-start mb-3">
+                            <span class="verification-badge">
+                                <i class="fas fa-shield-alt mr-2"></i> Verified Professional
+                            </span>
+                            <span class="security-badge">
+                                <i class="fas fa-lock mr-2"></i> Secure Account
+                            </span>
+                        </div>
+
+                        <div class="flex justify-center md:justify-start space-x-2">
+                            <a href="#" class="social-icon facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="social-icon twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="social-icon linkedin">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="social-icon instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mt-4 md:mt-0">
+                        <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-eye mr-2"></i> View Public Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tabs flex border-b border-gray-200 mb-6">
+                <button class="tab-button active">Personal Information</button>
+                <button class="tab-button">Professional Details</button>
+                <button class="tab-button">Security</button>
+                <button class="tab-button">Notifications</button>
+            </div>
+
+            <!-- Personal Information Section -->
+            <section id="personal-info" class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Personal Information</h2>
+                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                        <i class="fas fa-save mr-2"></i> Save Changes
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">First Name</label>
+                        <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="Sarah">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Last Name</label>
+                        <input type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="Johnson">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Email Address</label>
+                        <input type="email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="sarah.johnson@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Phone Number</label>
+                        <input type="tel" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="(555) 123-4567">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Date of Birth</label>
+                        <input type="date" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" value="1985-06-15">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Gender</label>
+                        <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300">
+                            <option>Female</option>
+                            <option>Male</option>
+                            <option>Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Bio</label>
+                    <textarea class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-300" rows="4">Board-certified dermatologist with over 10 years of experience. Specializing in cosmetic dermatology and skin cancer prevention. Committed to providing personalized care to all patients.</textarea>
+                </div>
+            </section>
+
+            <div class="profile-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Professional Details Section -->
+                <section class="section-card bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Professional Details</h2>
+                        <button class="text-teal-600 hover:text-teal-800">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-1">Profession</label>
+                            <p class="text-gray-800 font-medium">Dermatologist</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-1">Specialization</label>
+                            <p class="text-gray-800 font-medium">Cosmetic Dermatology, Skin Cancer Prevention</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-1">Medical License Number</label>
+                            <p class="text-gray-800 font-medium">MED-123456789</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-1">Clinic/Hospital</label>
+                            <p class="text-gray-800 font-medium">City Medical Center</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-1">Years of Experience</label>
+                            <p class="text-gray-800 font-medium">10 years</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-1">Education</label>
+                            <div class="space-y-2">
+                                <p class="text-gray-800 font-medium">MD, Harvard Medical School</p>
+                                <p class="text-gray-800 font-medium">Residency, Johns Hopkins Hospital</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-1">Certifications</label>
+                            <div class="space-y-2">
+                                <p class="text-gray-800 font-medium">American Board of Dermatology</p>
+                                <p class="text-gray-800 font-medium">Fellow of the American Academy of Dermatology</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Security Section -->
+                <section class="section-card bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Security</h2>
+                        <button class="text-teal-600 hover:text-teal-800">
+                            <i class="fas fa-shield-alt"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">Password</h3>
+                                <p class="text-gray-600 text-sm">Last changed 3 months ago</p>
+                            </div>
+                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                                Change Password
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">Two-Factor Authentication</h3>
+                                <p class="text-gray-600 text-sm">Add an extra layer of security</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">Login Activity</h3>
+                                <p class="text-gray-600 text-sm">Last login: Today at 9:30 AM from New York</p>
+                            </div>
+                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                                View History
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">Active Sessions</h3>
+                                <p class="text-gray-600 text-sm">2 active sessions</p>
+                            </div>
+                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                                Manage Sessions
+                            </button>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-200">
+                            <h3 class="font-bold text-gray-800 mb-3">Security Tips</h3>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-teal-500 mt-1 mr-2"></i>
+                                    <span>Use a strong, unique password that you don't use elsewhere</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-teal-500 mt-1 mr-2"></i>
+                                    <span>Enable two-factor authentication for extra security</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-teal-500 mt-1 mr-2"></i>
+                                    <span>Regularly review your active sessions</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-teal-500 mt-1 mr-2"></i>
+                                    <span>Be cautious of suspicious emails or messages</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Notification Preferences -->
+                <section class="section-card bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Notification Preferences</h2>
+                        <button class="text-teal-600 hover:text-teal-800">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">Email Notifications</h3>
+                                <p class="text-gray-600 text-sm">Receive notifications via email</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">SMS Notifications</h3>
+                                <p class="text-gray-600 text-sm">Receive notifications via text message</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">App Notifications</h3>
+                                <p class="text-gray-600 text-sm">Receive in-app notifications</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="pt-4">
+                            <h3 class="font-bold text-gray-800 mb-3">Notification Types</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">New Appointment Requests</h4>
+                                        <p class="text-gray-600 text-sm">Notify me when I receive new appointment requests</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Appointment Reminders</h4>
+                                        <p class="text-gray-600 text-sm">Remind me about upcoming appointments</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Cancellations</h4>
+                                        <p class="text-gray-600 text-sm">Notify me when appointments are cancelled</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">New Reviews</h4>
+                                        <p class="text-gray-600 text-sm">Notify me when I receive new patient reviews</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Account Preferences -->
+                <section class="section-card bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Account Preferences</h2>
+                        <button class="text-teal-600 hover:text-teal-800">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">Language Preference</h3>
+                                <p class="text-gray-600 text-sm">English (US)</p>
+                            </div>
+                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                                Change
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">Time Zone</h3>
+                                <p class="text-gray-600 text-sm">Eastern Time (ET)</p>
+                            </div>
+                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                                Change
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">Calendar Sync</h3>
+                                <p class="text-gray-600 text-sm">Not connected</p>
+                            </div>
+                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                                Connect
+                            </button>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-200">
+                            <h3 class="font-bold text-gray-800 mb-3">Danger Zone</h3>
+                            <div class="space-y-3">
+                                <button class="w-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 py-3 rounded-lg transition-colors flex items-center justify-center">
+                                    <i class="fas fa-ban mr-2"></i> Deactivate Account
+                                </button>
+                                <button class="w-full bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 py-3 rounded-lg transition-colors flex items-center justify-center">
+                                    <i class="fas fa-trash-alt mr-2"></i> Delete Account Permanently
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
     </div>
-  </main>
-</div>
 
-<script>
-  // Tab functionality
-  document.querySelectorAll('.tab-button').forEach(tab => {
-      tab.addEventListener('click', function() {
-          document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
-          this.classList.add('active');
+    <!-- Content Overlay -->
+    <div id="content-overlay"></div>
 
-          // In a real app, this would show the corresponding content section
-          const sectionName = this.textContent.toLowerCase().replace(' ', '-');
-          alert(`Showing ${sectionName} section`);
-      });
-  });
+    <script>
+        // Mobile sidebar toggle
+        document.getElementById('toggle-sidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('active');
+        });
 
-  // Profile picture change
-  document.querySelector('.profile-overlay').addEventListener('click', function() {
-      alert("Open file dialog to upload new profile photo");
-  });
+        document.getElementById('close-sidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+        });
 
-  // Initialize with some interactions
-  document.addEventListener('DOMContentLoaded', function() {
-      // Add hover effect to all cards
-      const cards = document.querySelectorAll('.section-card');
-      cards.forEach(card => {
-          card.addEventListener('mouseenter', function() {
-              this.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
-          });
+        document.getElementById('content-overlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+        });
 
-          card.addEventListener('mouseleave', function() {
-              this.style.boxShadow = '';
-          });
-      });
-  });
-</script>
+        // Tab functionality
+        document.querySelectorAll('.tab-button').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                // In a real app, this would show the corresponding content section
+                const sectionName = this.textContent.toLowerCase().replace(' ', '-');
+                alert(`Showing ${sectionName} section`);
+            });
+        });
+
+        // Profile picture change
+        document.querySelector('.profile-overlay').addEventListener('click', function() {
+            alert("Open file dialog to upload new profile photo");
+        });
+
+        // Initialize with some interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effect to all cards
+            const cards = document.querySelectorAll('.section-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '';
+                });
+            });
+        });
+    </script>
 </body>
 </html>

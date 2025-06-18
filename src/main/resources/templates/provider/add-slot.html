@@ -1,18 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Appointments - Add Time Slot</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'white-smoke': '#F5F5F5',
+                        'deep-sky-blue': '#00B7EB',
+                        'midnight-blue': '#191970',
+                        'crimson': '#DC143C',
+                        'sea-green': '#2E8B57',
+                        'light-gray': '#EDF2F7',
+                        'dark-gray': '#2D3748',
+                        'teal-blue': '#26A69A',
+                        'royal-purple': '#7857FE',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'sidebar': '5px 0 15px rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
         * {
             font-family: 'Poppins', sans-serif;
+        }
+        
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #26A69A;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #DC143C;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .user-avatar {
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(38, 166, 154, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+                transition: all 0.3s ease;
+            }
+            #sidebar.active {
+                left: 0;
+            }
+            #content-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+            #sidebar.active + #content-overlay {
+                display: block;
+            }
         }
 
         :root {
@@ -104,101 +186,118 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-<!-- Navigation Bar -->
-<nav class="bg-blue-900 text-white p-4 fixed top-0 w-full shadow-lg z-50">
-    <div class="container mx-auto flex justify-between items-center">
-        <button class="md:hidden p-2 text-white rounded-lg hover:bg-teal-700 transition-colors">
-            <i class="fas fa-bars w-5 h-5"></i>
-        </button>
-        <div class="flex items-center">
-            <i class="fas fa-calendar-check text-teal-400 text-xl mr-2"></i>
-            <h1 class="text-xl font-bold">Smart Appointments</h1>
-        </div>
-        <div class="flex items-center space-x-4">
-            <div class="hidden md:flex items-center">
-                <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold mr-2">P</div>
-                <span class="font-medium">Dr. Sarah Johnson</span>
+<body class="bg-white-smoke">
+    <!-- Navigation Bar -->
+    <nav class="bg-teal-blue text-white p-4 fixed top-0 w-full z-50 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <button id="toggle-sidebar" class="md:hidden mr-4 text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-check text-xl mr-2"></i>
+                    <h1 class="text-xl font-bold">Smart Appointments</h1>
+                </div>
             </div>
-            <button class="bg-red-500 hover:bg-teal-700 px-4 py-2 rounded-lg transition-colors duration-300 flex items-center">
-                <i class="fas fa-sign-out-alt mr-2"></i>
-                <span class="hidden sm:inline">Logout</span>
-            </button>
-        </div>
-    </div>
-</nav>
-
-<!-- Main Content -->
-<div class="flex min-h-screen pt-16">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-blue-900 text-white p-6 fixed top-16 h-full hidden md:block transition-all duration-300 z-40 shadow-xl">
-        <div class="flex items-center justify-between mb-8">
-            <h2 class="text-xl font-semibold flex items-center">
-                <i class="fas fa-user-md mr-2 text-teal-400"></i>
-                Provider Menu
-            </h2>
-        </div>
-        <nav>
-            <ul class="space-y-3">
-                <li>
-                    <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
-                        <i class="fas fa-tachometer-alt mr-3"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="block px-4 py-3 rounded-xl bg-teal-700 text-white transition-colors duration-300 flex items-center">
-                        <i class="fas fa-plus-circle mr-3"></i>
-                        Add Time Slot
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
-                        <i class="fas fa-calendar-alt mr-3"></i>
-                        View Calendar
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="block px-4 py-3 rounded-xl hover:bg-teal-700 transition-colors duration-300 flex items-center">
-                        <i class="fas fa-list mr-3"></i>
-                        My Appointments
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="flex-1 p-4 md:ml-64 md:p-6 transition-all duration-300">
-        <div class="max-w-6xl mx-auto">
-            <!-- Page Header -->
-            <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-800">Manage Time Slots</h1>
-                <p class="text-gray-600 mt-2">Create and manage your availability for appointments</p>
+            <div id="user-menu" class="flex items-center space-x-4">
+                <div class="relative">
+                    <button class="text-white p-2">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="notification-dot">2</span>
+                    </button>
+                </div>
+                <div class="hidden md:flex items-center">
+                    <div class="user-avatar w-10 h-10 rounded-full bg-white flex items-center justify-center text-teal-blue font-bold mr-2">P</div>
+                    <span id="user-name" class="font-medium">Provider</span>
+                </div>
+                <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
             </div>
+        </div>
+    </nav>
 
-            <!-- Tab Navigation -->
-            <div class="tabs flex border-b border-gray-200 mb-8">
-                <button id="add-slot-tab" class="tab-button active px-4 py-3 text-lg font-medium">Add New Slot</button>
-                <button id="manage-slots-tab" class="tab-button px-4 py-3 text-lg font-medium">Manage Existing Slots</button>
+    <!-- Main Layout with Sidebar -->
+    <div class="flex min-h-screen pt-16">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-midnight-blue text-white p-6 fixed top-16 h-full md:block transition-all duration-300 z-40 shadow-sidebar">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-user-md mr-2 text-teal-blue"></i>
+                    Provider Menu
+                </h2>
+                <button id="close-sidebar" class="md:hidden p-2 text-white rounded-full hover:bg-teal-blue">
+                    <i class="fas fa-times w-4 h-4"></i>
+                </button>
             </div>
+            <nav>
+                <ul class="space-y-2">
+                    <li>
+                        <a th:href="@{/provider/provider-panel}" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-tachometer-alt mr-3 text-teal-blue"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/my-appointments}" id="my-appointments" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-calendar-alt mr-3 text-sea-green"></i> My Appointments
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/view-calendar}" id="view-calendar" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-calendar mr-3 text-deep-sky-blue"></i> View Calendar
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/add-slot}" id="add-slot" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
+                            <i class="fas fa-plus-circle mr-3 text-royal-purple"></i> Add Time Slot
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/profile-settings}" id="profile-settings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-user-cog mr-3 text-teal-blue"></i> Profile Settings
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/provider/settings}" id="settings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-cogs mr-3 text-sea-green"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
-            <!-- Add Slot Section -->
-            <section id="add-slot-section" class="bg-white rounded-xl shadow-sm p-6 mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Add Time Slot</h2>
-
-                <!-- Slot Type Toggle -->
-                <div class="flex mb-6">
-                    <button id="single-slot-btn" class="slot-type-btn bg-teal-600 text-white px-6 py-3 rounded-l-lg font-medium transition-colors">Single Slot</button>
-                    <button id="recurring-slot-btn" class="slot-type-btn bg-gray-200 text-gray-700 px-6 py-3 rounded-r-lg font-medium transition-colors">Recurring Slots</button>
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <div class="max-w-6xl mx-auto">
+                <!-- Page Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800">Manage Time Slots</h1>
+                    <p class="text-gray-600 mt-2">Create and manage your availability for appointments</p>
                 </div>
 
-                <!-- Single Slot Form -->
-                <div id="single-slot-form" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-gray-700 font-medium mb-2">
-                                <i class="fas fa-calendar-day mr-2 text-teal-500"></i>Date
+                <!-- Tab Navigation -->
+                <div class="tabs flex border-b border-gray-200 mb-8">
+                    <button id="add-slot-tab" class="tab-button active px-4 py-3 text-lg font-medium">Add New Slot</button>
+                    <button id="manage-slots-tab" class="tab-button px-4 py-3 text-lg font-medium">Manage Existing Slots</button>
+                </div>
+
+                <!-- Add Slot Section -->
+                <section id="add-slot-section" class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Add Time Slot</h2>
+
+                    <!-- Slot Type Toggle -->
+                    <div class="flex mb-6">
+                        <button id="single-slot-btn" class="slot-type-btn bg-teal-600 text-white px-6 py-3 rounded-l-lg font-medium transition-colors">Single Slot</button>
+                        <button id="recurring-slot-btn" class="slot-type-btn bg-gray-200 text-gray-700 px-6 py-3 rounded-r-lg font-medium transition-colors">Recurring Slots</button>
+                    </div>
+
+                    <!-- Single Slot Form -->
+                    <div id="single-slot-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">
+                                    <i class="fas fa-calendar-day mr-2 text-teal-500"></i>Date
                             </label>
                             <input type="text" class="flatpickr-input" placeholder="Select date" id="slot-date">
                         </div>
@@ -489,6 +588,9 @@
     </main>
 </div>
 
+<!-- Content Overlay -->
+<div id="content-overlay"></div>
+
 <script>
     // Initialize date pickers
     flatpickr("#slot-date", {
@@ -579,6 +681,19 @@
         document.getElementById('slot-time').value = '10:00 AM';
         document.getElementById('start-time').value = '2:00 PM';
         document.getElementById('end-time').value = '4:00 PM';
+    });
+
+    // Mobile sidebar toggle
+    document.getElementById('toggle-sidebar').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.add('active');
+    });
+
+    document.getElementById('close-sidebar').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('active');
+    });
+
+    document.getElementById('content-overlay').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('active');
     });
 </script>
 </body>
