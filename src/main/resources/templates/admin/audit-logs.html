@@ -1,10 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Appointments - Audit Logs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'white-smoke': '#F5F5F5',
+                        'black': '#000000',
+                        'deep-sky-blue': '#00B7EB',
+                        'midnight-blue': '#191970',
+                        'crimson': '#DC143C',
+                        'sea-green': '#2E8B57',
+                        'light-gray': '#EDF2F7',
+                        'dark-gray': '#2D3748',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'sidebar': '5px 0 15px rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #00B7EB;
+        }
+        
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #DC143C;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+                transition: all 0.3s ease;
+            }
+            #sidebar.active {
+                left: 0;
+            }
+            #content-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+            #sidebar.active+#content-overlay {
+                display: block;
+            }
+        }
+    </style>
 </head>
-<body>
 
+<body class="bg-white-smoke">
+    <!-- Navigation Bar -->
+    <nav class="bg-deep-sky-blue text-white p-4 fixed top-0 w-full z-50 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <button id="toggle-sidebar" class="md:hidden mr-4 text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-check text-xl mr-2"></i>
+                    <h1 class="text-xl font-bold">Smart Appointments</h1>
+                </div>
+            </div>
+            <div id="user-menu" class="flex items-center space-x-4">
+                <div class="relative">
+                    <button class="text-white p-2">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="notification-dot">3</span>
+                    </button>
+                </div>
+                <div class="hidden md:flex items-center">
+                    <div class="user-avatar w-10 h-10 rounded-full bg-white flex items-center justify-center text-deep-sky-blue font-bold mr-2">A</div>
+                    <span id="user-name" class="font-medium">Admin User</span>
+                </div>
+                <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout with Sidebar -->
+    <div class="flex min-h-screen pt-16">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-midnight-blue text-white p-6 fixed top-16 h-full md:block transition-all duration-300 z-40 shadow-sidebar">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-user-cog mr-2 text-deep-sky-blue"></i> Admin Menu
+                </h2>
+                <button id="close-sidebar" class="md:hidden p-2 text-white rounded-full hover:bg-deep-sky-blue">
+                    <i class="fas fa-times w-4 h-4"></i>
+                </button>
+            </div>
+            <nav>
+                <ul class="space-y-2">
+                    <li>
+                        <a th:href="@{/admin/dashboard}" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-tachometer-alt mr-3 text-deep-sky-blue"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/manage-user}" id="manage-users" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-users mr-3 text-sea-green"></i> Manage Users
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/view-appointments}" id="view-appointments" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-calendar-check mr-3 text-deep-sky-blue"></i> View Appointments
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/audit-logs}" id="audit-logs" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
+                            <i class="fas fa-history mr-3 text-deep-sky-blue"></i> Audit Logs
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/admin/report}" id="reports" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-chart-bar mr-3 text-sea-green"></i> Reports
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Your existing audit logs content here -->
+        </main>
+    </div>
+
+    <!-- Content Overlay -->
+    <div id="content-overlay"></div>
+
+    <script>
+        // Mobile sidebar toggle
+        document.getElementById('toggle-sidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('active');
+        });
+
+        document.getElementById('close-sidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+        });
+
+        document.getElementById('content-overlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+        });
+    </script>
 </body>
+
 </html>
