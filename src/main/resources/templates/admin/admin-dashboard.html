@@ -442,6 +442,9 @@
                 document.getElementById('sidebar').classList.remove('active');
             });
         }        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication on page load
+            checkAuthentication();
+            
             document.getElementById('user-name').textContent = 'Admin User';
             
             // Logout functionality
@@ -455,6 +458,26 @@
                 });
             }
         });
+
+        // Check authentication and role
+        async function checkAuthentication() {
+            try {
+                const response = await fetch('/auth/api/role-check');
+                if (!response.ok) {
+                    window.location.href = '/auth/login?access=expired';
+                    return;
+                }
+                
+                const data = await response.json();
+                if (!data.authenticated || data.role !== 'ADMIN') {
+                    window.location.href = '/auth/login?access=denied&attempted=admin';
+                    return;
+                }
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+                // Don't redirect on network errors
+            }
+        }
 
         document.getElementById('toggle-sidebar').addEventListener('click', function() {
             const sidebar = document.getElementById('sidebar');

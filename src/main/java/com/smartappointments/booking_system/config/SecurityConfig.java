@@ -24,6 +24,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }    @Bean
+    @SuppressWarnings("deprecation")
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
@@ -34,16 +35,28 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
-    }
-
-    @Bean
+    }    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authenticationProvider(authenticationProvider())                .authorizeHttpRequests(auth -> auth
+                .authenticationProvider(authenticationProvider())
+                .authorizeHttpRequests(auth -> auth
+                        // Public resources
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/uploads/**").permitAll()
+                        
+                        // Authentication endpoints
                         .requestMatchers("/auth/login", "/auth/register", "/auth/perform_register").permitAll()
                         .requestMatchers("/debug/**").permitAll() // Allow debug endpoints
                         .requestMatchers("/logout").permitAll() // Allow logout endpoint
+                        
+                        // Role-based access control
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/provider/**").hasRole("PROVIDER") 
+                        .requestMatchers("/client/**").hasRole("CLIENT")
+                        
+                        // Dashboard endpoint (will redirect based on role)
+                        .requestMatchers("/dashboard").authenticated()
+                        
+                        // Any other request requires authentication
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -59,9 +72,24 @@ public class SecurityConfig {
                         .logoutUrl("/auth/perform_logout")
                         .logoutSuccessUrl("/auth/login?logout=true")
                         .permitAll()
+                )                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            // Redirect to login with access denied message
+                            response.sendRedirect("/auth/login?access=denied");
+                        })
+                )
+                .sessionManagement(session -> session
+                        .maximumSessions(1) // Allow only one session per user
+                        .maxSessionsPreventsLogin(false) // New login invalidates old session
+                        .sessionRegistry(sessionRegistry())
                 )
                 .csrf(csrf -> csrf.disable());
 
         return http.build();
+    }
+
+    @Bean
+    public org.springframework.security.core.session.SessionRegistry sessionRegistry() {
+        return new org.springframework.security.core.session.SessionRegistryImpl();
     }
 }

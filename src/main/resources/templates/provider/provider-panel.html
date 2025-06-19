@@ -455,9 +455,11 @@
     </main>
 </div>
 
-<script>
-    // Initialize FullCalendar
+<script>    // Initialize FullCalendar
     document.addEventListener('DOMContentLoaded', () => {
+        // Check authentication first
+        checkAuthentication();
+        
         const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
@@ -488,6 +490,26 @@
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
     });
+
+    // Check authentication and role
+    async function checkAuthentication() {
+        try {
+            const response = await fetch('/auth/api/role-check');
+            if (!response.ok) {
+                window.location.href = '/auth/login?access=expired';
+                return;
+            }
+            
+            const data = await response.json();
+            if (!data.authenticated || data.role !== 'PROVIDER') {
+                window.location.href = '/auth/login?access=denied&attempted=provider';
+                return;
+            }
+        } catch (error) {
+            console.error('Authentication check failed:', error);
+            // Don't redirect on network errors
+        }
+    }
 
     // Sidebar toggle for mobile
     document.getElementById('toggle-sidebar')?.addEventListener('click', () => {

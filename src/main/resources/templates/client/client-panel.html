@@ -627,11 +627,22 @@
 
         // Load dynamic data
         loadDashboardData();
-    });
-
-    // Load dashboard statistics and recent appointments
+    });    // Load dashboard statistics and recent appointments
     async function loadDashboardData() {
         try {
+            // Check authentication and role first
+            const authCheck = await fetch('/auth/api/role-check');
+            if (!authCheck.ok) {
+                window.location.href = '/auth/login?access=expired';
+                return;
+            }
+            
+            const authData = await authCheck.json();
+            if (!authData.authenticated || authData.role !== 'CLIENT') {
+                window.location.href = '/auth/login?access=denied&attempted=client';
+                return;
+            }
+            
             // Load appointment statistics
             const statsResponse = await fetch('/client/api/appointment-stats');
             if (statsResponse.ok) {
@@ -647,6 +658,7 @@
             }
         } catch (error) {
             console.error('Error loading dashboard data:', error);
+            // If there's a network error, don't redirect immediately
         }
     }
 
