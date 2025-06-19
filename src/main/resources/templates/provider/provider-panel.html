@@ -436,65 +436,19 @@
                 <div id="calendar-container" class="bg-white p-4 rounded-xl shadow-sm border border-medium-gray">
                     <div id="calendar"></div>
                 </div>
-            </div>
-
-            <!-- Upcoming Appointments -->
+            </div>            <!-- Upcoming Appointments -->
             <div>
                 <h3 class="text-lg font-semibold text-charcoal-gray mb-4">Today's Appointments</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="appointment-card bg-white p-5 rounded-xl shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-lg">John Anderson</h4>
-                                <p class="text-dark-gray text-sm">Annual Checkup</p>
-                            </div>
-                            <span class="bg-mint-green text-teal-blue px-3 py-1 rounded-full text-sm font-medium">Confirmed</span>
-                        </div>
-                        <div class="flex items-center mt-4">
-                            <div class="w-10 h-10 rounded-full bg-teal-blue/10 flex items-center justify-center mr-3">
-                                <i class="fas fa-clock text-teal-blue"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium">10:00 AM - 10:45 AM</p>
-                                <p class="text-sm text-dark-gray">Room 3</p>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex space-x-3">
-                            <button class="flex-1 bg-light-gray text-charcoal-gray py-2 rounded-lg hover:bg-medium-gray transition-colors">
-                                <i class="fas fa-notes-medical mr-2"></i>Notes
-                            </button>
-                            <button class="flex-1 bg-teal-blue text-soft-white py-2 rounded-lg hover:bg-teal-700 transition-colors">
-                                <i class="fas fa-video mr-2"></i>Start
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="appointment-card bg-white p-5 rounded-xl shadow-sm">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-lg">Sarah Mitchell</h4>
-                                <p class="text-dark-gray text-sm">Follow-up Consultation</p>
-                            </div>
-                            <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">Pending</span>
-                        </div>
-                        <div class="flex items-center mt-4">
-                            <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
-                                <i class="fas fa-clock text-yellow-500"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium">11:30 AM - 12:15 PM</p>
-                                <p class="text-sm text-dark-gray">Room 2</p>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex space-x-3">
-                            <button class="flex-1 bg-light-gray text-charcoal-gray py-2 rounded-lg hover:bg-medium-gray transition-colors">
-                                <i class="fas fa-info-circle mr-2"></i>Details
-                            </button>
-                            <button class="flex-1 bg-teal-blue text-soft-white py-2 rounded-lg hover:bg-teal-700 transition-colors">
-                                <i class="fas fa-check mr-2"></i>Confirm
-                            </button>
-                        </div>
-                    </div>
+                <div id="appointments-loading" class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-teal-blue text-2xl mb-2"></i>
+                    <p class="text-dark-gray">Loading appointments...</p>
+                </div>
+                <div id="appointments-container" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="display: none;">
+                    <!-- Dynamic appointments will be loaded here -->
+                </div>
+                <div id="no-appointments" class="text-center py-8" style="display: none;">
+                    <i class="fas fa-calendar-times text-4xl text-dark-gray mb-4"></i>
+                    <p class="text-dark-gray">No appointments for today</p>
                 </div>
             </div>
         </section>
@@ -578,19 +532,318 @@
             errorMessage.classList.remove('hidden');
             successMessage.classList.add('hidden');
         }
-    });
-
-    // Logout
+    });    // Logout
     document.getElementById('logout-btn')?.addEventListener('click', () => {
-        console.log('Logout');
-        localStorage.removeItem('jwt');
-        window.location.href = '/login';
+        if (confirm('Are you sure you want to logout?')) {
+            window.location.href = '/auth/perform_logout';
+        }
     });
 
-    // Initialize user menu
-    if (localStorage.getItem('jwt')) {
-        document.getElementById('user-menu').classList.remove('hidden');
+    // Load and display appointments
+    async function loadTodaysAppointments() {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const response = await fetch(`/provider/appointments/data?status=all`);
+            
+            if (!response.ok) {
+                throw new Error('Failed to load appointments');
+            }
+            
+            const appointments = await response.json();
+            
+            // Filter today's appointments
+            const todaysAppointments = appointments.filter(appointment => {
+                const appointmentDate = new Date(appointment.appointmentTime).toISOString().split('T')[0];
+                return appointmentDate === today;
+            });
+            
+            displayAppointments(todaysAppointments);
+        } catch (error) {
+            console.error('Error loading appointments:', error);
+            document.getElementById('appointments-loading').innerHTML = `
+                <i class="fas fa-exclamation-triangle text-coral-red text-2xl mb-2"></i>
+                <p class="text-coral-red">Failed to load appointments</p>
+            `;
+        }
     }
+
+    function displayAppointments(appointments) {
+        const loadingDiv = document.getElementById('appointments-loading');
+        const containerDiv = document.getElementById('appointments-container');
+        const noAppointmentsDiv = document.getElementById('no-appointments');
+
+        loadingDiv.style.display = 'none';
+
+        if (!appointments || appointments.length === 0) {
+            noAppointmentsDiv.style.display = 'block';
+            containerDiv.style.display = 'none';
+            return;
+        }
+
+        containerDiv.style.display = 'grid';
+        noAppointmentsDiv.style.display = 'none';
+        
+        containerDiv.innerHTML = appointments.map(appointment => createAppointmentCard(appointment)).join('');
+        
+        // Add event listeners to buttons
+        appointments.forEach(appointment => {
+            addAppointmentEventListeners(appointment.id);
+        });
+    }
+
+    function createAppointmentCard(appointment) {
+        const appointmentTime = new Date(appointment.appointmentTime);
+        const timeString = appointmentTime.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit', 
+            hour12: true 
+        });
+        
+        const endTime = new Date(appointmentTime.getTime() + (appointment.durationMinutes || 45) * 60000);
+        const endTimeString = endTime.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit', 
+            hour12: true 
+        });
+
+        const statusConfig = getStatusConfig(appointment.status);
+        const actionButtons = getActionButtons(appointment);
+
+        return `
+            <div class="appointment-card bg-white p-5 rounded-xl shadow-sm">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="font-bold text-lg">${appointment.client.firstName} ${appointment.client.lastName}</h4>
+                        <p class="text-dark-gray text-sm">${appointment.serviceType || 'Consultation'}</p>
+                    </div>
+                    <span class="${statusConfig.bgColor} ${statusConfig.textColor} px-3 py-1 rounded-full text-sm font-medium">
+                        ${statusConfig.text}
+                    </span>
+                </div>
+                <div class="flex items-center mt-4">
+                    <div class="w-10 h-10 rounded-full ${statusConfig.iconBg} flex items-center justify-center mr-3">
+                        <i class="fas fa-clock ${statusConfig.iconColor}"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">${timeString} - ${endTimeString}</p>
+                        <p class="text-sm text-dark-gray">${appointment.client.email}</p>
+                    </div>
+                </div>
+                ${appointment.clientNotes ? `
+                <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-dark-gray"><strong>Client Notes:</strong> ${appointment.clientNotes}</p>
+                </div>
+                ` : ''}
+                <div class="mt-4 flex space-x-3">
+                    ${actionButtons}
+                </div>
+            </div>
+        `;
+    }
+
+    function getStatusConfig(status) {
+        switch (status) {
+            case 'CONFIRMED':
+                return {
+                    bgColor: 'bg-mint-green',
+                    textColor: 'text-teal-blue',
+                    iconBg: 'bg-teal-blue/10',
+                    iconColor: 'text-teal-blue',
+                    text: 'Confirmed'
+                };
+            case 'PENDING':
+                return {
+                    bgColor: 'bg-yellow-100',
+                    textColor: 'text-yellow-700',
+                    iconBg: 'bg-yellow-100',
+                    iconColor: 'text-yellow-500',
+                    text: 'Pending'
+                };
+            case 'IN_PROGRESS':
+                return {
+                    bgColor: 'bg-blue-100',
+                    textColor: 'text-blue-700',
+                    iconBg: 'bg-blue-100',
+                    iconColor: 'text-blue-500',
+                    text: 'In Progress'
+                };
+            case 'COMPLETED':
+                return {
+                    bgColor: 'bg-green-100',
+                    textColor: 'text-green-700',
+                    iconBg: 'bg-green-100',
+                    iconColor: 'text-green-500',
+                    text: 'Completed'
+                };
+            case 'CANCELLED':
+                return {
+                    bgColor: 'bg-red-100',
+                    textColor: 'text-red-700',
+                    iconBg: 'bg-red-100',
+                    iconColor: 'text-red-500',
+                    text: 'Cancelled'
+                };
+            default:
+                return {
+                    bgColor: 'bg-gray-100',
+                    textColor: 'text-gray-700',
+                    iconBg: 'bg-gray-100',
+                    iconColor: 'text-gray-500',
+                    text: status
+                };
+        }
+    }
+
+    function getActionButtons(appointment) {
+        const buttons = [];
+        
+        // Notes button (always available)
+        buttons.push(`
+            <button data-appointment-id="${appointment.id}" data-action="notes" 
+                    class="flex-1 bg-light-gray text-charcoal-gray py-2 rounded-lg hover:bg-medium-gray transition-colors">
+                <i class="fas fa-notes-medical mr-2"></i>Notes
+            </button>
+        `);
+
+        // Action button based on status
+        switch (appointment.status) {
+            case 'PENDING':
+                buttons.push(`
+                    <button data-appointment-id="${appointment.id}" data-action="confirm" 
+                            class="flex-1 bg-teal-blue text-soft-white py-2 rounded-lg hover:bg-teal-700 transition-colors">
+                        <i class="fas fa-check mr-2"></i>Confirm
+                    </button>
+                `);
+                break;
+            case 'CONFIRMED':
+                buttons.push(`
+                    <button data-appointment-id="${appointment.id}" data-action="start" 
+                            class="flex-1 bg-teal-blue text-soft-white py-2 rounded-lg hover:bg-teal-700 transition-colors">
+                        <i class="fas fa-play mr-2"></i>Start
+                    </button>
+                `);
+                break;
+            case 'IN_PROGRESS':
+                buttons.push(`
+                    <button data-appointment-id="${appointment.id}" data-action="complete" 
+                            class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-check-circle mr-2"></i>Complete
+                    </button>
+                `);
+                break;
+            case 'COMPLETED':
+                buttons.push(`
+                    <button disabled class="flex-1 bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed">
+                        <i class="fas fa-check-double mr-2"></i>Completed
+                    </button>
+                `);
+                break;
+            case 'CANCELLED':
+                buttons.push(`
+                    <button disabled class="flex-1 bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed">
+                        <i class="fas fa-times mr-2"></i>Cancelled
+                    </button>
+                `);
+                break;
+            default:
+                buttons.push(`
+                    <button data-appointment-id="${appointment.id}" data-action="details" 
+                            class="flex-1 bg-teal-blue text-soft-white py-2 rounded-lg hover:bg-teal-700 transition-colors">
+                        <i class="fas fa-info-circle mr-2"></i>Details
+                    </button>
+                `);
+        }
+
+        return buttons.join('');
+    }
+
+    function addAppointmentEventListeners(appointmentId) {
+        const buttons = document.querySelectorAll(`[data-appointment-id="${appointmentId}"]`);
+        
+        buttons.forEach(button => {
+            button.addEventListener('click', async () => {
+                const action = button.getAttribute('data-action');
+                await handleAppointmentAction(appointmentId, action);
+            });
+        });
+    }
+
+    async function handleAppointmentAction(appointmentId, action) {
+        try {
+            let endpoint;
+            let method = 'PUT';
+            let body = null;
+
+            switch (action) {
+                case 'confirm':
+                    endpoint = `/provider/appointments/${appointmentId}/confirm`;
+                    break;
+                case 'start':
+                    endpoint = `/provider/appointments/${appointmentId}/start`;
+                    break;
+                case 'complete':
+                    endpoint = `/provider/appointments/${appointmentId}/complete`;
+                    break;
+                case 'notes':
+                    const notes = prompt('Enter appointment notes:');
+                    if (notes !== null) {
+                        endpoint = `/provider/appointments/${appointmentId}/notes`;
+                        body = JSON.stringify({ notes });
+                    } else {
+                        return; // User cancelled
+                    }
+                    break;
+                default:
+                    console.log(`Action not implemented: ${action}`);
+                    return;
+            }
+
+            const response = await fetch(endpoint, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to ${action} appointment`);
+            }
+
+            const result = await response.json();
+            console.log(`Appointment ${action} successful:`, result);
+            
+            // Show success message
+            showNotification(`Appointment ${action} successful!`, 'success');
+            
+            // Reload appointments to reflect changes
+            loadTodaysAppointments();
+            
+        } catch (error) {
+            console.error(`Error ${action} appointment:`, error);
+            showNotification(`Failed to ${action} appointment. Please try again.`, 'error');
+        }
+    }
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Initialize appointments loading
+    loadTodaysAppointments();
 </script>
 </body>
 </html>

@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,17 +66,20 @@ public class ProviderController {
     public String settings() {
         return "provider/settings";
     }    @GetMapping("/profile-settings")
-    @Transactional(readOnly = true)
     public String profileSettings(Model model, Authentication authentication) {
         User user = userService.findByEmail(authentication.getName()).orElse(null);
         if (user != null) {
             ProviderProfile profile = providerProfileService.getProviderProfile(user);
+            // Create empty profile for template if null
+            if (profile == null) {
+                profile = new ProviderProfile();
+                profile.setUser(user);
+            }
             model.addAttribute("profile", profile);
         }
         return "provider/profile-settings";
     }    @GetMapping("/profile-settings/data")
     @ResponseBody
-    @Transactional(readOnly = true)
     public ResponseEntity<?> getProfileData(Authentication authentication) {
         try {
             User user = userService.findByEmail(authentication.getName()).orElse(null);
@@ -88,6 +90,11 @@ public class ProviderController {
             }
             
             ProviderProfile profile = providerProfileService.getProviderProfile(user);
+            // Create empty profile if null
+            if (profile == null) {
+                profile = new ProviderProfile();
+                profile.setUser(user);
+            }
             return ResponseEntity.ok(profile);
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
@@ -391,6 +398,22 @@ public class ProviderController {
             }
 
             Appointment appointment = appointmentService.completeAppointment(appointmentId, user);
+            return ResponseEntity.ok(appointment);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/appointments/{appointmentId}/start")
+    @ResponseBody
+    public ResponseEntity<?> startAppointment(@PathVariable Long appointmentId, Authentication authentication) {
+        try {
+            User user = userService.findByEmail(authentication.getName()).orElse(null);
+            if (user == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
+            }
+
+            Appointment appointment = appointmentService.startAppointment(appointmentId, user);
             return ResponseEntity.ok(appointment);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

@@ -22,20 +22,22 @@ public class ProviderProfileService {    @Autowired
     private ProviderProfileRepository providerProfileRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
+    private UserRepository userRepository;    @Transactional(readOnly = true)
     public ProviderProfile getProviderProfile(User user) {
+        return providerProfileRepository.findByUser(user).orElse(null);
+    }
+    
+    @Transactional
+    public ProviderProfile getOrCreateProviderProfile(User user) {
         return providerProfileRepository.findByUser(user)
                 .orElseGet(() -> {
                     ProviderProfile newProfile = new ProviderProfile();
                     newProfile.setUser(user);
                     return providerProfileRepository.save(newProfile);
                 });
-    }
-
-    @Transactional
+    }    @Transactional
     public ProviderProfile updateProviderProfile(ProviderProfile profile, User user) {
-        ProviderProfile existingProfile = getProviderProfile(user);
+        ProviderProfile existingProfile = getOrCreateProviderProfile(user);
         
         // Update all fields
         existingProfile.setFirstName(profile.getFirstName());
@@ -56,11 +58,9 @@ public class ProviderProfileService {    @Autowired
         existingProfile.setTwitterUrl(profile.getTwitterUrl());
         existingProfile.setLinkedinUrl(profile.getLinkedinUrl());
         existingProfile.setInstagramUrl(profile.getInstagramUrl());        return providerProfileRepository.save(existingProfile);
-    }
-
-    @Transactional
+    }    @Transactional
     public ProviderProfile updatePersonalInfo(Map<String, Object> personalData, User user) {
-        ProviderProfile existingProfile = getProviderProfile(user);
+        ProviderProfile existingProfile = getOrCreateProviderProfile(user);
         
         // Update User entity fields (firstName, lastName)
         if (personalData.containsKey("firstName")) {
@@ -90,11 +90,9 @@ public class ProviderProfileService {    @Autowired
         }
 
         return providerProfileRepository.save(existingProfile);
-    }
-
-    @Transactional
+    }    @Transactional
     public ProviderProfile updateProfessionalInfo(Map<String, Object> professionalData, User user) {
-        ProviderProfile existingProfile = getProviderProfile(user);
+        ProviderProfile existingProfile = getOrCreateProviderProfile(user);
         
         // Update professional information fields
         if (professionalData.containsKey("profession")) {
@@ -146,10 +144,9 @@ public class ProviderProfileService {    @Autowired
         }
 
         return providerProfileRepository.save(existingProfile);
-    }
-
+    }    @Transactional
     public String uploadProfilePicture(MultipartFile file, User user) throws IOException {
-        ProviderProfile profile = getProviderProfile(user);
+        ProviderProfile profile = getOrCreateProviderProfile(user);
         
         // Create uploads directory if it doesn't exist
         String uploadsDir = "uploads/profile-pictures/";

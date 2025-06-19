@@ -17,14 +17,13 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     Optional<User> findByEmail(String email);
-    boolean existsByEmail(String email);
-
-    @Query("SELECT u FROM User u WHERE " +
+    boolean existsByEmail(String email);    @Query("SELECT u FROM User u WHERE " +
            "(:role IS NULL OR u.role = :role) AND " +
            "(:status IS NULL OR u.status = :status) AND " +
-           "(:search IS NULL OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "(:search IS NULL OR :search = '' OR " +
+           "u.firstName LIKE CONCAT('%', :search, '%') OR " +
+           "u.lastName LIKE CONCAT('%', :search, '%') OR " +
+           "u.email LIKE CONCAT('%', :search, '%'))")
     Page<User> findByFilters(
             @Param("role") Role role,
             @Param("status") Status status,

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="UTF-8">
+<head>    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Appointments - Client Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -80,9 +79,7 @@
 
         .user-avatar {
             transition: all 0.3s ease;
-        }
-
-        .user-avatar:hover {
+        }        .user-avatar:hover {
             transform: scale(1.1);
             box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
         }
@@ -101,6 +98,33 @@
             justify-content: center;
             font-size: 0.7rem;
             font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+                transition: all 0.3s ease;
+            }
+            #sidebar.active {
+                left: 0;
+            }
+            #content-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+            #sidebar.active + #content-overlay {
+                display: block;
+            }
         }
 
         /* Status indicators */
@@ -347,10 +371,9 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <!-- Upcoming Appointments -->
-            <div class="bg-white rounded-xl shadow-card p-6">
-                <div class="flex justify-between items-center mb-6">
+            <div class="bg-white rounded-xl shadow-card p-6">                <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-dark-gray">Upcoming Appointments</h2>
-                    <button class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    <button id="new-appointment-btn" class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
                         <i class="fas fa-plus mr-2"></i> New Appointment
                     </button>
                 </div>
@@ -401,21 +424,18 @@
                         </tr>
                         </tbody>
                     </table>
-                </div>
-
-                <div class="mt-6 flex justify-between items-center">
+                </div>                <div class="mt-6 flex justify-between items-center">
                     <div class="text-gray-600">Showing 1-3 of 5 appointments</div>
-                    <button class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors">
+                    <button id="view-all-appointments-btn" class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors">
                         View All
                     </button>
                 </div>
             </div>
 
             <!-- Recent Activity -->
-            <div class="bg-white rounded-xl shadow-card p-6">
-                <div class="flex justify-between items-center mb-6">
+            <div class="bg-white rounded-xl shadow-card p-6">                <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-dark-gray">Recent Activity</h2>
-                    <button class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                    <button id="full-history-btn" class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
                         <i class="fas fa-history mr-2"></i> Full History
                     </button>
                 </div>
@@ -470,9 +490,8 @@
 
         <!-- Quick Actions -->
         <div class="bg-white rounded-xl shadow-card p-6 mb-6">
-            <h2 class="text-xl font-bold text-dark-gray mb-6">Quick Actions</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-light-gray p-4 rounded-lg flex items-center cursor-pointer hover:bg-deep-sky-blue/10 transition-colors">
+            <h2 class="text-xl font-bold text-dark-gray mb-6">Quick Actions</h2>            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div id="book-appointment-action" class="bg-light-gray p-4 rounded-lg flex items-center cursor-pointer hover:bg-deep-sky-blue/10 transition-colors">
                     <div class="w-12 h-12 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mr-4">
                         <i class="fas fa-calendar-plus text-deep-sky-blue text-xl"></i>
                     </div>
@@ -482,7 +501,7 @@
                     </div>
                 </div>
 
-                <div class="bg-light-gray p-4 rounded-lg flex items-center cursor-pointer hover:bg-sea-green/10 transition-colors">
+                <div id="find-providers-action" class="bg-light-gray p-4 rounded-lg flex items-center cursor-pointer hover:bg-sea-green/10 transition-colors">
                     <div class="w-12 h-12 rounded-full bg-sea-green/20 flex items-center justify-center mr-4">
                         <i class="fas fa-search text-sea-green text-xl"></i>
                     </div>
@@ -492,7 +511,7 @@
                     </div>
                 </div>
 
-                <div class="bg-light-gray p-4 rounded-lg flex items-center cursor-pointer hover:bg-royal-purple/10 transition-colors">
+                <div id="view-invoices-action" class="bg-light-gray p-4 rounded-lg flex items-center cursor-pointer hover:bg-royal-purple/10 transition-colors">
                     <div class="w-12 h-12 rounded-full bg-royal-purple/20 flex items-center justify-center mr-4">
                         <i class="fas fa-file-invoice text-royal-purple text-xl"></i>
                     </div>
@@ -501,9 +520,213 @@
                         <p class="text-gray-600 text-sm">Access your billing history</p>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div></div>
     </main>
 </div>
+
+<script>
+    // Navigation functions
+    function navigateToBookAppointment() {
+        window.location.href = '/client/book-appointment';
+    }
+
+    function navigateToMyProvider() {
+        window.location.href = '/client/my-provider';
+    }
+
+    function navigateToMyBookings() {
+        window.location.href = '/client/my-bookings';
+    }
+
+    function navigateToAppointmentHistory() {
+        window.location.href = '/client/appointment-history';
+    }    function navigateToViewInvoices() {
+        window.location.href = '/client/invoices';
+    }    // Logout functionality
+    function performLogout() {
+        if (confirm('Are you sure you want to logout?')) {
+            // Since CSRF is disabled, we can use a simple redirect to logout URL
+            window.location.href = '/auth/perform_logout';
+        }
+    }// DOM Content Loaded event listener
+    document.addEventListener('DOMContentLoaded', function() {
+        // Quick Action buttons
+        const bookAppointmentAction = document.getElementById('book-appointment-action');
+        const findProvidersAction = document.getElementById('find-providers-action');
+        const viewInvoicesAction = document.getElementById('view-invoices-action');
+        
+        if (bookAppointmentAction) {
+            bookAppointmentAction.addEventListener('click', navigateToBookAppointment);
+        }
+        
+        if (findProvidersAction) {
+            findProvidersAction.addEventListener('click', navigateToMyProvider);
+        }
+        
+        if (viewInvoicesAction) {
+            viewInvoicesAction.addEventListener('click', navigateToViewInvoices);
+        }
+
+        // Header buttons
+        const newAppointmentBtn = document.getElementById('new-appointment-btn');
+        const viewAllBtn = document.getElementById('view-all-appointments-btn');
+        const fullHistoryBtn = document.getElementById('full-history-btn');
+        
+        if (newAppointmentBtn) {
+            newAppointmentBtn.addEventListener('click', navigateToBookAppointment);
+        }
+        
+        if (viewAllBtn) {
+            viewAllBtn.addEventListener('click', navigateToMyBookings);
+        }
+        
+        if (fullHistoryBtn) {
+            fullHistoryBtn.addEventListener('click', navigateToAppointmentHistory);
+        }
+
+        // Logout button
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', performLogout);
+        }
+
+        // Sidebar navigation
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Remove active class from all links
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                // Add active class to clicked link
+                this.classList.add('active');
+            });
+        });
+
+        // Mobile sidebar toggle
+        const toggleSidebar = document.getElementById('toggle-sidebar');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const sidebar = document.getElementById('sidebar');
+        const contentOverlay = document.getElementById('content-overlay');
+
+        if (toggleSidebar && sidebar) {
+            toggleSidebar.addEventListener('click', () => {
+                sidebar.classList.add('active');
+            });
+        }
+
+        if (closeSidebar && sidebar) {
+            closeSidebar.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+            });
+        }
+
+        if (contentOverlay && sidebar) {
+            contentOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+            });
+        }
+
+        // Load dynamic data
+        loadDashboardData();
+    });
+
+    // Load dashboard statistics and recent appointments
+    async function loadDashboardData() {
+        try {
+            // Load appointment statistics
+            const statsResponse = await fetch('/client/api/appointment-stats');
+            if (statsResponse.ok) {
+                const stats = await statsResponse.json();
+                updateStatCards(stats);
+            }
+
+            // Load recent appointments
+            const appointmentsResponse = await fetch('/client/api/my-appointments?limit=3');
+            if (appointmentsResponse.ok) {
+                const appointments = await appointmentsResponse.json();
+                updateRecentAppointments(appointments);
+            }
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+        }
+    }
+
+    // Update stat cards with real data
+    function updateStatCards(stats) {
+        const totalAppointments = document.querySelector('.stat-card:nth-child(1) .text-2xl');
+        const upcomingAppointments = document.querySelector('.stat-card:nth-child(2) .text-2xl');
+        const completedAppointments = document.querySelector('.stat-card:nth-child(3) .text-2xl');
+        const cancelledAppointments = document.querySelector('.stat-card:nth-child(4) .text-2xl');
+
+        if (totalAppointments) totalAppointments.textContent = stats.total || 0;
+        if (upcomingAppointments) upcomingAppointments.textContent = stats.upcoming || 0;
+        if (completedAppointments) completedAppointments.textContent = stats.completed || 0;
+        if (cancelledAppointments) cancelledAppointments.textContent = stats.cancelled || 0;
+    }
+
+    // Update recent appointments table
+    function updateRecentAppointments(appointments) {
+        const tbody = document.querySelector('tbody');
+        if (!tbody || !appointments || appointments.length === 0) return;
+
+        tbody.innerHTML = '';
+        
+        appointments.slice(0, 3).forEach(appointment => {
+            const row = document.createElement('tr');
+            row.className = 'table-row';
+            
+            const appointmentDate = new Date(appointment.appointmentTime);
+            const dateStr = appointmentDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+
+            const statusClass = getStatusClass(appointment.status);
+            const statusText = getStatusText(appointment.status);
+
+            row.innerHTML = `
+                <td class="p-3">${dateStr}</td>
+                <td class="p-3">${appointment.provider.firstName} ${appointment.provider.lastName}</td>
+                <td class="p-3">${appointment.serviceType || 'Consultation'}</td>
+                <td class="p-3">
+                    <span class="${statusClass} px-2 py-1 rounded-full text-xs font-medium">
+                        <span class="status-indicator status-${appointment.status.toLowerCase()}"></span>
+                        ${statusText}
+                    </span>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    }
+
+    // Helper functions for status styling
+    function getStatusClass(status) {
+        switch (status) {
+            case 'CONFIRMED': return 'bg-blue-100 text-blue-800';
+            case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+            case 'COMPLETED': return 'bg-green-100 text-green-800';
+            case 'CANCELLED': return 'bg-red-100 text-red-800';
+            case 'RESCHEDULED': return 'bg-purple-100 text-purple-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    function getStatusText(status) {
+        switch (status) {
+            case 'CONFIRMED': return 'Confirmed';
+            case 'PENDING': return 'Pending';
+            case 'COMPLETED': return 'Completed';
+            case 'CANCELLED': return 'Cancelled';
+            case 'RESCHEDULED': return 'Rescheduled';
+            default: return status;
+        }
+    }
+</script>
+
+<!-- Content Overlay for mobile sidebar -->
+<div id="content-overlay"></div>
+
 </body>
 </html>

@@ -3,6 +3,8 @@ package com.smartappointments.booking_system.Controller;
 import com.smartappointments.booking_system.model.*;
 import com.smartappointments.booking_system.service.AdminService;
 import com.smartappointments.booking_system.service.UserService;
+import com.smartappointments.booking_system.service.AppointmentService;
+import com.smartappointments.booking_system.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +27,12 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AppointmentService appointmentService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     // Dashboard remains unchanged
     @GetMapping("/dashboard")
@@ -172,6 +180,157 @@ public class AdminController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Recent Bookings API
+    @GetMapping("/api/recent-bookings")
+    @ResponseBody
+    public ResponseEntity<?> getRecentBookings(@RequestParam(defaultValue = "10") int limit) {
+        try {
+            // Get recent appointments across all providers
+            java.time.LocalDateTime since = java.time.LocalDateTime.now().minusDays(7);
+            java.util.List<Map<String, Object>> recentBookings = new java.util.ArrayList<>();
+
+            // This would typically use a custom repository method
+            // For now, we'll get all recent appointments
+            java.util.List<Appointment> appointments = appointmentService.getAllAppointmentsSince(since);
+
+            for (Appointment appointment : appointments) {
+                Map<String, Object> bookingInfo = new HashMap<>();
+                bookingInfo.put("id", appointment.getId());
+                bookingInfo.put("clientName", appointment.getClient().getFirstName() + " " + appointment.getClient().getLastName());
+                bookingInfo.put("providerName", "Dr. " + appointment.getProvider().getFirstName() + " " + appointment.getProvider().getLastName());
+                bookingInfo.put("appointmentTime", appointment.getAppointmentTime().toString());
+                bookingInfo.put("serviceType", appointment.getServiceType());
+                bookingInfo.put("status", appointment.getStatus());
+                bookingInfo.put("createdAt", appointment.getCreatedAt().toString());
+                recentBookings.add(bookingInfo);
+            }
+
+            return ResponseEntity.ok(recentBookings);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Send Bulk Notification API
+    @PostMapping("/api/send-notification")
+    @ResponseBody
+    public ResponseEntity<?> sendBulkNotification(@RequestBody Map<String, Object> notificationData) {
+        try {
+            String message = (String) notificationData.get("message");
+            String title = (String) notificationData.get("title");
+            String recipientType = (String) notificationData.get("recipientType"); // "ALL", "PROVIDERS", "CLIENTS"
+
+            java.util.List<User> recipients = new java.util.ArrayList<>();
+
+            switch (recipientType.toUpperCase()) {
+                case "ALL":
+                    recipients = userService.findAll();
+                    break;
+                case "PROVIDERS":
+                    recipients = userService.findByRole(User.Role.PROVIDER);
+                    break;
+                case "CLIENTS":
+                    recipients = userService.findByRole(User.Role.CLIENT);
+                    break;
+                default:
+                    return ResponseEntity.badRequest().body(Map.of("error", "Invalid recipient type"));
+            }
+
+            notificationService.sendBulkNotification(message, title, recipients);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Notifications sent successfully",
+                    "recipientCount", recipients.size()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // System Statistics API
+    @GetMapping("/api/system-stats")
+    @ResponseBody
+    public ResponseEntity<?> getSystemStats() {
+        try {
+            Map<String, Object> stats = new HashMap<>();
+
+            // User statistics
+            long totalUsers = userService.countAllUsers();
+            long totalProviders = userService.findByRole(User.Role.PROVIDER).size();
+            long totalClients = userService.findByRole(User.Role.CLIENT).size();
+
+            stats.put("totalUsers", totalUsers);
+            stats.put("totalProviders", totalProviders);
+            stats.put("totalClients", totalClients);
+
+            // Appointment statistics (last 30 days)
+            java.time.LocalDateTime thirtyDaysAgo = java.time.LocalDateTime.now().minusDays(30);
+            java.util.List<Appointment> recentAppointments = appointmentService.getAllAppointmentsSince(thirtyDaysAgo);
+
+            long totalAppointments = recentAppointments.size();
+            long confirmedAppointments = recentAppointments.stream()
+                    .filter(a -> "CONFIRMED".equals(a.getStatus()))
+                    .count();
+            long pendingAppointments = recentAppointments.stream()
+                    .filter(a -> "PENDING".equals(a.getStatus()))
+                    .count();
+            long cancelledAppointments = recentAppointments.stream()
+                    .filter(a -> "CANCELLED".equals(a.getStatus()))
+                    .count();
+
+            stats.put("appointmentsLast30Days", totalAppointments);
+            stats.put("confirmedAppointments", confirmedAppointments);
+            stats.put("pendingAppointments", pendingAppointments);
+            stats.put("cancelledAppointments", cancelledAppointments);
+
+            // Revenue estimation (simplified)
+            double estimatedRevenue = recentAppointments.stream()
+                    .filter(a -> "CONFIRMED".equals(a.getStatus()) || "COMPLETED".equals(a.getStatus()))
+                    .mapToDouble(a -> calculateAppointmentFee(a.getServiceType()))
+                    .sum();
+
+            stats.put("estimatedRevenueLast30Days", estimatedRevenue);
+
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Maintenance Notification API
+    @PostMapping("/api/maintenance-notification")
+    @ResponseBody
+    public ResponseEntity<?> sendMaintenanceNotification(@RequestBody Map<String, Object> maintenanceData) {
+        try {
+            String maintenanceTimeStr = (String) maintenanceData.get("maintenanceTime");
+            java.time.LocalDateTime maintenanceTime = java.time.LocalDateTime.parse(maintenanceTimeStr);
+
+            java.util.List<User> allUsers = userService.findAll();
+            notificationService.sendMaintenanceNotification(allUsers, maintenanceTime);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Maintenance notification sent to all users",
+                    "recipientCount", allUsers.size()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Helper method to calculate appointment fees
+    private double calculateAppointmentFee(String serviceType) {
+        switch (serviceType.toLowerCase()) {
+            case "consultation":
+                return 85.0;
+            case "check-up":
+                return 120.0;
+            case "treatment":
+                return 150.0;
+            default:
+                return 100.0;
         }
     }
 }

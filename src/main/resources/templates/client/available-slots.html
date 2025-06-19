@@ -314,9 +314,11 @@
                         <span class="font-medium">June 2025</span>
                         <button class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition-colors">
                             <i class="fas fa-chevron-right"></i>
-                        </button>
-                        <button class="bg-deep-sky-blue text-white px-4 py-2 rounded-lg ml-4">
+                        </button>                        <button id="refresh-availability" class="bg-deep-sky-blue text-white px-4 py-2 rounded-lg ml-4">
                             <i class="fas fa-sync-alt mr-2"></i> Refresh
+                        </button>
+                        <button id="debug-test" class="bg-purple-600 text-white px-4 py-2 rounded-lg ml-2">
+                            <i class="fas fa-bug mr-2"></i> Debug Test
                         </button>
                     </div>
                 </div>
@@ -526,6 +528,65 @@
     }
 
     // API functions
+    // Debug function to test API connectivity
+    async function debugAPIConnectivity() {
+        console.log('=== DEBUG: Testing API Connectivity ===');
+        
+        // Test 1: Check if providers endpoint works
+        try {
+            console.log('Testing /client/api/providers...');
+            const response = await fetch('/client/api/providers');
+            console.log('Providers response status:', response.status);
+            const data = await response.json();
+            console.log('Providers data:', data);
+        } catch (error) {
+            console.error('Providers API error:', error);
+        }
+        
+        // Test 2: Check if available-slots endpoint works
+        try {
+            console.log('Testing /client/api/available-slots...');
+            const response = await fetch('/client/api/available-slots');
+            console.log('Available slots response status:', response.status);
+            const data = await response.json();
+            console.log('Available slots data:', data);
+        } catch (error) {
+            console.error('Available slots API error:', error);
+        }
+        
+        // Test 3: Check if slots-by-date endpoint works
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            console.log('Testing /client/api/slots-by-date with date:', today);
+            const response = await fetch(`/client/api/slots-by-date?date=${today}`);
+            console.log('Slots by date response status:', response.status);
+            const data = await response.json();
+            console.log('Slots by date data:', data);
+        } catch (error) {
+            console.error('Slots by date API error:', error);
+        }
+          console.log('=== DEBUG: API Connectivity Test Complete ===');
+    }
+
+    // Debug test function
+    async function runDebugTest() {
+        try {
+            console.log('Running debug test...');
+            const response = await fetch('/client/api/debug/test');
+            const data = await response.json();
+            console.log('Debug test result:', data);
+            
+            if (response.ok) {
+                showNotification(`Debug Test Success: ${data.totalUsers} users, ${data.providerCount} providers, ${data.totalTimeSlots} time slots`, 'success');
+            } else {
+                showNotification(`Debug Test Failed: ${data.error}`, 'error');
+            }
+        } catch (error) {
+            console.error('Debug test error:', error);
+            showNotification(`Debug Test Error: ${error.message}`, 'error');
+        }
+    }
+
     async function fetchProviders() {
         try {
             const response = await fetch('/client/api/providers');
@@ -810,26 +871,30 @@
             loading.classList.add('hidden');
             table.classList.remove('hidden');
         }
-    }
-
-    // Event handlers
+    }    // Event handlers
     async function searchSlots() {
         const providerId = document.getElementById('provider-select').value || null;
         const selectedDate = document.getElementById('date-picker').value || null;
+        
+        console.log('Searching slots with providerId:', providerId, 'date:', selectedDate);
         
         try {
             showSlotsLoading(true);
             
             let slots;
             if (selectedDate) {
+                console.log('Fetching slots by date...');
                 slots = await fetchSlotsByDate(selectedDate, providerId);
             } else {
+                console.log('Fetching available slots...');
                 slots = await fetchAvailableSlots(providerId);
             }
             
+            console.log('Slots received:', slots);
             availableSlots = slots;
             renderTimeSlots(slots);
         } catch (error) {
+            console.error('Error in searchSlots:', error);
             showNotification(`Error loading slots: ${error.message}`, 'error');
         } finally {
             showSlotsLoading(false);
@@ -864,45 +929,49 @@
             clientNotes = notes;
             showNotification('Notes added successfully!');
         }
-    }
-
-    async function loadProviders() {
+    }    async function loadProviders() {
+        console.log('Loading providers...');
         try {
             providers = await fetchProviders();
+            console.log('Providers loaded:', providers);
             populateProviders();
         } catch (error) {
+            console.error('Error loading providers:', error);
             showNotification(`Error loading providers: ${error.message}`, 'error');
         }
-    }
-
-    async function loadProviderAvailability() {
+    }    async function loadProviderAvailability() {
+        console.log('Loading provider availability...');
         try {
             showAvailabilityLoading(true);
             const availability = await fetchProviderAvailability();
+            console.log('Provider availability loaded:', availability);
             renderProviderAvailability(availability);
         } catch (error) {
+            console.error('Error loading provider availability:', error);
             showNotification(`Error loading availability: ${error.message}`, 'error');
         } finally {
             showAvailabilityLoading(false);
         }
-    }
-
-    // Initialize
+    }// Initialize
     document.addEventListener('DOMContentLoaded', function() {
         // Set default date to today
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('date-picker').value = today;
         
+        // Run debug test first
+        console.log('=== Starting Client Available Slots Page ===');
+        debugAPIConnectivity();
+        
         // Load initial data
         loadProviders();
         loadProviderAvailability();
         searchSlots(); // Load today's slots by default
-        
-        // Event listeners
+          // Event listeners
         document.getElementById('search-slots-btn').addEventListener('click', searchSlots);
         document.getElementById('book-appointment-btn').addEventListener('click', handleBookAppointment);
         document.getElementById('add-notes-btn').addEventListener('click', handleAddNotes);
         document.getElementById('refresh-availability').addEventListener('click', loadProviderAvailability);
+        document.getElementById('debug-test').addEventListener('click', runDebugTest);
         
         // Auto-search when filters change
         document.getElementById('provider-select').addEventListener('change', searchSlots);

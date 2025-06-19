@@ -22,7 +22,7 @@ public class Appointment {
     private LocalDateTime appointmentTime;
     
     @Column(nullable = false)
-    private String status; // PENDING, CONFIRMED, CANCELLED, COMPLETED
+    private String status; // PENDING, CONFIRMED, IN_PROGRESS, CANCELLED, COMPLETED
     
     @Column(name = "service_type")
     private String serviceType; // e.g., "Consultation", "Checkup", "Therapy"
@@ -35,6 +35,18 @@ public class Appointment {
     
     @Column(name = "client_notes", columnDefinition = "TEXT")
     private String clientNotes; // Notes from the client when booking
+    
+    @Column(name = "cancellation_reason", columnDefinition = "TEXT")
+    private String cancellationReason; // Reason for cancellation
+    
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt; // When the appointment was cancelled
+    
+    @Column(name = "reschedule_reason", columnDefinition = "TEXT")
+    private String rescheduleReason; // Reason for rescheduling
+    
+    @Column(name = "rescheduled_at")
+    private LocalDateTime rescheduledAt; // When the appointment was rescheduled
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -140,6 +152,38 @@ public class Appointment {
         this.clientNotes = clientNotes;
     }
 
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public String getRescheduleReason() {
+        return rescheduleReason;
+    }
+
+    public void setRescheduleReason(String rescheduleReason) {
+        this.rescheduleReason = rescheduleReason;
+    }
+
+    public LocalDateTime getRescheduledAt() {
+        return rescheduledAt;
+    }
+
+    public void setRescheduledAt(LocalDateTime rescheduledAt) {
+        this.rescheduledAt = rescheduledAt;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -171,6 +215,10 @@ public class Appointment {
 
     public boolean isConfirmed() {
         return "CONFIRMED".equals(status);
+    }
+
+    public boolean isInProgress() {
+        return "IN_PROGRESS".equals(status);
     }
 
     public boolean isCompleted() {

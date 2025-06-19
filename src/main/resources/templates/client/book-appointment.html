@@ -69,9 +69,7 @@
         .user-avatar:hover {
             transform: scale(1.1);
             box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
-        }
-
-        @media (max-width: 768px) {
+        }        @media (max-width: 768px) {
             #sidebar {
                 position: fixed;
                 left: -100%;
@@ -99,6 +97,145 @@
             #sidebar.active + #content-overlay {
                 display: block;
             }
+        }
+
+        /* Dynamic Calendar Styles */
+        .calendar-day {
+            padding: 8px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-day.past {
+            color: #CBD5E0;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.available {
+            background-color: #F7FAFC;
+            border: 1px solid #E2E8F0;
+            color: #2D3748;
+        }
+
+        .calendar-day.available:hover {
+            background-color: #00B7EB;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .calendar-day.has-slots {
+            background-color: #C6F6D5;
+            border: 1px solid #68D391;
+            color: #2F855A;
+        }
+
+        .calendar-day.has-slots:hover {
+            background-color: #2E8B57;
+            color: white;
+        }
+
+        .calendar-day.selected {
+            background-color: #00B7EB;
+            color: white;
+            border: 2px solid #0099CC;
+            font-weight: bold;
+        }
+
+        .calendar-day.today {
+            border: 2px solid #FFA500;
+            font-weight: bold;
+        }
+
+        /* Time Slot Styles */
+        .time-slot {
+            padding: 8px 12px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .time-slot.available {
+            background-color: #F7FAFC;
+            border: 1px solid #E2E8F0;
+            color: #2D3748;
+        }
+
+        .time-slot.available:hover {
+            background-color: #00B7EB;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .time-slot.selected {
+            background-color: #2E8B57;
+            color: white;
+            border: 2px solid #22543D;
+        }
+
+        .time-slot.booked {
+            background-color: #FED7D7;
+            color: #E53E3E;
+            border: 1px solid #F56565;
+            cursor: not-allowed;
+        }
+
+        /* Provider Card Styles */
+        .provider-card {
+            transition: all 0.2s ease;
+        }
+
+        .provider-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .provider-card.selected {
+            border-color: #00B7EB !important;
+            border-width: 2px;
+            background-color: #F0F9FF;
+        }
+
+        /* Service Option Styles */
+        .service-option {
+            transition: all 0.2s ease;
+        }
+
+        .service-option:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .service-option.selected {
+            border-color: #2E8B57 !important;
+            border-width: 2px;
+            background-color: #F0FDF4;
+        }
+
+        /* Specialty Filter Styles */
+        .specialty-filter {
+            transition: all 0.2s ease;
+        }
+
+        .specialty-filter.active {
+            background-color: #00B7EB !important;
+            color: white !important;
+        }        /* Loading Animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
@@ -205,6 +342,29 @@
                                 <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center mr-3">2</div>
                                 <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center">3</div>
                             </div>
+                        </div>                        <!-- Provider Filtering -->
+                        <div class="mb-6">
+                            <label class="block text-dark-gray font-medium mb-3">
+                                <i class="fas fa-filter mr-2 text-deep-sky-blue"></i>
+                                Filter by Specialty
+                            </label>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <button class="specialty-filter active bg-deep-sky-blue text-white px-4 py-2 rounded-lg text-sm" data-specialty="all">
+                                    All Specialties
+                                </button>
+                                <button class="specialty-filter bg-gray-200 text-gray-700 hover:bg-deep-sky-blue hover:text-white px-4 py-2 rounded-lg text-sm" data-specialty="General">
+                                    General Practice
+                                </button>
+                                <button class="specialty-filter bg-gray-200 text-gray-700 hover:bg-deep-sky-blue hover:text-white px-4 py-2 rounded-lg text-sm" data-specialty="Dentistry">
+                                    Dentistry
+                                </button>
+                                <button class="specialty-filter bg-gray-200 text-gray-700 hover:bg-deep-sky-blue hover:text-white px-4 py-2 rounded-lg text-sm" data-specialty="Cardiology">
+                                    Cardiology
+                                </button>
+                                <button class="specialty-filter bg-gray-200 text-gray-700 hover:bg-deep-sky-blue hover:text-white px-4 py-2 rounded-lg text-sm" data-specialty="Physical Therapy">
+                                    Physical Therapy
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Provider Selection -->
@@ -213,136 +373,61 @@
                                 <i class="fas fa-user-md mr-2 text-deep-sky-blue"></i>
                                 Select Provider
                             </label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Provider Card 1 -->
-                                <div class="provider-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
-                                    <div class="flex items-center">
-                                        <div class="w-12 h-12 rounded-full bg-deep-sky-blue text-white flex items-center justify-center text-lg font-bold mr-3">RB</div>
-                                        <div>
-                                            <p class="font-medium">Dr. Robert Brown</p>
-                                            <p class="text-gray-600 text-sm">Dentist</p>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 flex justify-between">
-                                        <div>
-                                            <div class="flex items-center text-sm mb-1">
-                                                <i class="fas fa-star text-yellow-500 mr-1"></i>
-                                                <span class="font-medium">4.9</span>
-                                                <span class="text-gray-500 ml-1">(92 reviews)</span>
-                                            </div>
-                                            <div class="text-sm text-gray-600">
-                                                <i class="fas fa-map-marker-alt mr-2 text-sea-green"></i>
-                                                2.5 miles away
-                                            </div>
-                                        </div>
-                                        <button class="bg-deep-sky-blue text-white px-3 py-1 rounded-lg text-sm">
-                                            Select
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Provider Card 2 -->
-                                <div class="provider-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
-                                    <div class="flex items-center">
-                                        <div class="w-12 h-12 rounded-full bg-sea-green text-white flex items-center justify-center text-lg font-bold mr-3">SJ</div>
-                                        <div>
-                                            <p class="font-medium">Dr. Sarah Johnson</p>
-                                            <p class="text-gray-600 text-sm">General Practitioner</p>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 flex justify-between">
-                                        <div>
-                                            <div class="flex items-center text-sm mb-1">
-                                                <i class="fas fa-star text-yellow-500 mr-1"></i>
-                                                <span class="font-medium">4.8</span>
-                                                <span class="text-gray-500 ml-1">(128 reviews)</span>
-                                            </div>
-                                            <div class="text-sm text-gray-600">
-                                                <i class="fas fa-map-marker-alt mr-2 text-sea-green"></i>
-                                                1.2 miles away
-                                            </div>
-                                        </div>
-                                        <button class="bg-deep-sky-blue text-white px-3 py-1 rounded-lg text-sm">
-                                            Select
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Provider Card 3 -->
-                                <div class="provider-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
-                                    <div class="flex items-center">
-                                        <div class="w-12 h-12 rounded-full bg-royal-purple text-white flex items-center justify-center text-lg font-bold mr-3">LA</div>
-                                        <div>
-                                            <p class="font-medium">Dr. Lisa Anderson</p>
-                                            <p class="text-gray-600 text-sm">Physical Therapist</p>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3 flex justify-between">
-                                        <div>
-                                            <div class="flex items-center text-sm mb-1">
-                                                <i class="fas fa-star text-yellow-500 mr-1"></i>
-                                                <span class="font-medium">4.7</span>
-                                                <span class="text-gray-500 ml-1">(76 reviews)</span>
-                                            </div>
-                                            <div class="text-sm text-gray-600">
-                                                <i class="fas fa-map-marker-alt mr-2 text-sea-green"></i>
-                                                3.1 miles away
-                                            </div>
-                                        </div>
-                                        <button class="bg-deep-sky-blue text-white px-3 py-1 rounded-lg text-sm">
-                                            Select
-                                        </button>
-                                    </div>
-                                </div>
+                            <div id="loading-providers" class="text-center py-8">
+                                <i class="fas fa-spinner fa-spin text-deep-sky-blue text-2xl mb-2"></i>
+                                <p class="text-gray-600">Loading providers...</p>
                             </div>
-                        </div>
-
-                        <!-- Service Selection -->
-                        <div class="mb-6">
+                            <div id="provider-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+                                <!-- Providers will be loaded dynamically -->
+                            </div>
+                            <div id="no-providers" class="text-center py-8 hidden">
+                                <i class="fas fa-exclamation-circle text-gray-400 text-2xl mb-2"></i>
+                                <p class="text-gray-600">No providers found for this specialty.</p>
+                            </div>
+                        </div>                        <!-- Service Selection -->
+                        <div class="mb-6" id="service-selection" style="display: none;">
                             <label class="block text-dark-gray font-medium mb-3">
                                 <i class="fas fa-stethoscope mr-2 text-sea-green"></i>
-                                Select Service
+                                Select Service Type
                             </label>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
+                                <div class="service-option border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue" data-service="Consultation" data-duration="30" data-price="85">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mr-3">
-                                            <i class="fas fa-tooth text-deep-sky-blue"></i>
+                                            <i class="fas fa-user-md text-deep-sky-blue"></i>
                                         </div>
                                         <div>
-                                            <p class="font-medium">Dental Cleaning</p>
+                                            <p class="font-medium">Consultation</p>
                                             <p class="text-gray-600 text-sm">30 min • $85</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
+                                <div class="service-option border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue" data-service="Check-up" data-duration="45" data-price="120">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 rounded-full bg-sea-green/20 flex items-center justify-center mr-3">
                                             <i class="fas fa-heartbeat text-sea-green"></i>
                                         </div>
                                         <div>
-                                            <p class="font-medium">Physical Exam</p>
+                                            <p class="font-medium">Check-up</p>
                                             <p class="text-gray-600 text-sm">45 min • $120</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue">
+                                <div class="service-option border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue" data-service="Treatment" data-duration="60" data-price="150">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 rounded-full bg-royal-purple/20 flex items-center justify-center mr-3">
-                                            <i class="fas fa-eye text-royal-purple"></i>
+                                            <i class="fas fa-tools text-royal-purple"></i>
                                         </div>
                                         <div>
-                                            <p class="font-medium">Vision Test</p>
-                                            <p class="text-gray-600 text-sm">30 min • $75</p>
+                                            <p class="font-medium">Treatment</p>
+                                            <p class="text-gray-600 text-sm">60 min • $150</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Date & Time Selection -->
-                    <div class="bg-white rounded-xl shadow-card p-6 mb-6">
+                    </div>                    <!-- Date & Time Selection -->
+                    <div class="bg-white rounded-xl shadow-card p-6 mb-6" id="datetime-selection" style="display: none;">
                         <div class="flex items-center mb-6">
                             <div class="w-8 h-8 rounded-full bg-deep-sky-blue text-white flex items-center justify-center mr-3">2</div>
                             <h2 class="text-lg font-semibold">Select Date & Time</h2>
@@ -351,15 +436,15 @@
                         <!-- Calendar Navigation -->
                         <div class="flex justify-between items-center mb-6">
                             <div class="flex items-center gap-2">
-                                <button class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition-colors">
+                                <button id="prev-month" class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition-colors">
                                     <i class="fas fa-chevron-left"></i>
                                 </button>
-                                <span class="font-medium">June 2025</span>
-                                <button class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition-colors">
+                                <span id="current-month" class="font-medium">Loading...</span>
+                                <button id="next-month" class="bg-gray-200 p-2 rounded-lg hover:bg-gray-300 transition-colors">
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
                             </div>
-                            <button class="bg-deep-sky-blue text-white px-4 py-2 rounded-lg">
+                            <button id="refresh-slots" class="bg-deep-sky-blue text-white px-4 py-2 rounded-lg">
                                 <i class="fas fa-sync-alt mr-2"></i> Refresh
                             </button>
                         </div>
@@ -374,93 +459,49 @@
                             <div class="text-center font-medium py-2">Fri</div>
                             <div class="text-center font-medium py-2">Sat</div>
 
-                            <!-- Calendar days -->
-                            <div class="calendar-day text-gray-400">25</div>
-                            <div class="calendar-day text-gray-400">26</div>
-                            <div class="calendar-day text-gray-400">27</div>
-                            <div class="calendar-day text-gray-400">28</div>
-                            <div class="calendar-day text-gray-400">29</div>
-                            <div class="calendar-day text-gray-400">30</div>
-                            <div class="calendar-day available">1</div>
-
-                            <div class="calendar-day available">2</div>
-                            <div class="calendar-day available">3</div>
-                            <div class="calendar-day booked">4</div>
-                            <div class="calendar-day available">5</div>
-                            <div class="calendar-day available">6</div>
-                            <div class="calendar-day available">7</div>
-                            <div class="calendar-day available">8</div>
-
-                            <div class="calendar-day available">9</div>
-                            <div class="calendar-day booked">10</div>
-                            <div class="calendar-day booked">11</div>
-                            <div class="calendar-day available">12</div>
-                            <div class="calendar-day available">13</div>
-                            <div class="calendar-day available">14</div>
-                            <div class="calendar-day selected today">15</div>
-
-                            <div class="calendar-day available">16</div>
-                            <div class="calendar-day available">17</div>
-                            <div class="calendar-day available">18</div>
-                            <div class="calendar-day booked">19</div>
-                            <div class="calendar-day available">20</div>
-                            <div class="calendar-day available">21</div>
-                            <div class="calendar-day available">22</div>
+                            <!-- Calendar days will be populated dynamically -->
+                            <div id="calendar-grid" class="col-span-7 grid grid-cols-7 gap-2">
+                                <!-- Days will be loaded dynamically -->
+                            </div>
                         </div>
 
                         <!-- Time Slots -->
-                        <div class="mt-8">
-                            <h3 class="text-lg font-semibold mb-4">Available Time Slots for June 15, 2025</h3>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                                <div class="time-slot booked">8:00 AM</div>
-                                <div class="time-slot booked">8:30 AM</div>
-                                <div class="time-slot booked">9:00 AM</div>
-                                <div class="time-slot available">9:30 AM</div>
-                                <div class="time-slot booked">10:00 AM</div>
-                                <div class="time-slot available">10:30 AM</div>
-                                <div class="time-slot available">11:00 AM</div>
-                                <div class="time-slot available">11:30 AM</div>
-                                <div class="time-slot booked">12:00 PM</div>
-                                <div class="time-slot booked">12:30 PM</div>
-                                <div class="time-slot available">1:00 PM</div>
-                                <div class="time-slot available">1:30 PM</div>
-                                <div class="time-slot available selected">2:00 PM</div>
-                                <div class="time-slot available">2:30 PM</div>
-                                <div class="time-slot booked">3:00 PM</div>
-                                <div class="time-slot available">3:30 PM</div>
+                        <div class="mt-8" id="time-slots-section" style="display: none;">
+                            <h3 id="selected-date-title" class="text-lg font-semibold mb-4">Select a date to view available time slots</h3>
+                            <div id="loading-slots" class="text-center py-8" style="display: none;">
+                                <i class="fas fa-spinner fa-spin text-deep-sky-blue text-2xl mb-2"></i>
+                                <p class="text-gray-600">Loading available time slots...</p>
+                            </div>
+                            <div id="time-slots-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                <!-- Time slots will be loaded dynamically -->
+                            </div>
+                            <div id="no-slots" class="text-center py-8" style="display: none;">
+                                <i class="fas fa-calendar-times text-gray-400 text-2xl mb-2"></i>
+                                <p class="text-gray-600">No available time slots for this date.</p>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Additional Information -->
-                    <div class="bg-white rounded-xl shadow-card p-6">
+                    </div>                    <!-- Additional Information -->
+                    <div class="bg-white rounded-xl shadow-card p-6" id="booking-form" style="display: none;">
                         <div class="flex items-center mb-6">
                             <div class="w-8 h-8 rounded-full bg-deep-sky-blue text-white flex items-center justify-center mr-3">3</div>
                             <h2 class="text-lg font-semibold">Additional Information</h2>
                         </div>
 
-                        <form>
+                        <form id="appointment-form">
                             <div class="mb-6">
                                 <label class="block text-dark-gray font-medium mb-2">
                                     <i class="fas fa-comment-medical mr-2 text-royal-purple"></i>
                                     Reason for Visit
                                 </label>
-                                <textarea class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-royal-purple focus:border-royal-purple h-32" placeholder="Please describe the reason for your appointment..."></textarea>
+                                <textarea id="client-notes" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-royal-purple focus:border-royal-purple h-32" placeholder="Please describe the reason for your appointment..." required></textarea>
                             </div>
 
                             <div class="mb-6">
                                 <label class="block text-dark-gray font-medium mb-2">
-                                    <i class="fas fa-file-medical mr-2 text-crimson"></i>
-                                    Upload Documents (Optional)
+                                    <i class="fas fa-phone mr-2 text-deep-sky-blue"></i>
+                                    Contact Number
                                 </label>
-                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-3"></i>
-                                    <p class="text-gray-600 mb-2">Drag & drop files here or</p>
-                                    <button type="button" class="bg-deep-sky-blue text-white px-4 py-2 rounded-lg">
-                                        <i class="fas fa-folder-open mr-2"></i> Browse Files
-                                    </button>
-                                    <p class="text-gray-500 text-sm mt-3">Maximum file size: 10MB</p>
-                                </div>
+                                <input type="tel" id="contact-number" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-royal-purple focus:border-royal-purple" placeholder="Your phone number for appointment confirmation" required>
                             </div>
 
                             <div class="flex items-center mb-6">
@@ -470,60 +511,113 @@
                                 </label>
                             </div>
 
-                            <div class="flex justify-end">
-                                <button type="submit" class="bg-sea-green hover:bg-green-700 text-white px-8 py-3 rounded-lg transition-colors font-semibold flex items-center">
+                            <div class="flex items-center mb-6">
+                                <input type="checkbox" id="terms" class="w-5 h-5 text-deep-sky-blue rounded focus:ring-deep-sky-blue" required>
+                                <label for="terms" class="ml-2 text-gray-700">
+                                    I agree to the <span class="text-deep-sky-blue underline cursor-pointer">terms and conditions</span> and <span class="text-deep-sky-blue underline cursor-pointer">cancellation policy</span>
+                                </label>
+                            </div>
+
+                            <!-- Loading state -->
+                            <div id="booking-loading" class="text-center py-4 hidden">
+                                <i class="fas fa-spinner fa-spin text-deep-sky-blue text-xl mb-2"></i>
+                                <p class="text-gray-600">Booking your appointment...</p>
+                            </div>
+
+                            <!-- Error message -->
+                            <div id="booking-error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden">
+                                <div class="flex items-center">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    <span id="booking-error-message">An error occurred while booking your appointment.</span>
+                                </div>
+                            </div>
+
+                            <!-- Success message -->
+                            <div id="booking-success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 hidden">
+                                <div class="flex items-center">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    <span>Your appointment has been booked successfully!</span>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between">
+                                <button type="button" id="back-to-slots" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors">
+                                    <i class="fas fa-arrow-left mr-2"></i> Back to Slots
+                                </button>
+                                <button type="submit" id="confirm-booking" class="bg-sea-green hover:bg-green-700 text-white px-8 py-3 rounded-lg transition-colors font-semibold flex items-center">
                                     <i class="fas fa-calendar-check mr-2"></i> Confirm Appointment
                                 </button>
                             </div>
                         </form>
                     </div>
-                </div>
-
-                <!-- Right Column - Summary -->
+                </div>                <!-- Right Column - Summary -->
                 <div>
                     <!-- Appointment Summary -->
                     <div class="bg-white rounded-xl shadow-card p-6 mb-6 sticky top-6">
                         <h2 class="text-xl font-bold text-dark-gray mb-6">Appointment Summary</h2>
 
-                        <div class="mb-6 p-4 bg-light-gray rounded-lg">
+                        <!-- Empty state -->
+                        <div id="summary-empty" class="text-center py-8">
+                            <i class="fas fa-calendar-plus text-gray-400 text-3xl mb-3"></i>
+                            <p class="text-gray-600 mb-2">No appointment selected</p>
+                            <p class="text-gray-500 text-sm">Please select a provider and time slot to see your appointment summary.</p>
+                        </div>
+
+                        <!-- Provider info -->
+                        <div id="summary-provider" class="mb-6 p-4 bg-light-gray rounded-lg hidden">
                             <div class="flex items-center mb-3">
-                                <div class="w-12 h-12 rounded-full bg-deep-sky-blue text-white flex items-center justify-center text-lg font-bold mr-3">RB</div>
+                                <div id="summary-provider-avatar" class="w-12 h-12 rounded-full bg-deep-sky-blue text-white flex items-center justify-center text-lg font-bold mr-3">--</div>
                                 <div>
-                                    <p class="font-medium">Dr. Robert Brown</p>
-                                    <p class="text-gray-600 text-sm">Dentist</p>
+                                    <p id="summary-provider-name" class="font-medium">Select Provider</p>
+                                    <p id="summary-provider-specialty" class="text-gray-600 text-sm">Specialty</p>
                                 </div>
                             </div>
-                            <div class="flex items-center text-sm mb-1">
-                                <i class="fas fa-star text-yellow-500 mr-1"></i>
-                                <span class="font-medium">4.9</span>
-                                <span class="text-gray-500 ml-1">(92 reviews)</span>
-                            </div>
-                            <div class="text-sm text-gray-600">
-                                <i class="fas fa-map-marker-alt mr-2"></i>
-                                123 Dental Street, New York, NY
+                            <div id="summary-provider-bio" class="text-sm text-gray-600">
+                                Provider information will appear here
                             </div>
                         </div>
 
-                        <div class="space-y-4 mb-6">
+                        <!-- Appointment details -->
+                        <div id="summary-details" class="space-y-4 mb-6 hidden">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Service:</span>
-                                <span class="font-medium">Dental Cleaning</span>
+                                <span id="summary-service" class="font-medium">Not selected</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Date:</span>
-                                <span class="font-medium">June 15, 2025</span>
+                                <span id="summary-date" class="font-medium">Not selected</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Time:</span>
-                                <span class="font-medium">2:00 PM</span>
+                                <span id="summary-time" class="font-medium">Not selected</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Duration:</span>
-                                <span class="font-medium">30 minutes</span>
+                                <span id="summary-duration" class="font-medium">30 minutes</span>
                             </div>
                             <div class="flex justify-between border-t border-gray-200 pt-3">
                                 <span class="text-gray-600">Fee:</span>
-                                <span class="font-medium">$85.00</span>
+                                <span id="summary-fee" class="font-medium">$85.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress indicator -->
+                        <div id="booking-progress" class="mb-6 hidden">
+                            <div class="flex items-center text-sm mb-2">
+                                <div class="flex items-center">
+                                    <div id="step1-indicator" class="w-6 h-6 rounded-full bg-gray-300 text-white flex items-center justify-center text-xs mr-2">1</div>
+                                    <span id="step1-text" class="text-gray-500">Provider</span>
+                                </div>
+                                <div class="flex-1 h-1 bg-gray-200 mx-3"></div>
+                                <div class="flex items-center">
+                                    <div id="step2-indicator" class="w-6 h-6 rounded-full bg-gray-300 text-white flex items-center justify-center text-xs mr-2">2</div>
+                                    <span id="step2-text" class="text-gray-500">Date & Time</span>
+                                </div>
+                                <div class="flex-1 h-1 bg-gray-200 mx-3"></div>
+                                <div class="flex items-center">
+                                    <div id="step3-indicator" class="w-6 h-6 rounded-full bg-gray-300 text-white flex items-center justify-center text-xs mr-2">3</div>
+                                    <span id="step3-text" class="text-gray-500">Confirm</span>
+                                </div>
                             </div>
                         </div>
 
@@ -536,9 +630,30 @@
                             </p>
                         </div>
 
-                        <button class="bg-sea-green hover:bg-green-700 text-white w-full py-3 rounded-lg transition-colors font-semibold flex items-center justify-center">
-                            <i class="fas fa-lock mr-2"></i> Confirm & Pay Now
+                        <button id="quick-book" class="bg-sea-green hover:bg-green-700 text-white w-full py-3 rounded-lg transition-colors font-semibold flex items-center justify-center hidden">
+                            <i class="fas fa-rocket mr-2"></i> Quick Book Now
                         </button>
+                    </div>
+
+                    <!-- Debug Panel -->
+                    <div class="bg-white rounded-xl shadow-card p-6 mb-6">
+                        <h3 class="text-lg font-semibold mb-4">
+                            <i class="fas fa-bug mr-2 text-crimson"></i> Debug & Test
+                        </h3>
+                        <div class="space-y-2">
+                            <button id="test-api" class="bg-deep-sky-blue text-white px-4 py-2 rounded-lg w-full">
+                                <i class="fas fa-flask mr-2"></i> Test API Connection
+                            </button>
+                            <button id="load-providers" class="bg-sea-green text-white px-4 py-2 rounded-lg w-full">
+                                <i class="fas fa-users mr-2"></i> Load Providers
+                            </button>
+                            <button id="clear-selection" class="bg-gray-500 text-white px-4 py-2 rounded-lg w-full">
+                                <i class="fas fa-trash mr-2"></i> Clear Selection
+                            </button>
+                        </div>
+                        <div id="debug-output" class="mt-4 p-3 bg-gray-100 rounded text-sm max-h-32 overflow-y-auto" style="display: none;">
+                            Debug output will appear here...
+                        </div>
                     </div>
 
                     <!-- Support Card -->
@@ -564,67 +679,587 @@
 <div id="content-overlay"></div>
 
 <script>
-    // Toggle sidebar for mobile
-    document.getElementById('toggle-sidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.add('active');
-    });
+    // Global state management
+    const BookingApp = {
+        state: {
+            providers: [],
+            selectedProvider: null,
+            selectedService: null,
+            selectedDate: null,
+            selectedTimeSlot: null,
+            availableSlots: [],
+            currentMonth: new Date(),
+            currentSpecialty: 'all'
+        },
+        
+        // Initialize the application
+        init() {
+            console.log('🚀 Initializing Booking Application...');
+            this.setupEventListeners();
+            this.loadProviders();
+        },
 
-    // Close sidebar for mobile
-    document.getElementById('close-sidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('active');
-    });
-
-    // Close sidebar when clicking on overlay
-    document.getElementById('content-overlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('active');
-    });
-
-    // Initialize with dashboard visible
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('user-name').textContent = 'Client User';
-
-        // Calendar day selection
-        const calendarDays = document.querySelectorAll('.calendar-day:not(.text-gray-400)');
-        calendarDays.forEach(day => {
-            day.addEventListener('click', function() {
-                // Remove selected class from all days
-                calendarDays.forEach(d => d.classList.remove('selected'));
-
-                // Add selected class to clicked day
-                this.classList.add('selected');
+        // Set up all event listeners
+        setupEventListeners() {
+            // Mobile sidebar toggle
+            document.getElementById('toggle-sidebar')?.addEventListener('click', () => {
+                document.getElementById('sidebar').classList.add('active');
             });
-        });
 
-        // Time slot selection
-        const timeSlots = document.querySelectorAll('.time-slot.available');
-        timeSlots.forEach(slot => {
-            slot.addEventListener('click', function() {
-                // Remove selected class from all slots
-                timeSlots.forEach(s => s.classList.remove('selected'));
-
-                // Add selected class to clicked slot
-                this.classList.add('selected');
+            document.getElementById('close-sidebar')?.addEventListener('click', () => {
+                document.getElementById('sidebar').classList.remove('active');
             });
-        });
 
-        // Provider selection
-        const providerCards = document.querySelectorAll('.provider-card');
-        providerCards.forEach(card => {
-            card.addEventListener('click', function() {
-                // Remove border from all cards
-                providerCards.forEach(c => c.classList.remove('border-deep-sky-blue', 'border-2'));
-
-                // Add border to selected card
-                this.classList.add('border-deep-sky-blue', 'border-2');
+            document.getElementById('content-overlay')?.addEventListener('click', () => {
+                document.getElementById('sidebar').classList.remove('active');
             });
-        });
 
-        // Form submission
-        document.querySelector('form').addEventListener('submit', function(e) {
+            // Specialty filter buttons
+            document.querySelectorAll('.specialty-filter').forEach(btn => {
+                btn.addEventListener('click', (e) => this.filterBySpecialty(e.target.dataset.specialty));
+            });
+
+            // Calendar navigation
+            document.getElementById('prev-month')?.addEventListener('click', () => this.navigateMonth(-1));
+            document.getElementById('next-month')?.addEventListener('click', () => this.navigateMonth(1));
+            document.getElementById('refresh-slots')?.addEventListener('click', () => this.refreshSlots());
+
+            // Form handling
+            document.getElementById('appointment-form')?.addEventListener('submit', (e) => this.submitBooking(e));
+            document.getElementById('back-to-slots')?.addEventListener('click', () => this.showStep(2));
+
+            // Debug buttons
+            document.getElementById('test-api')?.addEventListener('click', () => this.testAPI());
+            document.getElementById('load-providers')?.addEventListener('click', () => this.loadProviders());
+            document.getElementById('clear-selection')?.addEventListener('click', () => this.clearSelection());
+            document.getElementById('quick-book')?.addEventListener('click', () => this.showStep(3));
+        },
+
+        // Load providers from API
+        async loadProviders() {
+            console.log('📡 Loading providers...');
+            this.showLoading('providers');
+            
+            try {
+                const response = await fetch('/client/api/providers');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    this.state.providers = data;
+                    console.log('✅ Providers loaded:', data.length);
+                    this.renderProviders();
+                    this.updateDebugOutput(`Loaded ${data.length} providers successfully`);
+                } else {
+                    throw new Error(data.error || 'Failed to load providers');
+                }
+            } catch (error) {
+                console.error('❌ Error loading providers:', error);
+                this.showError('Failed to load providers: ' + error.message);
+                this.updateDebugOutput('Error: ' + error.message);
+            }
+        },
+
+        // Render providers based on current filter
+        renderProviders() {
+            const container = document.getElementById('provider-list');
+            const loadingEl = document.getElementById('loading-providers');
+            const noProvidersEl = document.getElementById('no-providers');
+            
+            if (!container) return;
+
+            // Filter providers by specialty
+            const filteredProviders = this.state.currentSpecialty === 'all' 
+                ? this.state.providers 
+                : this.state.providers.filter(p => p.specialty === this.state.currentSpecialty);
+
+            // Hide loading
+            loadingEl.classList.add('hidden');
+            
+            if (filteredProviders.length === 0) {
+                container.classList.add('hidden');
+                noProvidersEl.classList.remove('hidden');
+                return;
+            }
+
+            noProvidersEl.classList.add('hidden');
+            container.classList.remove('hidden');
+            
+            container.innerHTML = filteredProviders.map(provider => `
+                <div class="provider-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-deep-sky-blue" 
+                     data-provider-id="${provider.id}">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 rounded-full bg-deep-sky-blue text-white flex items-center justify-center text-lg font-bold mr-3">
+                            ${this.getInitials(provider.name)}
+                        </div>
+                        <div>
+                            <p class="font-medium">${provider.name}</p>
+                            <p class="text-gray-600 text-sm">${provider.specialty}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="text-sm text-gray-600 mb-2">
+                            ${provider.bio || 'Experienced healthcare professional'}
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-calendar mr-1"></i>
+                                Available slots
+                            </div>
+                            <button class="select-provider-btn bg-deep-sky-blue text-white px-3 py-1 rounded-lg text-sm">
+                                Select
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click handlers
+            container.querySelectorAll('.provider-card').forEach(card => {
+                card.addEventListener('click', () => this.selectProvider(card.dataset.providerId));
+            });
+        },
+
+        // Select a provider
+        selectProvider(providerId) {
+            console.log('👨‍⚕️ Selecting provider:', providerId);
+            
+            const provider = this.state.providers.find(p => p.id == providerId);
+            if (!provider) return;
+
+            this.state.selectedProvider = provider;
+
+            // Update UI
+            document.querySelectorAll('.provider-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-provider-id="${providerId}"]`).classList.add('selected');
+
+            // Show service selection
+            document.getElementById('service-selection').style.display = 'block';
+            this.setupServiceSelection();
+            this.updateSummary();
+            this.updateProgress(1);
+        },
+
+        // Set up service selection
+        setupServiceSelection() {
+            document.querySelectorAll('.service-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const service = option.dataset.service;
+                    const duration = option.dataset.duration;
+                    const price = option.dataset.price;
+                    
+                    this.selectService({ service, duration, price });
+                });
+            });
+        },
+
+        // Select a service
+        selectService(serviceData) {
+            console.log('🏥 Selecting service:', serviceData);
+            
+            this.state.selectedService = serviceData;
+
+            // Update UI
+            document.querySelectorAll('.service-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`[data-service="${serviceData.service}"]`).classList.add('selected');
+
+            // Show date/time selection
+            document.getElementById('datetime-selection').style.display = 'block';
+            this.setupCalendar();
+            this.updateSummary();
+            this.updateProgress(2);
+        },
+
+        // Set up calendar
+        setupCalendar() {
+            this.renderCalendar();
+        },
+
+        // Render calendar
+        renderCalendar() {
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            
+            document.getElementById('current-month').textContent = 
+                `${monthNames[this.state.currentMonth.getMonth()]} ${this.state.currentMonth.getFullYear()}`;
+
+            const firstDay = new Date(this.state.currentMonth.getFullYear(), this.state.currentMonth.getMonth(), 1);
+            const lastDay = new Date(this.state.currentMonth.getFullYear(), this.state.currentMonth.getMonth() + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+            const calendarGrid = document.getElementById('calendar-grid');
+            calendarGrid.innerHTML = '';
+
+            for (let i = 0; i < 42; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = currentDate.getDate();
+                dayElement.dataset.date = currentDate.toISOString().split('T')[0];
+
+                // Add appropriate classes
+                if (currentDate.getMonth() !== this.state.currentMonth.getMonth()) {
+                    dayElement.classList.add('text-gray-400');
+                } else if (currentDate < new Date()) {
+                    dayElement.classList.add('past');
+                } else {
+                    dayElement.classList.add('available');
+                    if (currentDate.toDateString() === new Date().toDateString()) {
+                        dayElement.classList.add('today');
+                    }
+                }
+
+                dayElement.addEventListener('click', () => this.selectDate(dayElement.dataset.date));
+                calendarGrid.appendChild(dayElement);
+            }
+        },
+
+        // Select a date
+        async selectDate(dateString) {
+            if (!this.state.selectedProvider) return;
+            
+            console.log('📅 Selecting date:', dateString);
+            this.state.selectedDate = dateString;
+
+            // Update calendar UI
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+            });
+            document.querySelector(`[data-date="${dateString}"]`)?.classList.add('selected');
+
+            // Load time slots for this date
+            await this.loadTimeSlots(dateString);
+        },
+
+        // Load time slots for a specific date
+        async loadTimeSlots(date) {
+            console.log('⏰ Loading time slots for:', date);
+            
+            const slotsSection = document.getElementById('time-slots-section');
+            const loadingSlots = document.getElementById('loading-slots');
+            const slotsGrid = document.getElementById('time-slots-grid');
+            const noSlots = document.getElementById('no-slots');
+            const dateTitle = document.getElementById('selected-date-title');
+
+            slotsSection.style.display = 'block';
+            loadingSlots.style.display = 'block';
+            slotsGrid.innerHTML = '';
+            noSlots.style.display = 'none';
+
+            const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            dateTitle.textContent = `Available Time Slots for ${formattedDate}`;
+
+            try {
+                const url = `/client/api/slots-by-date?date=${date}&providerId=${this.state.selectedProvider.id}`;
+                const response = await fetch(url);
+                const slots = await response.json();
+                
+                loadingSlots.style.display = 'none';
+
+                if (response.ok && slots.length > 0) {
+                    this.state.availableSlots = slots;
+                    this.renderTimeSlots(slots);
+                } else {
+                    noSlots.style.display = 'block';
+                    this.state.availableSlots = [];
+                }
+            } catch (error) {
+                console.error('❌ Error loading time slots:', error);
+                loadingSlots.style.display = 'none';
+                noSlots.style.display = 'block';
+            }
+        },
+
+        // Render time slots
+        renderTimeSlots(slots) {
+            const slotsGrid = document.getElementById('time-slots-grid');
+            
+            slotsGrid.innerHTML = slots.map(slot => {
+                const time = new Date(`1970-01-01T${slot.startTime}`).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                
+                const isAvailable = slot.currentAttendees < slot.maxAttendees;
+                
+                return `
+                    <div class="time-slot ${isAvailable ? 'available' : 'booked'}" 
+                         data-slot-id="${slot.id}" 
+                         ${isAvailable ? `data-time="${time}"` : ''}>
+                        ${time}
+                        ${!isAvailable ? '<br><small>Booked</small>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers
+            slotsGrid.querySelectorAll('.time-slot.available').forEach(slot => {
+                slot.addEventListener('click', () => this.selectTimeSlot(slot.dataset.slotId, slot.dataset.time));
+            });
+        },
+
+        // Select a time slot
+        selectTimeSlot(slotId, time) {
+            console.log('⏱️ Selecting time slot:', slotId, time);
+            
+            const slot = this.state.availableSlots.find(s => s.id == slotId);
+            if (!slot) return;
+
+            this.state.selectedTimeSlot = { ...slot, timeString: time };
+
+            // Update UI
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            document.querySelector(`[data-slot-id="${slotId}"]`).classList.add('selected');
+
+            // Show booking form
+            document.getElementById('booking-form').style.display = 'block';
+            this.updateSummary();
+            this.updateProgress(3);
+        },
+
+        // Filter providers by specialty
+        filterBySpecialty(specialty) {
+            console.log('🔍 Filtering by specialty:', specialty);
+            
+            this.state.currentSpecialty = specialty;
+
+            // Update filter buttons
+            document.querySelectorAll('.specialty-filter').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.specialty === specialty) {
+                    btn.classList.add('active');
+                }
+            });
+
+            this.renderProviders();
+        },
+
+        // Navigate calendar month
+        navigateMonth(direction) {
+            this.state.currentMonth.setMonth(this.state.currentMonth.getMonth() + direction);
+            this.renderCalendar();
+        },
+
+        // Refresh slots
+        refreshSlots() {
+            if (this.state.selectedDate) {
+                this.loadTimeSlots(this.state.selectedDate);
+            }
+        },
+
+        // Submit booking
+        async submitBooking(e) {
             e.preventDefault();
-            alert('Appointment booked successfully!');
-            // In a real app, this would redirect to confirmation page
-        });
+            
+            if (!this.state.selectedProvider || !this.state.selectedTimeSlot) {
+                this.showError('Please select a provider and time slot');
+                return;
+            }
+
+            console.log('📋 Submitting booking...');
+            
+            const loadingEl = document.getElementById('booking-loading');
+            const errorEl = document.getElementById('booking-error');
+            const successEl = document.getElementById('booking-success');
+            
+            loadingEl.classList.remove('hidden');
+            errorEl.classList.add('hidden');
+            successEl.classList.add('hidden');
+
+            try {
+                const bookingData = {
+                    timeSlotId: this.state.selectedTimeSlot.id,
+                    serviceType: this.state.selectedService.service,
+                    clientNotes: document.getElementById('client-notes').value
+                };
+
+                const response = await fetch('/client/api/book-appointment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const result = await response.json();
+                loadingEl.classList.add('hidden');
+
+                if (response.ok) {
+                    successEl.classList.remove('hidden');
+                    console.log('✅ Booking successful:', result);
+                    
+                    // Reset form after a delay
+                    setTimeout(() => {
+                        this.clearSelection();
+                        window.location.href = '/client/my-bookings';
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Booking failed');
+                }
+            } catch (error) {
+                console.error('❌ Booking error:', error);
+                loadingEl.classList.add('hidden');
+                document.getElementById('booking-error-message').textContent = error.message;
+                errorEl.classList.remove('hidden');
+            }
+        },
+
+        // Update appointment summary
+        updateSummary() {
+            const emptyEl = document.getElementById('summary-empty');
+            const providerEl = document.getElementById('summary-provider');
+            const detailsEl = document.getElementById('summary-details');
+            const quickBookBtn = document.getElementById('quick-book');
+
+            if (this.state.selectedProvider) {
+                emptyEl.classList.add('hidden');
+                providerEl.classList.remove('hidden');
+                
+                document.getElementById('summary-provider-avatar').textContent = 
+                    this.getInitials(this.state.selectedProvider.name);
+                document.getElementById('summary-provider-name').textContent = this.state.selectedProvider.name;
+                document.getElementById('summary-provider-specialty').textContent = this.state.selectedProvider.specialty;
+                document.getElementById('summary-provider-bio').textContent = 
+                    this.state.selectedProvider.bio || 'Experienced healthcare professional';
+                
+                if (this.state.selectedService) {
+                    detailsEl.classList.remove('hidden');
+                    document.getElementById('summary-service').textContent = this.state.selectedService.service;
+                    document.getElementById('summary-duration').textContent = `${this.state.selectedService.duration} minutes`;
+                    document.getElementById('summary-fee').textContent = `$${this.state.selectedService.price}`;
+                    
+                    if (this.state.selectedDate) {
+                        const formattedDate = new Date(this.state.selectedDate).toLocaleDateString();
+                        document.getElementById('summary-date').textContent = formattedDate;
+                        
+                        if (this.state.selectedTimeSlot) {
+                            document.getElementById('summary-time').textContent = this.state.selectedTimeSlot.timeString;
+                            quickBookBtn.classList.remove('hidden');
+                        }
+                    }
+                }
+            } else {
+                emptyEl.classList.remove('hidden');
+                providerEl.classList.add('hidden');
+                detailsEl.classList.add('hidden');
+                quickBookBtn.classList.add('hidden');
+            }
+        },
+
+        // Update progress indicators
+        updateProgress(step) {
+            const steps = [
+                { indicator: 'step1-indicator', text: 'step1-text' },
+                { indicator: 'step2-indicator', text: 'step2-text' },
+                { indicator: 'step3-indicator', text: 'step3-text' }
+            ];
+
+            document.getElementById('booking-progress').classList.remove('hidden');
+
+            steps.forEach((s, index) => {
+                const indicator = document.getElementById(s.indicator);
+                const text = document.getElementById(s.text);
+                
+                if (index < step) {
+                    indicator.classList.remove('bg-gray-300');
+                    indicator.classList.add('bg-sea-green');
+                    text.classList.remove('text-gray-500');
+                    text.classList.add('text-sea-green');
+                } else {
+                    indicator.classList.remove('bg-sea-green');
+                    indicator.classList.add('bg-gray-300');
+                    text.classList.remove('text-sea-green');
+                    text.classList.add('text-gray-500');
+                }
+            });
+        },
+
+        // Show specific step
+        showStep(step) {
+            const sections = ['service-selection', 'datetime-selection', 'booking-form'];
+            sections.forEach((section, index) => {
+                const el = document.getElementById(section);
+                if (el) {
+                    el.style.display = index < step ? 'block' : 'none';
+                }
+            });
+        },
+
+        // Utility functions
+        getInitials(name) {
+            return name.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 2);
+        },
+
+        showLoading(context) {
+            console.log(`⏳ Loading ${context}...`);
+        },
+
+        showError(message) {
+            console.error('❌ Error:', message);
+            alert('Error: ' + message); // Replace with better UI later
+        },
+
+        updateDebugOutput(message) {
+            const debugEl = document.getElementById('debug-output');
+            if (debugEl) {
+                debugEl.style.display = 'block';
+                debugEl.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            }
+        },
+
+        clearSelection() {
+            console.log('🧹 Clearing selection...');
+            this.state.selectedProvider = null;
+            this.state.selectedService = null;
+            this.state.selectedDate = null;
+            this.state.selectedTimeSlot = null;
+            
+            // Hide all sections except the first
+            document.getElementById('service-selection').style.display = 'none';
+            document.getElementById('datetime-selection').style.display = 'none';
+            document.getElementById('booking-form').style.display = 'none';
+            
+            // Clear form
+            document.getElementById('appointment-form')?.reset();
+            
+            // Update UI
+            this.updateSummary();
+            this.renderProviders();
+        },
+
+        async testAPI() {
+            console.log('🧪 Testing API connection...');
+            try {
+                const response = await fetch('/client/api/debug/test');
+                const data = await response.json();
+                console.log('API Test Result:', data);
+                this.updateDebugOutput('API test successful: ' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                console.error('API Test Failed:', error);
+                this.updateDebugOutput('API test failed: ' + error.message);
+            }
+        }
+    };
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('📄 DOM loaded, initializing app...');
+        document.getElementById('user-name').textContent = 'Client User';
+        BookingApp.init();
     });
 </script>
 </body>

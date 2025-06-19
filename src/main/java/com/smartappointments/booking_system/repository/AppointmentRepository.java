@@ -20,6 +20,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByProviderAndStatusOrderByAppointmentTimeAsc(User provider, String status);
     List<Appointment> findByProviderAndAppointmentTimeAfterOrderByAppointmentTimeAsc(User provider, LocalDateTime dateTime);
     
+    // Client-specific queries
+    List<Appointment> findByClient(User client);
+    List<Appointment> findByClientOrderByAppointmentTimeDesc(User client);
+    List<Appointment> findByClientAndStatusOrderByAppointmentTimeDesc(User client, String status);
+    List<Appointment> findByClientAndAppointmentTimeAfterOrderByAppointmentTimeAsc(User client, LocalDateTime dateTime);
+    Page<Appointment> findByClient(User client, Pageable pageable);
+    Page<Appointment> findByClientAndStatus(User client, String status, Pageable pageable);
+    
     // Paginated queries
     Page<Appointment> findByProvider(User provider, Pageable pageable);
     Page<Appointment> findByProviderAndStatus(User provider, String status, Pageable pageable);
@@ -32,4 +40,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            "ORDER BY a.appointmentTime ASC")
     List<Appointment> findByProviderAndClientNameContainingIgnoreCaseOrderByAppointmentTimeAsc(
         @Param("provider") User provider, @Param("searchTerm") String searchTerm);
+
+    // Admin queries for system-wide appointments
+    List<Appointment> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime since);
+    List<Appointment> findAllByOrderByCreatedAtDesc();
 }

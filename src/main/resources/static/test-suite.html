@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking System API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { background: #007bff; color: white; border: none; padding: 10px 15px; margin: 5px; border-radius: 3px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+        pre { background: #f1f1f1; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Booking System API Test Suite</h1>
+    <p>This page tests all the enhanced booking system APIs to verify functionality.</p>
+
+    <div class="test-section">
+        <h3>🔌 API Connectivity Test</h3>
+        <button class="test-button" onclick="testAPIConnection()">Test API Connection</button>
+        <div id="connection-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>👨‍⚕️ Provider Loading Test</h3>
+        <button class="test-button" onclick="testProviders()">Load All Providers</button>
+        <button class="test-button" onclick="testProviderFiltering()">Test Specialty Filtering</button>
+        <div id="providers-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📅 Time Slots Test</h3>
+        <button class="test-button" onclick="testTimeSlots()">Load Available Slots</button>
+        <button class="test-button" onclick="testSlotsByDate()">Load Slots by Date</button>
+        <div id="slots-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📋 Booking Test</h3>
+        <button class="test-button" onclick="testBookingFlow()">Test Booking Process</button>
+        <div id="booking-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Admin Features Test</h3>
+        <button class="test-button" onclick="testAdminStats()">Test System Statistics</button>
+        <button class="test-button" onclick="testRecentBookings()">Test Recent Bookings</button>
+        <div id="admin-result" class="result"></div>
+    </div>
+
+    <script>
+        // Helper function to display results
+        function displayResult(elementId, result, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="${isSuccess ? 'success' : 'error'}">
+                    ${isSuccess ? '✅' : '❌'} ${result.message || 'Test completed'}
+                </div>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+            `;
+        }
+
+        // Test API Connection
+        async function testAPIConnection() {
+            try {
+                const response = await fetch('/client/api/debug/test');
+                const data = await response.json();
+                displayResult('connection-result', {
+                    message: 'API connection successful!',
+                    status: response.status,
+                    data: data
+                }, true);
+            } catch (error) {
+                displayResult('connection-result', {
+                    message: 'API connection failed!',
+                    error: error.message
+                }, false);
+            }
+        }
+
+        // Test Providers Loading
+        async function testProviders() {
+            try {
+                const response = await fetch('/client/api/providers');
+                const providers = await response.json();
+                displayResult('providers-result', {
+                    message: `Successfully loaded ${providers.length} providers`,
+                    providers: providers.slice(0, 3), // Show first 3 providers
+                    totalCount: providers.length
+                }, true);
+            } catch (error) {
+                displayResult('providers-result', {
+                    message: 'Failed to load providers!',
+                    error: error.message
+                }, false);
+            }
+        }
+
+        // Test Provider Filtering
+        async function testProviderFiltering() {
+            try {
+                const response = await fetch('/client/api/providers');
+                const allProviders = await response.json();
+                
+                // Group by specialty
+                const specialties = {};
+                allProviders.forEach(provider => {
+                    const specialty = provider.specialty || 'General';
+                    if (!specialties[specialty]) {
+                        specialties[specialty] = [];
+                    }
+                    specialties[specialty].push(provider);
+                });
+
+                displayResult('providers-result', {
+                    message: 'Provider filtering test completed',
+                    specialtyBreakdown: Object.keys(specialties).map(specialty => ({
+                        specialty: specialty,
+                        count: specialties[specialty].length,
+                        providers: specialties[specialty].map(p => p.name)
+                    }))
+                }, true);
+            } catch (error) {
+                displayResult('providers-result', {
+                    message: 'Provider filtering test failed!',
+                    error: error.message
+                }, false);
+            }
+        }
+
+        // Test Time Slots
+        async function testTimeSlots() {
+            try {
+                const response = await fetch('/client/api/available-slots?daysAhead=7');
+                const slots = await response.json();
+                displayResult('slots-result', {
+                    message: `Successfully loaded ${slots.length} available slots`,
+                    sampleSlots: slots.slice(0, 5), // Show first 5 slots
+                    totalCount: slots.length
+                }, true);
+            } catch (error) {
+                displayResult('slots-result', {
+                    message: 'Failed to load time slots!',
+                    error: error.message
+                }, false);
+            }
+        }
+
+        // Test Slots by Date
+        async function testSlotsByDate() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+                
+                const todayResponse = await fetch(`/client/api/slots-by-date?date=${today}`);
+                const tomorrowResponse = await fetch(`/client/api/slots-by-date?date=${tomorrow}`);
+                
+                const todaySlots = await todayResponse.json();
+                const tomorrowSlots = await tomorrowResponse.json();
+
+                displayResult('slots-result', {
+                    message: 'Slots by date test completed',
+                    today: {
+                        date: today,
+                        availableSlots: Array.isArray(todaySlots) ? todaySlots.length : 0
+                    },
+                    tomorrow: {
+                        date: tomorrow,
+                        availableSlots: Array.isArray(tomorrowSlots) ? tomorrowSlots.length : 0
+                    }
+                }, true);
+            } catch (error) {
+                displayResult('slots-result', {
+                    message: 'Slots by date test failed!',
+                    error: error.message
+                }, false);
+            }
+        }
+
+        // Test Booking Flow (simulation)
+        async function testBookingFlow() {
+            try {
+                // First, get available slots
+                const slotsResponse = await fetch('/client/api/available-slots?daysAhead=7');
+                const slots = await slotsResponse.json();
+
+                if (!Array.isArray(slots) || slots.length === 0) {
+                    displayResult('booking-result', {
+                        message: 'No available slots found for booking test',
+                        status: 'warning'
+                    }, false);
+                    return;
+                }
+
+                // Try to create a test booking (this might fail due to authentication)
+                const testBooking = {
+                    timeSlotId: slots[0].id,
+                    serviceType: 'Consultation',
+                    clientNotes: 'Test booking from API test suite'
+                };
+
+                const bookingResponse = await fetch('/client/api/book-appointment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testBooking)
+                });
+
+                const bookingResult = await bookingResponse.json();
+
+                displayResult('booking-result', {
+                    message: bookingResponse.ok ? 'Booking test successful!' : 'Booking test failed (expected if not authenticated)',
+                    status: bookingResponse.status,
+                    selectedSlot: slots[0],
+                    bookingData: testBooking,
+                    response: bookingResult
+                }, bookingResponse.ok);
+
+            } catch (error) {
+                displayResult('booking-result', {
+                    message: 'Booking flow test failed!',
+                    error: error.message
+                }, false);
+            }
+        }
+
+        // Test Admin Statistics
+        async function testAdminStats() {
+            try {
+                const response = await fetch('/admin/api/system-stats');
+                
+                if (response.status === 403) {
+                    displayResult('admin-result', {
+                        message: 'Admin access restricted (requires admin login)',
+                        status: 'authentication_required'
+                    }, false);
+                    return;
+                }
+
+                const stats = await response.json();
+                displayResult('admin-result', {
+                    message: 'System statistics loaded successfully',
+                    statistics: stats
+                }, true);
+            } catch (error) {
+                displayResult('admin-result', {
+                    message: 'Failed to load admin statistics',
+                    error: error.message
+                }, false);
+            }
+        }
+
+        // Test Recent Bookings
+        async function testRecentBookings() {
+            try {
+                const response = await fetch('/admin/api/recent-bookings?limit=5');
+                
+                if (response.status === 403) {
+                    displayResult('admin-result', {
+                        message: 'Admin access restricted (requires admin login)',
+                        status: 'authentication_required'
+                    }, false);
+                    return;
+                }
+
+                const bookings = await response.json();
+                displayResult('admin-result', {
+                    message: `Loaded ${Array.isArray(bookings) ? bookings.length : 0} recent bookings`,
+                    recentBookings: bookings
+                }, true);
+            } catch (error) {
+                displayResult('admin-result', {
+                    message: 'Failed to load recent bookings',
+                    error: error.message
+                }, false);
+            }
+        }
+
+        // Auto-run basic tests on page load
+        window.addEventListener('load', function() {
+            console.log('🧪 API Test Suite Loaded');
+            console.log('Click the test buttons to verify functionality');
+            
+            // Auto-test API connection
+            setTimeout(testAPIConnection, 1000);
+        });
+    </script>
+
+    <div style="margin-top: 40px; padding: 20px; background: #e9ecef; border-radius: 5px;">
+        <h3>📋 Quick Test Checklist</h3>
+        <ul>
+            <li>✅ API Connection - Tests basic connectivity</li>
+            <li>✅ Provider Loading - Verifies provider data fetching</li>
+            <li>✅ Specialty Filtering - Tests provider categorization</li>
+            <li>✅ Time Slot Loading - Checks availability system</li>
+            <li>✅ Date-specific Slots - Verifies calendar integration</li>
+            <li>✅ Booking Flow - Tests appointment creation</li>
+            <li>✅ Admin Features - Verifies management capabilities</li>
+        </ul>
+        
+        <p><strong>Note:</strong> Some tests may require authentication. The booking test and admin tests will show authentication errors if not logged in as the appropriate user type.</p>
+        
+        <p><strong>Access the live application:</strong><br>
+        📱 Client Booking: <a href="/client/book-appointment" target="_blank">http://localhost:8080/client/book-appointment</a><br>
+        👨‍⚕️ Provider Dashboard: <a href="/provider" target="_blank">http://localhost:8080/provider</a><br>
+        👨‍💼 Admin Panel: <a href="/admin/dashboard" target="_blank">http://localhost:8080/admin/dashboard</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Appointments - Invoices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'white-smoke': '#F5F5F5',
+                        'deep-sky-blue': '#00B7EB',
+                        'midnight-blue': '#191970',
+                        'crimson': '#DC143C',
+                        'sea-green': '#2E8B57',
+                        'light-gray': '#EDF2F7',
+                        'dark-gray': '#2D3748',
+                        'teal-blue': '#26A69A',
+                        'royal-purple': '#7857FE',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'sidebar': '5px 0 15px rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #00B7EB;
+        }
+
+        .user-avatar {
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #DC143C;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+                transition: all 0.3s ease;
+            }
+            #sidebar.active {
+                left: 0;
+            }
+            #content-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+            #sidebar.active + #content-overlay {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white-smoke">
+    <!-- Navigation Bar -->
+    <nav class="bg-deep-sky-blue text-white p-4 fixed top-0 w-full z-50 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <button id="toggle-sidebar" class="md:hidden mr-4 text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-check text-xl mr-2"></i>
+                    <h1 class="text-xl font-bold">Smart Appointments</h1>
+                </div>
+            </div>
+            <div id="user-menu" class="flex items-center space-x-4">
+                <div class="relative">
+                    <button class="text-white p-2">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="notification-dot">2</span>
+                    </button>
+                </div>
+                <div class="hidden md:flex items-center">
+                    <div class="user-avatar w-10 h-10 rounded-full bg-white flex items-center justify-center text-deep-sky-blue font-bold mr-2">C</div>
+                    <span id="user-name" class="font-medium">Client User</span>
+                </div>
+                <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout with Sidebar -->
+    <div class="flex min-h-screen pt-16">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-midnight-blue text-white p-6 fixed top-16 h-full md:block transition-all duration-300 z-40 shadow-sidebar">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-user mr-2 text-deep-sky-blue"></i>
+                    Client Menu
+                </h2>
+                <button id="close-sidebar" class="md:hidden p-2 text-white rounded-full hover:bg-deep-sky-blue">
+                    <i class="fas fa-times w-4 h-4"></i>
+                </button>
+            </div>
+            <nav>
+                <ul class="space-y-2">
+                    <li>
+                        <a th:href="@{/client/client-panel}" id="dashboard" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-tachometer-alt mr-3 text-deep-sky-blue"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/client/book-appointment}" id="book-appointment" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-calendar-plus mr-3 text-sea-green"></i> Book Appointment
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/client/my-bookings}" id="my-bookings" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-calendar mr-3 text-teal-blue"></i> My Bookings
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/client/appointment-history}" id="appointment-history" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-history mr-3 text-royal-purple"></i> Appointment History
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/client/my-provider}" id="my-provider" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-user-md mr-3 text-deep-sky-blue"></i> My Provider
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/client/invoices}" id="invoices" class="sidebar-link block px-4 py-3 rounded-lg transition-colors flex items-center active">
+                            <i class="fas fa-file-invoice mr-3 text-royal-purple"></i> Invoices
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Header -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-dark-gray">Invoices & Billing</h1>
+                <p class="text-gray-600 mt-2">View and manage your appointment invoices</p>
+            </div>
+
+            <!-- Coming Soon Message -->
+            <div class="bg-white rounded-xl shadow-card p-12 text-center">
+                <div class="mb-6">
+                    <i class="fas fa-file-invoice text-6xl text-royal-purple mb-4"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-dark-gray mb-4">Invoice System Coming Soon</h2>
+                <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                    We're working on implementing a comprehensive invoice and billing system. 
+                    This feature will allow you to view, download, and manage all your appointment-related bills.
+                </p>
+                <div class="space-y-3 text-left max-w-md mx-auto">
+                    <div class="flex items-center">
+                        <i class="fas fa-check text-sea-green mr-3"></i>
+                        <span>View detailed appointment bills</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check text-sea-green mr-3"></i>
+                        <span>Download PDF invoices</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check text-sea-green mr-3"></i>
+                        <span>Payment history tracking</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check text-sea-green mr-3"></i>
+                        <span>Insurance claim support</span>
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <button onclick="history.back()" class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-6 py-3 rounded-lg transition-colors flex items-center mx-auto">
+                        <i class="fas fa-arrow-left mr-2"></i> Go Back
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Content Overlay for mobile sidebar -->
+    <div id="content-overlay"></div>
+
+    <script>        // Logout functionality
+        function performLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/auth/perform_logout';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Logout button
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', performLogout);
+            }
+
+            // Mobile sidebar toggle
+            const toggleSidebar = document.getElementById('toggle-sidebar');
+            const closeSidebar = document.getElementById('close-sidebar');
+            const sidebar = document.getElementById('sidebar');
+            const contentOverlay = document.getElementById('content-overlay');
+
+            if (toggleSidebar && sidebar) {
+                toggleSidebar.addEventListener('click', () => {
+                    sidebar.classList.add('active');
+                });
+            }
+
+            if (closeSidebar && sidebar) {
+                closeSidebar.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                });
+            }
+
+            if (contentOverlay && sidebar) {
+                contentOverlay.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

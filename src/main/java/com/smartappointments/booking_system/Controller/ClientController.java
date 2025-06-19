@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,21 +73,25 @@ public class ClientController {
         return "client/appointment-history";
     }
 
+    @GetMapping("/invoices")
+    public String invoices() {
+        return "client/invoices";
+    }
+
     // API Endpoints for Available Slots
 
     @GetMapping("/api/providers")
     @ResponseBody
     public ResponseEntity<?> getAvailableProviders() {
         try {            List<User> providers = userService.findByRole(User.Role.PROVIDER);
-            List<Map<String, Object>> providerList = providers.stream()
-                .<Map<String, Object>>map(provider -> {
+            List<Map<String, Object>> providerList = providers.stream()                .<Map<String, Object>>map(provider -> {
                     ProviderProfile profile = providerProfileService.getProviderProfile(provider);
                     return Map.of(
                         "id", provider.getId(),
                         "name", provider.getFirstName() + " " + provider.getLastName(),
                         "email", provider.getEmail(),
-                        "specialty", profile.getSpecialization() != null ? profile.getSpecialization() : "General",
-                        "bio", profile.getBio() != null ? profile.getBio() : ""
+                        "specialty", profile != null && profile.getSpecialization() != null ? profile.getSpecialization() : "General",
+                        "bio", profile != null && profile.getBio() != null ? profile.getBio() : ""
                     );
                 })
                 .collect(Collectors.toList());
@@ -107,10 +112,11 @@ public class ClientController {
             LocalDate startDate = date != null ? LocalDate.parse(date) : LocalDate.now();
             LocalDate endDate = startDate.plusDays(daysAhead);
             
-            List<TimeSlot> availableSlots;
-            if (providerId != null) {
-                User provider = userService.findById(providerId).orElse(null);
-                if (provider == null) {
+            List<TimeSlot> availableSlots;            if (providerId != null) {
+                User provider = null;
+                try {
+                    provider = userService.getUserById(providerId);
+                } catch (RuntimeException e) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Provider not found"));
                 }
                 availableSlots = timeSlotService.getAvailableSlotsByProviderAndDateRange(provider, startDate, endDate);
@@ -132,10 +138,11 @@ public class ClientController {
         try {
             LocalDate targetDate = LocalDate.parse(date);
             
-            List<TimeSlot> slots;
-            if (providerId != null) {
-                User provider = userService.findById(providerId).orElse(null);
-                if (provider == null) {
+            List<TimeSlot> slots;            if (providerId != null) {
+                User provider = null;
+                try {
+                    provider = userService.getUserById(providerId);
+                } catch (RuntimeException e) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Provider not found"));
                 }
                 slots = timeSlotService.getAvailableSlotsByProviderAndDate(provider, targetDate);
@@ -207,8 +214,7 @@ public class ClientController {
             LocalDate today = LocalDate.now();
             LocalDate tomorrow = today.plusDays(1);
             LocalDate weekEnd = today.plusDays(7);
-              List<Map<String, Object>> availability = providers.stream()
-                .<Map<String, Object>>map(provider -> {
+              List<Map<String, Object>> availability = providers.stream()                .<Map<String, Object>>map(provider -> {
                     ProviderProfile profile = providerProfileService.getProviderProfile(provider);
                     int todaySlots = timeSlotService.getAvailableSlotsByProviderAndDate(provider, today).size();
                     int tomorrowSlots = timeSlotService.getAvailableSlotsByProviderAndDate(provider, tomorrow).size();
@@ -217,7 +223,7 @@ public class ClientController {
                     return Map.of(
                         "id", provider.getId(),
                         "name", provider.getFirstName() + " " + provider.getLastName(),
-                        "specialty", profile.getSpecialization() != null ? profile.getSpecialization() : "General",
+                        "specialty", profile != null && profile.getSpecialization() != null ? profile.getSpecialization() : "General",
                         "todaySlots", todaySlots,
                         "tomorrowSlots", tomorrowSlots,
                         "weekSlots", weekSlots
@@ -228,6 +234,165 @@ public class ClientController {
             return ResponseEntity.ok(availability);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/api/debug/test")
+    @ResponseBody
+    public ResponseEntity<?> debugTest() {
+        try {
+            Map<String, Object> debug = new HashMap<>();
+            debug.put("timestamp", LocalDateTime.now());
+            debug.put("message", "API is working");
+            
+            // Check database connectivity
+            long userCount = userService.countAllUsers();
+            debug.put("totalUsers", userCount);
+            
+            // Check providers
+            List<User> providers = userService.findByRole(User.Role.PROVIDER);
+            debug.put("providerCount", providers.size());
+            
+            // Check time slots
+            List<TimeSlot> allSlots = timeSlotService.getAllTimeSlots();
+            debug.put("totalTimeSlots", allSlots.size());
+            
+            return ResponseEntity.ok(debug);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage(), "stackTrace", e.getStackTrace()));
+        }
+    }
+
+    // Client Appointment Management API Endpoints
+    
+    @GetMapping("/api/my-appointments")
+    @ResponseBody
+    public ResponseEntity<?> getMyAppointments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String status,
+            Authentication authentication) {
+        try {
+            User client = userService.findByEmail(authentication.getName()).orElse(null);
+            if (client == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Client not found"));
+            }
+
+            List<Appointment> appointments;
+            if (status != null && !status.equals("all")) {
+                appointments = appointmentService.getClientAppointmentsByStatus(client, status.toUpperCase());
+            } else {
+                appointments = appointmentService.getClientAppointments(client);
+            }
+
+            // Transform appointments for frontend
+            List<Map<String, Object>> appointmentList = appointments.stream()
+                .map(appointment -> {
+                    Map<String, Object> appointmentMap = new HashMap<>();
+                    appointmentMap.put("id", appointment.getId());
+                    appointmentMap.put("providerId", appointment.getProvider().getId());
+                    appointmentMap.put("providerName", appointment.getProviderFullName());
+                    appointmentMap.put("providerSpecialty", getProviderSpecialty(appointment.getProvider()));
+                    appointmentMap.put("appointmentTime", appointment.getAppointmentTime().toString());
+                    appointmentMap.put("status", appointment.getStatus());
+                    appointmentMap.put("serviceType", appointment.getServiceType());
+                    appointmentMap.put("durationMinutes", appointment.getDurationMinutes());
+                    appointmentMap.put("clientNotes", appointment.getClientNotes());
+                    appointmentMap.put("notes", appointment.getNotes());
+                    appointmentMap.put("createdAt", appointment.getCreatedAt().toString());
+                    appointmentMap.put("updatedAt", appointment.getUpdatedAt().toString());
+                    appointmentMap.put("cancellationReason", appointment.getCancellationReason());
+                    appointmentMap.put("cancelledAt", appointment.getCancelledAt() != null ? appointment.getCancelledAt().toString() : null);
+                    appointmentMap.put("rescheduleReason", appointment.getRescheduleReason());
+                    appointmentMap.put("rescheduledAt", appointment.getRescheduledAt() != null ? appointment.getRescheduledAt().toString() : null);
+                    return appointmentMap;
+                })
+                .collect(Collectors.toList());
+
+            return ResponseEntity.ok(Map.of(
+                "appointments", appointmentList,
+                "total", appointments.size()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/api/appointment-stats")
+    @ResponseBody
+    public ResponseEntity<?> getAppointmentStats(Authentication authentication) {
+        try {
+            User client = userService.findByEmail(authentication.getName()).orElse(null);
+            if (client == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Client not found"));
+            }
+
+            Map<String, Long> stats = appointmentService.getClientAppointmentStats(client);
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/cancel-appointment")
+    @ResponseBody
+    public ResponseEntity<?> cancelAppointment(
+            @RequestBody Map<String, Object> request,
+            Authentication authentication) {
+        try {
+            User client = userService.findByEmail(authentication.getName()).orElse(null);
+            if (client == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Client not found"));
+            }
+
+            Long appointmentId = Long.valueOf(request.get("appointmentId").toString());
+            String reason = (String) request.get("reason");
+
+            Appointment cancelledAppointment = appointmentService.cancelAppointmentByClient(appointmentId, client, reason);
+
+            return ResponseEntity.ok(Map.of(
+                "appointment", cancelledAppointment,
+                "message", "Appointment cancelled successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/reschedule-appointment")
+    @ResponseBody
+    public ResponseEntity<?> rescheduleAppointment(
+            @RequestBody Map<String, Object> request,
+            Authentication authentication) {
+        try {
+            User client = userService.findByEmail(authentication.getName()).orElse(null);
+            if (client == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Client not found"));
+            }
+
+            Long appointmentId = Long.valueOf(request.get("appointmentId").toString());
+            String newDateTimeStr = (String) request.get("newDateTime");
+            String reason = (String) request.get("reason");
+
+            LocalDateTime newDateTime = LocalDateTime.parse(newDateTimeStr);
+
+            Appointment rescheduledAppointment = appointmentService.rescheduleAppointmentByClient(appointmentId, client, newDateTime, reason);
+
+            return ResponseEntity.ok(Map.of(
+                "appointment", rescheduledAppointment,
+                "message", "Appointment reschedule request submitted successfully"
+            ));        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Helper method to get provider specialty
+    private String getProviderSpecialty(User provider) {
+        try {
+            ProviderProfile profile = providerProfileService.getProviderProfile(provider);
+            return profile != null && profile.getSpecialization() != null ? profile.getSpecialization() : "General";
+        } catch (Exception e) {
+            return "General";
         }
     }
 }

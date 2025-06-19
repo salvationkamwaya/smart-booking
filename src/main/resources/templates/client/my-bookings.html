@@ -70,8 +70,7 @@
             transform: scale(1.1);
             box-shadow: 0 0 0 3px rgba(0, 183, 235, 0.3);
         }
-        
-        @media (max-width: 768px) {
+          @media (max-width: 768px) {
             #sidebar {
                 position: fixed;
                 left: -100%;
@@ -95,6 +94,168 @@
             }
             #sidebar.active + #content-overlay {
                 display: block;
+            }
+        }
+
+        /* Custom styles for my-bookings */
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .icon-container {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #6B7280;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            color: #00B7EB;
+            border-bottom-color: #00B7EB;
+        }
+
+        .tab-btn:hover {
+            color: #00B7EB;
+        }
+
+        .filter-btn {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #E5E7EB;
+        }
+
+        .filter-btn.active {
+            background-color: #00B7EB !important;
+            color: white !important;
+            border-color: #00B7EB !important;
+        }
+
+        .filter-btn:hover:not(.active) {
+            background-color: #F3F4F6;
+            border-color: #00B7EB;
+        }
+
+        .booking-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .booking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .booking-header {
+            padding: 20px 24px 0;
+        }
+
+        .booking-details {
+            padding: 20px 24px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .booking-info {
+            min-width: 0;
+        }
+
+        .booking-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 140px;
+        }
+
+        .action-btn {
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-upcoming {
+            background-color: #3B82F6;
+        }
+
+        .status-confirmed {
+            background-color: #10B981;
+        }        .status-pending {
+            background-color: #F59E0B;
+        }
+
+        .status-in_progress {
+            background-color: #3B82F6;
+        }
+
+        .status-cancelled {
+            background-color: #EF4444;
+        }
+
+        .status-completed {
+            background-color: #8B5CF6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-icon {
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .booking-details {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .booking-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+                min-width: auto;
+            }
+
+            .action-btn {
+                flex: 1;
+                min-width: 120px;
             }
         }
     </style>
@@ -182,15 +343,13 @@
             <div class="mb-6">
                 <h1 class="text-3xl font-bold text-dark-gray">My Bookings</h1>
                 <p class="text-gray-600 mt-2">Manage your appointments and bookings</p>
-            </div>
-
-            <!-- Stats Cards -->
+            </div>            <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div class="stat-card bg-white p-5 rounded-xl shadow-card">
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-gray-500 text-sm">Total Appointments</p>
-                            <p class="text-2xl font-bold mt-1">14</p>
+                            <p id="total-count" class="text-2xl font-bold mt-1">0</p>
                         </div>
                         <div class="icon-container bg-deep-sky-blue/20">
                             <i class="fas fa-calendar-alt text-deep-sky-blue text-xl"></i>
@@ -202,7 +361,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-gray-500 text-sm">Upcoming</p>
-                            <p class="text-2xl font-bold mt-1">2</p>
+                            <p id="upcoming-count" class="text-2xl font-bold mt-1">0</p>
                         </div>
                         <div class="icon-container bg-sea-green/20">
                             <i class="fas fa-clock text-sea-green text-xl"></i>
@@ -214,7 +373,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-gray-500 text-sm">Completed</p>
-                            <p class="text-2xl font-bold mt-1">10</p>
+                            <p id="completed-count" class="text-2xl font-bold mt-1">0</p>
                         </div>
                         <div class="icon-container bg-royal-purple/20">
                             <i class="fas fa-check-circle text-royal-purple text-xl"></i>
@@ -226,7 +385,7 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-gray-500 text-sm">Cancelled</p>
-                            <p class="text-2xl font-bold mt-1">2</p>
+                            <p id="cancelled-count" class="text-2xl font-bold mt-1">0</p>
                         </div>
                         <div class="icon-container bg-crimson/20">
                             <i class="fas fa-times-circle text-crimson text-xl"></i>
@@ -236,19 +395,18 @@
             </div>
 
             <!-- Filter and Tabs Section -->
-            <div class="bg-white rounded-xl shadow-card p-6 mb-6">
-                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+            <div class="bg-white rounded-xl shadow-card p-6 mb-6">                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                     <div class="mb-4 md:mb-0">
                         <h2 class="text-xl font-bold text-dark-gray">Appointment List</h2>
                         <p class="text-gray-600">Filter and manage your appointments</p>
                     </div>
                     <div class="flex space-x-2">
                         <div class="relative">
-                            <input type="text" placeholder="Search appointments..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 w-full md:w-64">
+                            <input type="text" id="search-input" placeholder="Search appointments..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 w-full md:w-64">
                             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                         </div>
-                        <button class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
-                            <i class="fas fa-filter mr-2"></i> Filter
+                        <button id="refresh-btn" class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-sync-alt mr-2"></i> Refresh
                         </button>
                     </div>
                 </div>
@@ -259,251 +417,25 @@
                     <button class="tab-btn" data-tab="upcoming">Upcoming</button>
                     <button class="tab-btn" data-tab="completed">Completed</button>
                     <button class="tab-btn" data-tab="cancelled">Cancelled</button>
-                </div>
-
-                <!-- Status Filter Chips -->
+                </div>                <!-- Status Filter Chips -->
                 <div class="flex flex-wrap gap-2 mb-6">
-                    <button class="filter-btn active bg-deep-sky-blue text-white px-4 py-1 rounded-full">All</button>
-                    <button class="filter-btn bg-white border border-gray-300 text-gray-700 px-4 py-1 rounded-full">Confirmed</button>
-                    <button class="filter-btn bg-white border border-gray-300 text-gray-700 px-4 py-1 rounded-full">Pending</button>
-                    <button class="filter-btn bg-white border border-gray-300 text-gray-700 px-4 py-1 rounded-full">Rescheduled</button>
+                    <button class="filter-btn active" data-status="all">All</button>
+                    <button class="filter-btn" data-status="CONFIRMED">Confirmed</button>
+                    <button class="filter-btn" data-status="PENDING">Pending</button>
+                    <button class="filter-btn" data-status="IN_PROGRESS">In Progress</button>
+                    <button class="filter-btn" data-status="CANCELLED">Cancelled</button>
+                    <button class="filter-btn" data-status="COMPLETED">Completed</button>
+                    <button class="filter-btn" data-status="RESCHEDULED">Rescheduled</button>
                 </div>
 
-                <!-- Bookings List -->
+                <!-- Loading State -->
+                <div id="loading-state" class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-deep-sky-blue text-2xl mb-2"></i>
+                    <p class="text-gray-600">Loading your appointments...</p>
+                </div>                <!-- Bookings List -->
                 <div id="bookings-container">
-                    <!-- Upcoming Booking 1 -->
-                    <div class="booking-card">
-                        <div class="booking-header">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        <span class="status-indicator status-upcoming"></span>
-                                        Upcoming
-                                    </span>
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium ml-2">
-                                        Confirmed
-                                    </span>
-                                </div>
-                                <span class="text-sm text-gray-600">Booking ID: #SA-2458</span>
-                            </div>
-                        </div>
-                        <div class="booking-details">
-                            <div class="booking-info">
-                                <div class="flex items-center mb-3">
-                                    <div class="w-12 h-12 rounded-full bg-deep-sky-blue/20 flex items-center justify-center mr-4">
-                                        <i class="fas fa-user-md text-deep-sky-blue"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-lg">Dr. Sarah Johnson</h3>
-                                        <p class="text-gray-600">General Physician</p>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <p class="text-sm text-gray-500">Date & Time</p>
-                                        <p class="font-medium">June 16, 2024 at 2:30 PM</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Service</p>
-                                        <p class="font-medium">Annual Checkup</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Duration</p>
-                                        <p class="font-medium">45 minutes</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Location</p>
-                                        <p class="font-medium">Main Hospital, Room 205</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="booking-actions">
-                                <button class="action-btn bg-deep-sky-blue text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
-                                    <i class="fas fa-calendar-alt mr-2"></i> Reschedule
-                                </button>
-                                <button class="action-btn bg-crimson text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
-                                    <i class="fas fa-times mr-2"></i> Cancel
-                                </button>
-                                <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-info-circle mr-2"></i> View Details
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Upcoming Booking 2 -->
-                    <div class="booking-card">
-                        <div class="booking-header">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        <span class="status-indicator status-upcoming"></span>
-                                        Upcoming
-                                    </span>
-                                    <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium ml-2">
-                                        Pending
-                                    </span>
-                                </div>
-                                <span class="text-sm text-gray-600">Booking ID: #SA-2491</span>
-                            </div>
-                        </div>
-                        <div class="booking-details">
-                            <div class="booking-info">
-                                <div class="flex items-center mb-3">
-                                    <div class="w-12 h-12 rounded-full bg-sea-green/20 flex items-center justify-center mr-4">
-                                        <i class="fas fa-user-md text-sea-green"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-lg">Dr. Robert Brown</h3>
-                                        <p class="text-gray-600">Dentist</p>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <p class="text-sm text-gray-500">Date & Time</p>
-                                        <p class="font-medium">June 17, 2024 at 10:00 AM</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Service</p>
-                                        <p class="font-medium">Dental Cleaning</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Duration</p>
-                                        <p class="font-medium">30 minutes</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Location</p>
-                                        <p class="font-medium">Dental Clinic, Suite 101</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="booking-actions">
-                                <button class="action-btn bg-deep-sky-blue text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
-                                    <i class="fas fa-calendar-alt mr-2"></i> Reschedule
-                                </button>
-                                <button class="action-btn bg-crimson text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
-                                    <i class="fas fa-times mr-2"></i> Cancel
-                                </button>
-                                <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-info-circle mr-2"></i> View Details
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Completed Booking -->
-                    <div class="booking-card">
-                        <div class="booking-header">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        <span class="status-indicator status-completed"></span>
-                                        Completed
-                                    </span>
-                                </div>
-                                <span class="text-sm text-gray-600">Booking ID: #SA-2387</span>
-                            </div>
-                        </div>
-                        <div class="booking-details">
-                            <div class="booking-info">
-                                <div class="flex items-center mb-3">
-                                    <div class="w-12 h-12 rounded-full bg-royal-purple/20 flex items-center justify-center mr-4">
-                                        <i class="fas fa-user-md text-royal-purple"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-lg">Dr. Lisa Anderson</h3>
-                                        <p class="text-gray-600">Physical Therapist</p>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <p class="text-sm text-gray-500">Date & Time</p>
-                                        <p class="font-medium">June 10, 2024 at 2:00 PM</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Service</p>
-                                        <p class="font-medium">Physical Therapy Session</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Duration</p>
-                                        <p class="font-medium">60 minutes</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Location</p>
-                                        <p class="font-medium">Rehabilitation Center</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="booking-actions">
-                                <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
-                                    <i class="fas fa-file-medical mr-2"></i> View Notes
-                                </button>
-                                <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-star mr-2"></i> Rate Appointment
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Cancelled Booking -->
-                    <div class="booking-card">
-                        <div class="booking-header">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
-                                        <span class="status-indicator status-cancelled"></span>
-                                        Cancelled
-                                    </span>
-                                </div>
-                                <span class="text-sm text-gray-600">Booking ID: #SA-2312</span>
-                            </div>
-                        </div>
-                        <div class="booking-details">
-                            <div class="booking-info">
-                                <div class="flex items-center mb-3">
-                                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
-                                        <i class="fas fa-user-md text-gray-500"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-lg">Dr. Michael Chen</h3>
-                                        <p class="text-gray-600">Dermatologist</p>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <p class="text-sm text-gray-500">Date & Time</p>
-                                        <p class="font-medium">June 5, 2024 at 3:00 PM</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Service</p>
-                                        <p class="font-medium">Skin Checkup</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Cancellation Reason</p>
-                                        <p class="font-medium">Conflict with work schedule</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Cancelled On</p>
-                                        <p class="font-medium">June 3, 2024</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="booking-actions">
-                                <button class="action-btn bg-deep-sky-blue text-white py-2 px-4 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-calendar-plus mr-2"></i> Rebook Appointment
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    <!-- Dynamic appointment cards will be inserted here -->
+                </div>                </div>
 
                 <!-- Empty State (hidden by default) -->
                 <div id="empty-state" class="empty-state hidden">
@@ -545,7 +477,50 @@
     <!-- Content Overlay -->
     <div id="content-overlay"></div>
 
+    <!-- Cancel Appointment Modal -->
+    <div id="cancel-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-bold mb-4">Cancel Appointment</h3>
+            <p class="text-gray-600 mb-4">Are you sure you want to cancel this appointment?</p>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Reason for cancellation:</label>
+                <textarea id="cancel-reason" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Please provide a reason..."></textarea>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button id="cancel-modal-close" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                <button id="cancel-modal-confirm" class="px-4 py-2 bg-crimson text-white rounded-lg hover:bg-red-600">Confirm Cancellation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reschedule Appointment Modal -->
+    <div id="reschedule-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-bold mb-4">Reschedule Appointment</h3>
+            <p class="text-gray-600 mb-4">Please select a new date and time for your appointment.</p>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">New Date & Time:</label>
+                <input type="datetime-local" id="reschedule-datetime" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Reason for rescheduling:</label>
+                <textarea id="reschedule-reason" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Please provide a reason..."></textarea>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button id="reschedule-modal-close" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+                <button id="reschedule-modal-confirm" class="px-4 py-2 bg-deep-sky-blue text-white rounded-lg hover:bg-blue-600">Submit Request</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Global variables
+        let allAppointments = [];
+        let filteredAppointments = [];
+        let currentFilter = 'all';
+        let currentTab = 'all';
+        let currentSearchTerm = '';
+
         // Mobile sidebar toggle
         document.getElementById('toggle-sidebar').addEventListener('click', () => {
             document.getElementById('sidebar').classList.add('active');
@@ -558,6 +533,578 @@
         document.getElementById('content-overlay').addEventListener('click', () => {
             document.getElementById('sidebar').classList.remove('active');
         });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('My Bookings page loaded');
+            initializeEventListeners();
+            initializeModalEventListeners();
+            loadAppointments();
+            loadAppointmentStats();
+        });
+
+        function initializeEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const tabValue = e.target.dataset.tab;
+                    switchTab(tabValue);
+                });
+            });
+
+            // Status filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const statusValue = e.target.dataset.status;
+                    applyStatusFilter(statusValue);
+                });
+            });
+
+            // Search functionality
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', (e) => {
+                currentSearchTerm = e.target.value.toLowerCase();
+                applyFilters();
+            });
+
+            // Refresh button
+            document.getElementById('refresh-btn').addEventListener('click', () => {
+                loadAppointments();
+                loadAppointmentStats();
+            });
+        }
+
+        function initializeModalEventListeners() {
+            // Cancel modal event listeners
+            document.getElementById('cancel-modal-close').addEventListener('click', () => {
+                toggleCancelModal(false);
+            });
+
+            document.getElementById('cancel-modal-confirm').addEventListener('click', () => {
+                const appointmentId = document.getElementById('cancel-modal').dataset.appointmentId;
+                const reason = document.getElementById('cancel-reason').value.trim();
+                
+                if (!reason) {
+                    alert('Please provide a reason for cancellation.');
+                    return;
+                }
+                
+                toggleCancelModal(false);
+                cancelAppointment(appointmentId, reason);
+            });
+
+            // Reschedule modal event listeners
+            document.getElementById('reschedule-modal-close').addEventListener('click', () => {
+                toggleRescheduleModal(false);
+            });
+
+            document.getElementById('reschedule-modal-confirm').addEventListener('click', () => {
+                const appointmentId = document.getElementById('reschedule-modal').dataset.appointmentId;
+                const newDateTime = document.getElementById('reschedule-datetime').value;
+                const reason = document.getElementById('reschedule-reason').value.trim();
+                
+                if (!newDateTime) {
+                    alert('Please select a new date and time.');
+                    return;
+                }
+                
+                if (!reason) {
+                    alert('Please provide a reason for rescheduling.');
+                    return;
+                }
+                
+                toggleRescheduleModal(false);
+                rescheduleAppointment(appointmentId, newDateTime, reason);
+            });
+
+            // Close modals when clicking outside
+            document.getElementById('cancel-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'cancel-modal') {
+                    toggleCancelModal(false);
+                }
+            });
+
+            document.getElementById('reschedule-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'reschedule-modal') {
+                    toggleRescheduleModal(false);
+                }
+            });
+        }
+
+        async function loadAppointments() {
+            try {
+                showLoading(true);
+                console.log('Loading appointments...');
+
+                const response = await fetch('/client/api/my-appointments');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                allAppointments = data.appointments || [];
+                console.log('Loaded appointments:', allAppointments);
+                
+                applyFilters();
+                showLoading(false);
+
+            } catch (error) {
+                console.error('Error loading appointments:', error);
+                showError('Failed to load appointments: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        async function loadAppointmentStats() {
+            try {
+                const response = await fetch('/client/api/appointment-stats');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const stats = await response.json();
+                
+                if (stats.error) {
+                    throw new Error(stats.error);
+                }
+
+                updateStatsDisplay(stats);
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function updateStatsDisplay(stats) {
+            document.getElementById('total-count').textContent = stats.total || 0;
+            document.getElementById('upcoming-count').textContent = stats.upcoming || 0;
+            document.getElementById('completed-count').textContent = stats.completed || 0;
+            document.getElementById('cancelled-count').textContent = stats.cancelled || 0;
+        }
+
+        function switchTab(tabValue) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabValue}"]`).classList.add('active');
+
+            currentTab = tabValue;
+            applyFilters();
+        }
+
+        function applyStatusFilter(statusValue) {
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-status="${statusValue}"]`).classList.add('active');
+
+            currentFilter = statusValue;
+            applyFilters();
+        }
+
+        function applyFilters() {
+            let filtered = [...allAppointments];
+
+            // Apply tab filter
+            if (currentTab !== 'all') {
+                const now = new Date();
+                switch (currentTab) {
+                    case 'upcoming':
+                        filtered = filtered.filter(apt => {
+                            const aptDate = new Date(apt.appointmentTime);
+                            return aptDate > now && apt.status !== 'CANCELLED';
+                        });
+                        break;
+                    case 'completed':
+                        filtered = filtered.filter(apt => apt.status === 'COMPLETED');
+                        break;
+                    case 'cancelled':
+                        filtered = filtered.filter(apt => apt.status === 'CANCELLED');
+                        break;
+                }
+            }
+
+            // Apply status filter
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(apt => apt.status === currentFilter);
+            }
+
+            // Apply search filter
+            if (currentSearchTerm) {
+                filtered = filtered.filter(apt => 
+                    apt.providerName.toLowerCase().includes(currentSearchTerm) ||
+                    apt.serviceType.toLowerCase().includes(currentSearchTerm) ||
+                    apt.status.toLowerCase().includes(currentSearchTerm)
+                );
+            }
+
+            filteredAppointments = filtered;
+            renderAppointments();
+        }
+
+        function renderAppointments() {
+            const container = document.getElementById('bookings-container');
+            const emptyState = document.getElementById('empty-state');
+
+            if (filteredAppointments.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            const appointmentsHtml = filteredAppointments.map(appointment => 
+                createAppointmentCard(appointment)
+            ).join('');
+
+            container.innerHTML = appointmentsHtml;
+
+            // Add event listeners to action buttons
+            addActionEventListeners();
+        }
+
+        function createAppointmentCard(appointment) {
+            const appointmentDate = new Date(appointment.appointmentTime);
+            const isUpcoming = appointmentDate > new Date() && appointment.status !== 'CANCELLED';
+            const canCancel = isUpcoming && appointment.status !== 'CANCELLED';
+            const canReschedule = isUpcoming && appointment.status !== 'CANCELLED';
+
+            const statusConfig = getStatusConfig(appointment.status);
+            
+            return `
+                <div class="booking-card" data-appointment-id="${appointment.id}">
+                    <div class="booking-header">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="${statusConfig.badgeClass}">
+                                    <span class="status-indicator ${statusConfig.indicatorClass}"></span>
+                                    ${statusConfig.label}
+                                </span>
+                                ${appointment.status === 'CONFIRMED' ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium ml-2">Confirmed</span>' : ''}
+                            </div>
+                            <span class="text-sm text-gray-600">Booking ID: #${appointment.id}</span>
+                        </div>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-info">
+                            <div class="flex items-center mb-3">
+                                <div class="w-12 h-12 rounded-full ${getProviderIconBg(appointment.providerSpecialty)} flex items-center justify-center mr-4">
+                                    <i class="fas fa-user-md ${getProviderIconColor(appointment.providerSpecialty)}"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg">${appointment.providerName}</h3>
+                                    <p class="text-gray-600">${appointment.providerSpecialty}</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Date & Time</p>
+                                    <p class="font-medium">${formatDateTime(appointment.appointmentTime)}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Service</p>
+                                    <p class="font-medium">${appointment.serviceType || 'Consultation'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Duration</p>
+                                    <p class="font-medium">${appointment.durationMinutes || 30} minutes</p>
+                                </div>
+                                ${appointment.status === 'CANCELLED' && appointment.cancellationReason ? `
+                                <div>
+                                    <p class="text-sm text-gray-500">Cancellation Reason</p>
+                                    <p class="font-medium">${appointment.cancellationReason}</p>
+                                </div>
+                                ` : `
+                                <div>
+                                    <p class="text-sm text-gray-500">Status</p>
+                                    <p class="font-medium">${appointment.status}</p>
+                                </div>
+                                `}
+                                ${appointment.clientNotes ? `
+                                <div class="md:col-span-2">
+                                    <p class="text-sm text-gray-500">Your Notes</p>
+                                    <p class="font-medium">${appointment.clientNotes}</p>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="booking-actions">
+                            ${getActionButtons(appointment, canReschedule, canCancel)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getStatusConfig(status) {
+            const configs = {
+                'PENDING': {
+                    label: 'Pending',
+                    badgeClass: 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium',
+                    indicatorClass: 'status-pending'
+                },
+                'CONFIRMED': {
+                    label: 'Confirmed',
+                    badgeClass: 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium',
+                    indicatorClass: 'status-confirmed'
+                },
+                'COMPLETED': {
+                    label: 'Completed',
+                    badgeClass: 'bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium',
+                    indicatorClass: 'status-completed'
+                },
+                'CANCELLED': {
+                    label: 'Cancelled',
+                    badgeClass: 'bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium',
+                    indicatorClass: 'status-cancelled'
+                }
+            };
+            return configs[status] || configs['PENDING'];
+        }
+
+        function getProviderIconBg(specialty) {
+            const specialties = {
+                'General': 'bg-deep-sky-blue/20',
+                'Dentist': 'bg-sea-green/20',
+                'Dermatologist': 'bg-royal-purple/20',
+                'Physical Therapist': 'bg-teal-blue/20'
+            };
+            return specialties[specialty] || 'bg-deep-sky-blue/20';
+        }
+
+        function getProviderIconColor(specialty) {
+            const specialties = {
+                'General': 'text-deep-sky-blue',
+                'Dentist': 'text-sea-green',
+                'Dermatologist': 'text-royal-purple',
+                'Physical Therapist': 'text-teal-blue'
+            };
+            return specialties[specialty] || 'text-deep-sky-blue';
+        }
+
+        function getActionButtons(appointment, canReschedule, canCancel) {
+            let buttons = '';
+
+            if (canReschedule) {
+                buttons += `
+                    <button class="action-btn reschedule-btn bg-deep-sky-blue text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center" data-appointment-id="${appointment.id}">
+                        <i class="fas fa-calendar-alt mr-2"></i> Reschedule
+                    </button>
+                `;
+            }
+
+            if (canCancel) {
+                buttons += `
+                    <button class="action-btn cancel-btn bg-crimson text-white py-2 px-4 rounded-lg mb-2 flex items-center justify-center" data-appointment-id="${appointment.id}">
+                        <i class="fas fa-times mr-2"></i> Cancel
+                    </button>
+                `;
+            }
+
+            if (appointment.status === 'COMPLETED') {
+                buttons += `
+                    <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg mb-2 flex items-center justify-center">
+                        <i class="fas fa-file-medical mr-2"></i> View Notes
+                    </button>
+                    <button class="action-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-star mr-2"></i> Rate Appointment
+                    </button>
+                `;
+            }
+
+            if (appointment.status === 'CANCELLED') {
+                buttons += `
+                    <button class="action-btn rebook-btn bg-deep-sky-blue text-white py-2 px-4 rounded-lg flex items-center justify-center" data-appointment-id="${appointment.id}">
+                        <i class="fas fa-calendar-plus mr-2"></i> Rebook Appointment
+                    </button>
+                `;
+            }
+
+            // Always show view details
+            buttons += `
+                <button class="action-btn view-details-btn bg-white border border-deep-sky-blue text-deep-sky-blue py-2 px-4 rounded-lg flex items-center justify-center" data-appointment-id="${appointment.id}">
+                    <i class="fas fa-info-circle mr-2"></i> View Details
+                </button>
+            `;
+
+            return buttons;
+        }
+
+        function addActionEventListeners() {
+            // Cancel appointment
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const appointmentId = e.target.closest('.cancel-btn').dataset.appointmentId;
+                    showCancelModal(appointmentId);
+                });
+            });
+
+            // Reschedule appointment
+            document.querySelectorAll('.reschedule-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const appointmentId = e.target.closest('.reschedule-btn').dataset.appointmentId;
+                    showRescheduleModal(appointmentId);
+                });
+            });
+
+            // Rebook appointment
+            document.querySelectorAll('.rebook-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Redirect to booking page
+                    window.location.href = '/client/book-appointment';
+                });
+            });
+
+            // View details
+            document.querySelectorAll('.view-details-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const appointmentId = e.target.closest('.view-details-btn').dataset.appointmentId;
+                    showDetailsModal(appointmentId);
+                });
+            });
+        }
+
+        function showCancelModal(appointmentId) {
+            document.getElementById('cancel-modal').dataset.appointmentId = appointmentId;
+            toggleCancelModal(true);
+        }
+
+        function showRescheduleModal(appointmentId) {
+            document.getElementById('reschedule-modal').dataset.appointmentId = appointmentId;
+            toggleRescheduleModal(true);
+        }
+
+        function toggleCancelModal(show) {
+            const modal = document.getElementById('cancel-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+                document.getElementById('cancel-reason').value = ''; // Clear reason field
+                document.getElementById('cancel-reason').focus();
+            } else {
+                modal.classList.add('hidden');
+            }
+        }        function toggleRescheduleModal(show) {
+            const modal = document.getElementById('reschedule-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+                
+                // Set minimum date to today
+                const now = new Date();
+                const minDateTime = now.toISOString().slice(0, 16);
+                document.getElementById('reschedule-datetime').min = minDateTime;
+                
+                document.getElementById('reschedule-datetime').value = ''; // Clear date/time field
+                document.getElementById('reschedule-reason').value = ''; // Clear reason field
+                document.getElementById('reschedule-datetime').focus();
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        async function cancelAppointment(appointmentId, reason) {
+            try {
+                showLoading(true);
+
+                const response = await fetch('/client/api/cancel-appointment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        appointmentId: appointmentId,
+                        reason: reason
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                alert('Appointment cancelled successfully!');
+                loadAppointments();
+                loadAppointmentStats();
+
+            } catch (error) {
+                console.error('Error cancelling appointment:', error);
+                alert('Failed to cancel appointment: ' + error.message);
+            } finally {
+                showLoading(false);
+                toggleCancelModal(false);
+            }
+        }
+
+        async function rescheduleAppointment(appointmentId, newDateTime, reason) {
+            try {
+                showLoading(true);
+
+                const response = await fetch('/client/api/reschedule-appointment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        appointmentId: appointmentId,
+                        newDateTime: newDateTime,
+                        reason: reason
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                alert('Reschedule request submitted successfully! The provider will review your request.');
+                loadAppointments();
+                loadAppointmentStats();
+
+            } catch (error) {
+                console.error('Error rescheduling appointment:', error);
+                alert('Failed to reschedule appointment: ' + error.message);
+            } finally {
+                showLoading(false);
+                toggleRescheduleModal(false);
+            }
+        }
+
+        function formatDateTime(dateTimeStr) {
+            const date = new Date(dateTimeStr);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showLoading(show) {
+            const loadingState = document.getElementById('loading-state');
+            if (show) {
+                loadingState.classList.remove('hidden');
+            } else {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        function showError(message) {
+            alert('Error: ' + message);
+        }
     </script>
 </body>
 </html>

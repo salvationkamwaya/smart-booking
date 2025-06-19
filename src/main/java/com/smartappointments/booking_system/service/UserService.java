@@ -103,8 +103,12 @@ public class UserService {
         return userRepository.findByRole(role);
     }
 
-    // Find user by ID
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    // Count all users
+    public long countAllUsers() {
+        return userRepository.count();
     }
 }

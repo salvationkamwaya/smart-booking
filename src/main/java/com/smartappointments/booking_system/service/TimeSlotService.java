@@ -189,4 +189,9 @@ public class TimeSlotService {
         }
         return daysSet;
     }
+
+    // Get all time slots
+    public List<TimeSlot> getAllTimeSlots() {
+        return timeSlotRepository.findAll();
+    }
 }
