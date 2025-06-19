@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/uploads/**").permitAll()
                         .requestMatchers("/auth/login", "/auth/register", "/auth/perform_register").permitAll()
                         .requestMatchers("/debug/**").permitAll() // Allow debug endpoints
+                        .requestMatchers("/logout").permitAll() // Allow logout endpoint
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

@@ -250,29 +250,54 @@ public class NotificationService {
      * Send bulk notifications to multiple users
      */
     public void sendBulkNotification(String message, String title, java.util.List<User> recipients) {
-        for (User recipient : recipients) {
-            logger.info("BULK NOTIFICATION - {}: {} - {}", recipient.getEmail(), title, message);
-            // TODO: Implement actual bulk sending
+        try {
+            for (User recipient : recipients) {
+                notifyUser(recipient, title, message);
+            }
+            logger.info("Bulk notification sent to {} recipients: {}", recipients.size(), title);
+        } catch (Exception e) {
+            logger.error("Failed to send bulk notification: {}", title, e);
         }
     }
     
     /**
-     * Send system maintenance notification
+     * Send maintenance notification to all users
      */
     public void sendMaintenanceNotification(java.util.List<User> users, java.time.LocalDateTime maintenanceTime) {
-        String message = String.format(
-            "Scheduled Maintenance Notice:\n" +
-            "Our booking system will be under maintenance on %s.\n" +
-            "During this time, online booking may be temporarily unavailable.\n" +
-            "We apologize for any inconvenience.",
-            maintenanceTime.toString()
-        );
-        
-        sendBulkNotification(message, "System Maintenance Notice", users);
+        try {
+            String title = "Scheduled Maintenance Notification";
+            String message = String.format(
+                "Dear User,\n\n" +
+                "We will be performing scheduled maintenance on our system on %s.\n" +
+                "The system may be temporarily unavailable during this time.\n" +
+                "We apologize for any inconvenience caused.\n\n" +
+                "Best regards,\n" +
+                "Smart Appointments Team",
+                maintenanceTime.format(java.time.format.DateTimeFormatter.ofPattern("MMMM dd, yyyy 'at' HH:mm"))
+            );
+            
+            sendBulkNotification(message, title, users);
+            logger.info("Maintenance notification sent to {} users for maintenance at {}", users.size(), maintenanceTime);
+        } catch (Exception e) {
+            logger.error("Failed to send maintenance notification", e);
+        }
     }
     
     /**
-     * Send custom notification to provider
+     * General method to send notification to any user
+     */
+    private void notifyUser(User user, String subject, String message) {
+        try {
+            logger.info("USER NOTIFICATION - {} ({}): {}", user.getEmail(), subject, message);
+            // TODO: Implement actual email/SMS sending
+            // emailService.sendEmail(user.getEmail(), subject, message);
+        } catch (Exception e) {
+            logger.error("Failed to send notification to user: {}", user.getEmail(), e);
+        }
+    }
+    
+    /**
+     * Notify provider with custom message
      */
     public void notifyProvider(User provider, String subject, String message) {
         try {
@@ -285,7 +310,7 @@ public class NotificationService {
     }
     
     /**
-     * Send custom notification to client
+     * Notify client with custom message
      */
     public void notifyClient(User client, String subject, String message) {
         try {

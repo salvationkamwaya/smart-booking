@@ -44,4 +44,47 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Admin queries for system-wide appointments
     List<Appointment> findByCreatedAtAfterOrderByCreatedAtDesc(LocalDateTime since);
     List<Appointment> findAllByOrderByCreatedAtDesc();
+    
+    // ADMIN APPOINTMENT MANAGEMENT METHODS
+    
+    // Status-based queries with pagination
+    Page<Appointment> findByStatusOrderByAppointmentTimeDesc(String status, Pageable pageable);
+    List<Appointment> findByStatusOrderByAppointmentTimeDesc(String status);
+    
+    // Date-time range queries
+    Page<Appointment> findByAppointmentTimeBetweenOrderByAppointmentTimeAsc(LocalDateTime start, LocalDateTime end, Pageable pageable);
+    List<Appointment> findByAppointmentTimeBetweenOrderByAppointmentTimeAsc(LocalDateTime start, LocalDateTime end);
+    
+    // Upcoming appointments
+    Page<Appointment> findByAppointmentTimeAfterOrderByAppointmentTimeAsc(LocalDateTime dateTime, Pageable pageable);
+    
+    // All appointments with pagination
+    Page<Appointment> findAllByOrderByAppointmentTimeDesc(Pageable pageable);
+    List<Appointment> findAllByOrderByAppointmentTimeDesc();
+    
+    // Search with status filter
+    @Query("SELECT a FROM Appointment a WHERE " +
+           "(LOWER(a.client.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(a.client.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(CONCAT(a.client.firstName, ' ', a.client.lastName)) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) AND " +
+           "a.status = :status " +
+           "ORDER BY a.appointmentTime DESC")
+    Page<Appointment> findByClientNameContainingIgnoreCaseAndStatusOrderByAppointmentTimeDesc(
+        @Param("searchTerm") String searchTerm, @Param("status") String status, Pageable pageable);
+    
+    // Search without status filter
+    @Query("SELECT a FROM Appointment a WHERE " +
+           "(LOWER(a.client.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(a.client.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(CONCAT(a.client.firstName, ' ', a.client.lastName)) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
+           "ORDER BY a.appointmentTime DESC")
+    Page<Appointment> findByClientNameContainingIgnoreCaseOrderByAppointmentTimeDesc(
+        @Param("searchTerm") String searchTerm, Pageable pageable);
+      // Count methods for statistics
+    long countByAppointmentTimeBetweenAndStatus(LocalDateTime start, LocalDateTime end, String status);
+    long countByRescheduledAtBetween(LocalDateTime start, LocalDateTime end);
+    
+    // Date range queries for reporting
+    List<Appointment> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+    List<Appointment> findByProviderAndCreatedAtBetween(User provider, LocalDateTime startDate, LocalDateTime endDate);
 }

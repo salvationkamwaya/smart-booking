@@ -3,6 +3,7 @@ package com.smartappointments.booking_system.service;
 import com.smartappointments.booking_system.model.Appointment;
 import com.smartappointments.booking_system.model.User;
 import com.smartappointments.booking_system.repository.AppointmentRepository;
+import com.smartappointments.booking_system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,7 +12,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +30,13 @@ public class AppointmentService {
     private AppointmentRepository appointmentRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private AuditService auditService;
 
     // Get appointments for a specific provider
     public List<Appointment> getProviderAppointments(User provider) {
@@ -102,13 +114,19 @@ public class AppointmentService {
         appointment.setStatus(status);
         appointment.setUpdatedAt(LocalDateTime.now());
         Appointment updatedAppointment = appointmentRepository.save(appointment);
-        
-        // Send status change notifications
+          // Send status change notifications
         try {
             notificationService.notifyAppointmentStatusChanged(updatedAppointment, oldStatus, status);
         } catch (Exception e) {
             // Log error but don't fail the status update
             System.err.println("Failed to send status change notifications for appointment " + appointmentId + ": " + e.getMessage());
+        }
+        
+        // Log the status change
+        try {
+            auditService.logAppointmentStatusChanged(appointmentId, oldStatus, status, provider, null);
+        } catch (Exception e) {
+            System.err.println("Failed to log appointment status change: " + e.getMessage());
         }
         
         return updatedAppointment;
@@ -173,13 +191,25 @@ public class AppointmentService {
         appointment.setCreatedAt(LocalDateTime.now());
         appointment.setUpdatedAt(LocalDateTime.now());
         Appointment savedAppointment = appointmentRepository.save(appointment);
-        
-        // Send notifications to all relevant parties
+          // Send notifications to all relevant parties
         try {
             notificationService.notifyAppointmentBooked(savedAppointment);
         } catch (Exception e) {
             // Log error but don't fail the appointment creation
             System.err.println("Failed to send notifications for appointment " + savedAppointment.getId() + ": " + e.getMessage());
+        }
+        
+        // Log appointment creation
+        try {
+            auditService.logAppointmentCreated(
+                savedAppointment.getId(), 
+                savedAppointment.getClientFullName(), 
+                savedAppointment.getProviderFullName(), 
+                savedAppointment.getProvider(), 
+                null
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to log appointment creation: " + e.getMessage());
         }
         
         return savedAppointment;
@@ -269,14 +299,11 @@ public class AppointmentService {
         // Verify that the appointment belongs to this client
         if (!appointment.getClient().getId().equals(client.getId())) {
             throw new RuntimeException("You can only cancel your own appointments");
-        }
-
-        // Check if appointment can be cancelled (not already completed/cancelled)
+        }        // Check if appointment can be cancelled (not already completed/cancelled)
         if ("COMPLETED".equals(appointment.getStatus()) || "CANCELLED".equals(appointment.getStatus())) {
             throw new RuntimeException("Cannot cancel a completed or already cancelled appointment");
         }
 
-        String oldStatus = appointment.getStatus();
         appointment.setStatus("CANCELLED");
         appointment.setCancellationReason(reason);
         appointment.setCancelledAt(LocalDateTime.now());
@@ -330,5 +357,301 @@ public class AppointmentService {
         );
 
         return savedAppointment;
+    }
+    
+    // ADMIN APPOINTMENT MANAGEMENT METHODS
+    
+    /**
+     * Get filtered appointments for admin with pagination
+     */
+    public Page<Appointment> getFilteredAppointments(String search, String status, 
+            LocalDateTime fromDate, LocalDateTime toDate, String tab, Pageable pageable) {
+        
+        // Build the query based on filters
+        if (tab != null && !tab.isEmpty()) {
+            switch (tab.toLowerCase()) {
+                case "upcoming":
+                    LocalDateTime now = LocalDateTime.now();
+                    return appointmentRepository.findByAppointmentTimeAfterOrderByAppointmentTimeAsc(now, pageable);
+                case "today":
+                    LocalDate today = LocalDate.now();
+                    LocalDateTime startOfDay = today.atStartOfDay();
+                    LocalDateTime endOfDay = today.atTime(23, 59, 59);
+                    return appointmentRepository.findByAppointmentTimeBetweenOrderByAppointmentTimeAsc(
+                        startOfDay, endOfDay, pageable);
+                case "completed":
+                    return appointmentRepository.findByStatusOrderByAppointmentTimeDesc("COMPLETED", pageable);
+                case "cancelled":
+                    return appointmentRepository.findByStatusOrderByAppointmentTimeDesc("CANCELLED", pageable);
+                default:
+                    break;
+            }
+        }
+        
+        // Apply filters
+        if (search != null && !search.isEmpty()) {
+            if (status != null && !status.isEmpty()) {
+                return appointmentRepository.findByClientNameContainingIgnoreCaseAndStatusOrderByAppointmentTimeDesc(
+                    search, status, pageable);
+            } else {
+                return appointmentRepository.findByClientNameContainingIgnoreCaseOrderByAppointmentTimeDesc(
+                    search, pageable);
+            }
+        }
+        
+        if (status != null && !status.isEmpty()) {
+            return appointmentRepository.findByStatusOrderByAppointmentTimeDesc(status, pageable);
+        }
+        
+        if (fromDate != null && toDate != null) {
+            return appointmentRepository.findByAppointmentTimeBetweenOrderByAppointmentTimeAsc(
+                fromDate, toDate, pageable);
+        }
+        
+        // Default: return all appointments
+        return appointmentRepository.findAllByOrderByAppointmentTimeDesc(pageable);
+    }
+    
+    /**
+     * Get total count of appointments
+     */
+    public long getTotalAppointments() {
+        return appointmentRepository.count();
+    }
+    
+    /**
+     * Get appointments by status
+     */
+    public List<Appointment> getAppointmentsByStatus(String status) {
+        return appointmentRepository.findByStatusOrderByAppointmentTimeDesc(status);
+    }
+    
+    /**
+     * Get appointments by specific date
+     */
+    public List<Appointment> getAppointmentsByDate(LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
+        return appointmentRepository.findByAppointmentTimeBetweenOrderByAppointmentTimeAsc(startOfDay, endOfDay);
+    }
+    
+    /**
+     * Get count of pending appointments by date
+     */
+    public long getPendingAppointmentsByDate(LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
+        return appointmentRepository.countByAppointmentTimeBetweenAndStatus(startOfDay, endOfDay, "PENDING");
+    }
+    
+    /**
+     * Get count of cancelled appointments by date
+     */
+    public long getCancelledAppointmentsByDate(LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
+        return appointmentRepository.countByAppointmentTimeBetweenAndStatus(startOfDay, endOfDay, "CANCELLED");
+    }
+    
+    /**
+     * Get count of rescheduled appointments by date
+     */
+    public long getRescheduledAppointmentsByDate(LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
+        return appointmentRepository.countByRescheduledAtBetween(startOfDay, endOfDay);
+    }
+    
+    /**
+     * Get appointment by ID (admin access)
+     */
+    public Appointment getAppointmentById(Long id) {
+        return appointmentRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Appointment not found with ID: " + id));
+    }
+    
+    /**
+     * Update appointment (admin access)
+     */
+    public Appointment updateAppointment(Long id, Appointment updatedAppointment) {
+        Appointment existingAppointment = getAppointmentById(id);
+        
+        // Update fields
+        if (updatedAppointment.getAppointmentTime() != null) {
+            existingAppointment.setAppointmentTime(updatedAppointment.getAppointmentTime());
+        }
+        if (updatedAppointment.getStatus() != null) {
+            String oldStatus = existingAppointment.getStatus();
+            existingAppointment.setStatus(updatedAppointment.getStatus());
+            
+            // Send notification if status changed
+            if (!oldStatus.equals(updatedAppointment.getStatus())) {
+                try {
+                    notificationService.notifyAppointmentStatusChanged(existingAppointment, oldStatus, updatedAppointment.getStatus());
+                } catch (Exception e) {
+                    System.err.println("Failed to send status change notification: " + e.getMessage());
+                }
+            }
+        }
+        if (updatedAppointment.getNotes() != null) {
+            existingAppointment.setNotes(updatedAppointment.getNotes());
+        }
+        if (updatedAppointment.getServiceType() != null) {
+            existingAppointment.setServiceType(updatedAppointment.getServiceType());
+        }
+          existingAppointment.setUpdatedAt(LocalDateTime.now());
+        Appointment saved = appointmentRepository.save(existingAppointment);
+        
+        // Log appointment update
+        try {
+            auditService.logAppointmentUpdated(
+                id, 
+                "Appointment details updated by admin", 
+                null, 
+                null
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to log appointment update: " + e.getMessage());
+        }
+        
+        return saved;
+    }
+    
+    /**
+     * Delete appointment (admin access)
+     */
+    public void deleteAppointment(Long id) {
+        Appointment appointment = getAppointmentById(id);
+          // Send cancellation notifications before deletion
+        try {
+            notificationService.notifyClient(
+                appointment.getClient(),
+                "Appointment Cancelled",
+                "Your appointment scheduled for " + appointment.getAppointmentTime() + " has been cancelled by the administrator."
+            );
+            notificationService.notifyProvider(
+                appointment.getProvider(),
+                "Appointment Cancelled",
+                "The appointment with " + appointment.getClient().getFirstName() + " " + appointment.getClient().getLastName() + 
+                " scheduled for " + appointment.getAppointmentTime() + " has been cancelled by the administrator."
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send cancellation notifications: " + e.getMessage());
+        }
+        
+        // Log appointment deletion
+        try {
+            auditService.logAppointmentDeleted(
+                id, 
+                String.format("Appointment between %s and %s deleted by admin", 
+                    appointment.getClientFullName(), appointment.getProviderFullName()),
+                null, 
+                null
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to log appointment deletion: " + e.getMessage());
+        }
+        
+        appointmentRepository.deleteById(id);
+    }
+    
+    /**
+     * Create appointment by admin
+     */
+    public Appointment createAppointmentByAdmin(Map<String, Object> appointmentData) {
+        Appointment appointment = new Appointment();
+        
+        // Extract and set appointment data
+        Long clientId = Long.valueOf(appointmentData.get("clientId").toString());
+        Long providerId = Long.valueOf(appointmentData.get("providerId").toString());
+        
+        User client = userRepository.findById(clientId)
+            .orElseThrow(() -> new RuntimeException("Client not found"));
+        User provider = userRepository.findById(providerId)
+            .orElseThrow(() -> new RuntimeException("Provider not found"));
+        
+        appointment.setClient(client);
+        appointment.setProvider(provider);
+        appointment.setAppointmentTime(LocalDateTime.parse(appointmentData.get("appointmentTime").toString()));
+        appointment.setServiceType(appointmentData.get("serviceType").toString());
+        appointment.setStatus(appointmentData.getOrDefault("status", "PENDING").toString());
+        appointment.setNotes(appointmentData.getOrDefault("notes", "").toString());
+        appointment.setCreatedAt(LocalDateTime.now());
+        appointment.setUpdatedAt(LocalDateTime.now());
+        
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+        
+        // Send notifications
+        try {
+            notificationService.notifyAppointmentBooked(savedAppointment);
+        } catch (Exception e) {
+            System.err.println("Failed to send booking notifications: " + e.getMessage());
+        }
+        
+        return savedAppointment;
+    }
+    
+    /**
+     * Export appointments to CSV/Excel
+     */
+    public byte[] exportAppointments(String format, String fromDate, String toDate) throws IOException {
+        List<Appointment> appointments;
+        
+        if (fromDate != null && toDate != null) {
+            LocalDateTime from = LocalDate.parse(fromDate).atStartOfDay();
+            LocalDateTime to = LocalDate.parse(toDate).atTime(23, 59, 59);
+            appointments = appointmentRepository.findByAppointmentTimeBetweenOrderByAppointmentTimeAsc(from, to);
+        } else {
+            appointments = appointmentRepository.findAllByOrderByAppointmentTimeDesc();
+        }
+        
+        if ("csv".equalsIgnoreCase(format) || format == null) {
+            return exportToCSV(appointments);
+        } else {
+            // For now, default to CSV. Excel export can be implemented later
+            return exportToCSV(appointments);
+        }
+    }
+    
+    private byte[] exportToCSV(List<Appointment> appointments) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+        
+        // Write CSV header
+        writer.write("ID,Client Name,Provider Name,Appointment Time,Service Type,Status,Notes,Created At\n");
+        
+        // Write appointment data
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (Appointment appointment : appointments) {
+            writer.write(String.format("%d,\"%s %s\",\"%s %s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                appointment.getId(),
+                appointment.getClient().getFirstName(),
+                appointment.getClient().getLastName(),
+                appointment.getProvider().getFirstName(),
+                appointment.getProvider().getLastName(),
+                appointment.getAppointmentTime().format(formatter),
+                appointment.getServiceType(),
+                appointment.getStatus(),
+                appointment.getNotes() != null ? appointment.getNotes().replace("\"", "\"\"") : "",
+                appointment.getCreatedAt().format(formatter)
+            ));
+        }
+          writer.flush();
+        writer.close();
+        return outputStream.toByteArray();
+    }
+
+    // Get appointments between dates
+    public List<Appointment> getAllAppointmentsBetween(LocalDateTime startDate, LocalDateTime endDate) {
+        return appointmentRepository.findByCreatedAtBetween(startDate, endDate);
+    }
+
+    // Get appointments by provider and date range
+    public List<Appointment> getAppointmentsByProviderAndDateRange(Long providerId, LocalDateTime startDate, LocalDateTime endDate) {
+        Optional<User> provider = userRepository.findById(providerId);
+        if (provider.isPresent()) {
+            return appointmentRepository.findByProviderAndCreatedAtBetween(provider.get(), startDate, endDate);
+        }
+        return List.of();
     }
 }

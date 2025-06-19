@@ -366,8 +366,7 @@
                 <div class="hidden md:flex items-center">
                     <div class="user-avatar w-10 h-10 rounded-full bg-white flex items-center justify-center text-deep-sky-blue font-bold mr-2">A</div>
                     <span id="user-name" class="font-medium">Admin User</span>
-                </div>
-                <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
+                </div>                <button id="logout-btn" class="bg-crimson hover:bg-white hover:text-crimson px-4 py-2 rounded transition-colors flex items-center">
                     <i class="fas fa-sign-out-alt mr-2"></i>
                     <span class="hidden sm:inline">Logout</span>
                 </button>
@@ -440,20 +439,19 @@
                         <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                     </div>
 
-                    <!-- Filters -->
-                    <div class="flex flex-wrap gap-3 w-full md:w-auto">
+                    <!-- Filters -->                    <div class="flex flex-wrap gap-3 w-full md:w-auto">
                         <select name="role" class="w-full md:w-auto p-2 border border-gray-300 rounded-lg focus:outline-none">
                             <option value="">All Roles</option>
-                            <option value="client">Client</option>
-                            <option value="provider">Provider</option>
-                            <option value="admin">Admin</option>
+                            <option value="CLIENT">Client</option>
+                            <option value="PROVIDER">Provider</option>
+                            <option value="ADMIN">Admin</option>
                         </select>
 
                         <select name="status" class="w-full md:w-auto p-2 border border-gray-300 rounded-lg focus:outline-none">
                             <option value="">All Statuses</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="pending">Pending</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="INACTIVE">Inactive</option>
+                            <option value="PENDING">Pending</option>
                         </select>
 
                         <button id="apply-filters" class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
@@ -468,26 +466,22 @@
                         Add New User
                     </button>
                 </div>
-            </div>
-
-            <!-- User Tabs -->
+            </div>            <!-- User Tabs -->
             <div class="flex border-b border-gray-200 mb-6">
-                <button class="tab-button active">All Users (1,248)</button>
-                <button class="tab-button">Clients (845)</button>
-                <button class="tab-button">Providers (372)</button>
-                <button class="tab-button">Admins (31)</button>
-                <button class="tab-button">Pending (24)</button>
+                <button class="tab-button active" data-count="all">All Users (Loading...)</button>
+                <button class="tab-button" data-count="clients">Clients (Loading...)</button>
+                <button class="tab-button" data-count="providers">Providers (Loading...)</button>
+                <button class="tab-button" data-count="admins">Admins (Loading...)</button>
+                <button class="tab-button" data-count="pending">Pending (Loading...)</button>
             </div>
 
             <!-- Users Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6 users-grid">
                 <!-- User cards will be populated by JavaScript -->
-            </div>
-
-            <!-- Pagination -->
+            </div>            <!-- Pagination -->
             <div class="bg-white rounded-xl shadow-card p-6">
                 <div class="flex flex-col md:flex-row justify-between items-center">
-                    <div class="text-gray-600 mb-4 md:mb-0">Showing 1-6 of 1,248 users</div>
+                    <div class="text-gray-600 mb-4 md:mb-0" id="pagination-info">Loading...</div>
                     <div class="flex space-x-2 pagination">
                         <!-- Pagination buttons will be populated by JavaScript -->
                     </div>
@@ -632,13 +626,41 @@
 
         document.getElementById('content-overlay').addEventListener('click', () => {
             document.getElementById('sidebar').classList.remove('active');
-        });
-
-        // Tab functionality
+        });        // Tab functionality
         document.querySelectorAll('.tab-button').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
+                
+                // Set filter based on tab
+                const roleSelect = document.querySelector('select[name="role"]');
+                const statusSelect = document.querySelector('select[name="status"]');
+                
+                const tabType = this.getAttribute('data-count');
+                switch(tabType) {
+                    case 'all':
+                        roleSelect.value = '';
+                        statusSelect.value = '';
+                        break;
+                    case 'clients':
+                        roleSelect.value = 'CLIENT';
+                        statusSelect.value = '';
+                        break;
+                    case 'providers':
+                        roleSelect.value = 'PROVIDER';
+                        statusSelect.value = '';
+                        break;
+                    case 'admins':
+                        roleSelect.value = 'ADMIN';
+                        statusSelect.value = '';
+                        break;
+                    case 'pending':
+                        roleSelect.value = '';
+                        statusSelect.value = 'PENDING';
+                        break;
+                }
+                
+                loadUsers();
             });
         });
 
@@ -665,9 +687,7 @@
             if (e.target === modal) {
                 modal.classList.add('hidden');
             }
-        });
-
-        // User Management Functions
+        });        // User Management Functions
         const UserAPI = {
             getUsers: async (search, role, status, page = 0) => {
                 const response = await fetch(`/admin/api/users?search=${search || ''}&role=${role || ''}&status=${status || ''}&page=${page}`);
@@ -682,6 +702,10 @@
                     },
                     body: JSON.stringify(userData)
                 });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to create user');
+                }
                 return await response.json();
             },
 
@@ -693,6 +717,10 @@
                     },
                     body: JSON.stringify(userData)
                 });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to update user');
+                }
                 return await response.json();
             },
 
@@ -700,6 +728,10 @@
                 const response = await fetch(`/admin/api/users/${id}/status?status=${status}`, {
                     method: 'PUT'
                 });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to update user status');
+                }
                 return await response.json();
             },
 
@@ -708,10 +740,10 @@
                     method: 'DELETE'
                 });
                 if (!response.ok) {
-                    throw new Error('Failed to delete user');
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to delete user');
                 }
-            }
-        };
+            }        };
 
         // UI Event Handlers
         document.addEventListener('DOMContentLoaded', function() {
@@ -822,9 +854,7 @@
                     alert('Error updating user: ' + error.message);
                 }
             });
-        });
-
-        async function loadUsers(page = 0) {
+        });        async function loadUsers(page = 0) {
             const searchInput = document.querySelector('.search-input');
             const roleSelect = document.querySelector('select[name="role"]');
             const statusSelect = document.querySelector('select[name="status"]');
@@ -837,12 +867,20 @@
                     page
                 );
                 updateUsersGrid(data.users);
-                updatePagination(data.totalPages, page);
+                updatePagination(data.totalPages, page, data.totalElements);
                 updateCounts(data.counts);
+                updatePaginationInfo(page, data.users.length, data.totalElements);
             } catch (error) {
                 console.error('Error loading users:', error);
                 alert('Error loading users. Please try again.');
             }
+        }
+
+        function updatePaginationInfo(currentPage, currentPageSize, totalElements) {
+            const start = currentPage * 10 + 1;
+            const end = start + currentPageSize - 1;
+            const infoElement = document.getElementById('pagination-info');
+            infoElement.textContent = `Showing ${start}-${end} of ${totalElements} users`;
         }
 
         function updateUsersGrid(users) {
@@ -880,22 +918,20 @@
                     </div>
                 </div>
             `).join('');
-        }
-
-        function getRoleBackgroundClass(role) {
+        }        function getRoleBackgroundClass(role) {
             const classes = {
-                'ROLE_ADMIN': 'bg-crimson/20',
-                'ROLE_PROVIDER': 'bg-midnight-blue/20',
-                'ROLE_CLIENT': 'bg-deep-sky-blue/20'
+                'ADMIN': 'bg-crimson/20',
+                'PROVIDER': 'bg-midnight-blue/20',
+                'CLIENT': 'bg-deep-sky-blue/20'
             };
             return classes[role] || 'bg-gray-200';
         }
 
         function getRoleIconClass(role) {
             const icons = {
-                'ROLE_ADMIN': 'fas fa-user-shield text-crimson',
-                'ROLE_PROVIDER': 'fas fa-user-md text-midnight-blue',
-                'ROLE_CLIENT': 'fas fa-user text-deep-sky-blue'
+                'ADMIN': 'fas fa-user-shield text-crimson',
+                'PROVIDER': 'fas fa-user-md text-midnight-blue',
+                'CLIENT': 'fas fa-user text-deep-sky-blue'
             };
             return icons[role] || 'fas fa-user text-gray-600';
         }
@@ -920,10 +956,8 @@
                     </button>
                 `;
             }
-        }
-
-        function formatRole(role) {
-            return role.replace('ROLE_', '').charAt(0) + role.replace('ROLE_', '').slice(1).toLowerCase();
+        }        function formatRole(role) {
+            return role.charAt(0) + role.slice(1).toLowerCase();
         }
 
         function formatStatus(status) {
@@ -939,7 +973,7 @@
             });
         }
 
-        function updatePagination(totalPages, currentPage) {
+        function updatePagination(totalPages, currentPage, totalElements) {
             const pagination = document.querySelector('.pagination');
             let html = '';
 
@@ -973,11 +1007,21 @@
             document.querySelector('[data-count="admins"]').textContent = `Admins (${counts.totalAdmins})`;
             document.querySelector('[data-count="pending"]').textContent = `Pending (${counts.totalPending})`;
         }        async function viewUser(userId) {
-            // Implementation for viewing user details
-            console.log('View user:', userId);
-        }
+            try {
+                // Get user details
+                const response = await fetch(`/admin/api/users?search=&role=&status=&page=0&size=1000`);
+                const data = await response.json();
+                const user = data.users.find(u => u.id === userId);
 
-        async function updateUserStatus(userId, newStatus) {
+                if (user) {
+                    alert(`User Details:\n\nName: ${user.firstName} ${user.lastName}\nEmail: ${user.email}\nRole: ${formatRole(user.role)}\nStatus: ${formatStatus(user.status)}\nJoined: ${formatDate(user.createdAt)}\nLast Active: ${formatDate(user.lastLoginDate) || 'Never'}`);
+                } else {
+                    alert('User not found');
+                }
+            } catch (error) {
+                alert('Error loading user details: ' + error.message);
+            }
+        }        async function updateUserStatus(userId, newStatus) {
             try {
                 await UserAPI.updateUserStatus(userId, newStatus);
                 loadUsers();
@@ -985,6 +1029,13 @@
                 alert('Error updating user status: ' + error.message);
             }
         }
+        
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout';
+            }
+        });
     </script>
 </body>
 

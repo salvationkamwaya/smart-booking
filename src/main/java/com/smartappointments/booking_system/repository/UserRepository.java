@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,12 +30,16 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             @Param("status") Status status,
             @Param("search") String search,
             Pageable pageable
-    );
-
-    @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role AND u.status = :status")
+    );    @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role AND u.status = :status")
     long countByRoleAndStatus(@Param("role") Role role, @Param("status") Status status);
     
-    // Find users by role
+    @Query("SELECT COUNT(u) FROM User u WHERE u.status = :status")
+    long countByStatus(@Param("status") Status status);
+      // Find users by role
     @Query("SELECT u FROM User u WHERE u.role = :role")
     List<User> findByRole(@Param("role") Role role);
+    
+    // Find users created between dates
+    @Query("SELECT u FROM User u WHERE u.createdAt BETWEEN :startDate AND :endDate")
+    List<User> findByCreatedAtBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

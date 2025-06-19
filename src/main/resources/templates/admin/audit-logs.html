@@ -164,18 +164,300 @@
                     </li>
                 </ul>
             </nav>
-        </aside>
-
-        <!-- Main Content -->
+        </aside>        <!-- Main Content -->
         <main class="flex-1 ml-64 p-8">
-            <!-- Your existing audit logs content here -->
-        </main>
-    </div>
+            <!-- Page Header -->
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-dark-gray">Audit Logs</h1>
+                <p class="text-gray-600 mt-2">Monitor system activities and security events</p>
+            </div>
 
-    <!-- Content Overlay -->
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-5 rounded-xl shadow-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Logs</p>
+                            <p id="total-logs" class="text-2xl font-bold mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-list text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex items-center text-xs text-gray-600">
+                            <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+                            <span>Last 24 hours</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Today's Activity</p>
+                            <p id="today-logs" class="text-2xl font-bold mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-clock text-green-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex items-center text-xs text-gray-600">
+                            <i class="fas fa-calendar text-gray-400 mr-1"></i>
+                            <span>Activity today</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Errors/Failures</p>
+                            <p id="error-logs" class="text-2xl font-bold mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex items-center text-xs text-gray-600">
+                            <i class="fas fa-arrow-down text-green-500 mr-1"></i>
+                            <span>Today's errors</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Security Events</p>
+                            <p id="security-logs" class="text-2xl font-bold mt-1">0</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                            <i class="fas fa-shield-alt text-yellow-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex items-center text-xs text-gray-600">
+                            <i class="fas fa-lock text-gray-400 mr-1"></i>
+                            <span>Login/logout events</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Controls -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-6">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <!-- Search Bar -->
+                    <div class="relative w-full lg:w-1/3">
+                        <input type="text" id="search-input" placeholder="Search logs..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="flex flex-wrap gap-3 w-full lg:w-auto">
+                        <!-- Date Range -->
+                        <div class="flex gap-2">
+                            <input type="date" id="from-date" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                            <input type="date" id="to-date" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                        </div>
+
+                        <!-- Entity Type Filter -->
+                        <select id="entity-filter" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                            <option value="">All Entities</option>
+                            <option value="USER">Users</option>
+                            <option value="APPOINTMENT">Appointments</option>
+                            <option value="SYSTEM">System</option>
+                        </select>
+
+                        <!-- Severity Filter -->
+                        <select id="severity-filter" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                            <option value="">All Severities</option>
+                            <option value="INFO">Info</option>
+                            <option value="WARN">Warning</option>
+                            <option value="ERROR">Error</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+
+                        <!-- Success Filter -->
+                        <select id="success-filter" class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-deep-sky-blue">
+                            <option value="">All Operations</option>
+                            <option value="true">Successful</option>
+                            <option value="false">Failed</option>
+                        </select>
+
+                        <button id="apply-filters" class="bg-deep-sky-blue hover:bg-midnight-blue text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-filter mr-2"></i>
+                            Apply
+                        </button>
+
+                        <button id="clear-filters" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-times mr-2"></i>
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <button id="view-recent" class="bg-white border border-deep-sky-blue text-deep-sky-blue hover:bg-deep-sky-blue hover:text-white p-4 rounded-lg transition-colors flex items-center justify-center">
+                    <i class="fas fa-clock mr-2"></i>
+                    Recent Activities
+                </button>
+                <button id="view-failed" class="bg-white border border-red-500 text-red-500 hover:bg-red-500 hover:text-white p-4 rounded-lg transition-colors flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Failed Operations
+                </button>
+                <button id="export-logs" class="bg-white border border-green-500 text-green-500 hover:bg-green-500 hover:text-white p-4 rounded-lg transition-colors flex items-center justify-center">
+                    <i class="fas fa-download mr-2"></i>
+                    Export Logs
+                </button>
+            </div>
+
+            <!-- Audit Logs Table -->
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-dark-gray">Audit Logs</h2>
+                    <div class="flex items-center space-x-2">
+                        <select id="page-size" class="p-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="10">10 per page</option>
+                            <option value="20" selected>20 per page</option>
+                            <option value="50">50 per page</option>
+                            <option value="100">100 per page</option>
+                        </select>
+                        <button id="refresh-logs" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-light-gray">
+                                <th class="p-3 text-left text-dark-gray font-semibold">Timestamp</th>
+                                <th class="p-3 text-left text-dark-gray font-semibold">Action</th>
+                                <th class="p-3 text-left text-dark-gray font-semibold">User</th>
+                                <th class="p-3 text-left text-dark-gray font-semibold">Entity</th>
+                                <th class="p-3 text-left text-dark-gray font-semibold">Status</th>
+                                <th class="p-3 text-left text-dark-gray font-semibold">Severity</th>
+                                <th class="p-3 text-left text-dark-gray font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-table-body" class="divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="7" class="text-center py-8 text-gray-500">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i>
+                                    Loading audit logs...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-6 flex justify-between items-center">
+                    <div id="showing-text" class="text-gray-600">Showing 0-0 of 0 logs</div>
+                    <div id="pagination-container" class="flex space-x-2">
+                        <!-- Pagination buttons will be added here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>    <!-- Content Overlay -->
     <div id="content-overlay"></div>
 
+    <!-- Log Detail Modal -->
+    <div id="log-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-dark-gray">Audit Log Details</h2>
+                        <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Log ID</label>
+                                <div id="modal-id" class="p-2 bg-gray-50 rounded border"></div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Timestamp</label>
+                                <div id="modal-timestamp" class="p-2 bg-gray-50 rounded border"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Action</label>
+                                <div id="modal-action" class="p-2 bg-gray-50 rounded border"></div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Performed By</label>
+                                <div id="modal-user" class="p-2 bg-gray-50 rounded border"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Entity Type</label>
+                                <div id="modal-entity-type" class="p-2 bg-gray-50 rounded border"></div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Entity ID</label>
+                                <div id="modal-entity-id" class="p-2 bg-gray-50 rounded border"></div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">IP Address</label>
+                                <div id="modal-ip" class="p-2 bg-gray-50 rounded border"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Severity</label>
+                                <div id="modal-severity" class="p-2 bg-gray-50 rounded border"></div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Success</label>
+                                <div id="modal-success" class="p-2 bg-gray-50 rounded border"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Details</label>
+                            <div id="modal-details" class="p-3 bg-gray-50 rounded border min-h-[100px] whitespace-pre-wrap"></div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">User Agent</label>
+                            <div id="modal-user-agent" class="p-2 bg-gray-50 rounded border text-sm"></div>
+                        </div>
+                        
+                        <div class="flex justify-end pt-4">
+                            <button id="close-modal-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Global variables
+        let currentPage = 0;
+        let currentPageSize = 20;
+        let currentFilters = {};
+
         // Mobile sidebar toggle
         document.getElementById('toggle-sidebar').addEventListener('click', () => {
             document.getElementById('sidebar').classList.add('active');
@@ -188,6 +470,422 @@
         document.getElementById('content-overlay').addEventListener('click', () => {
             document.getElementById('sidebar').classList.remove('active');
         });
+        
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout';
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAuditStats();
+            loadAuditLogs();
+            initializeEventListeners();
+        });
+
+        // Initialize event listeners
+        function initializeEventListeners() {
+            // Search functionality
+            const searchInput = document.getElementById('search-input');
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentFilters.search = this.value;
+                    currentPage = 0;
+                    loadAuditLogs();
+                }, 500);
+            });
+
+            // Date filters
+            document.getElementById('from-date').addEventListener('change', function() {
+                currentFilters.fromDate = this.value;
+                currentPage = 0;
+                loadAuditLogs();
+            });
+
+            document.getElementById('to-date').addEventListener('change', function() {
+                currentFilters.toDate = this.value;
+                currentPage = 0;
+                loadAuditLogs();
+            });
+
+            // Entity type filter
+            document.getElementById('entity-filter').addEventListener('change', function() {
+                currentFilters.entityType = this.value;
+                currentPage = 0;
+                loadAuditLogs();
+            });
+
+            // Severity filter
+            document.getElementById('severity-filter').addEventListener('change', function() {
+                currentFilters.severity = this.value;
+                currentPage = 0;
+                loadAuditLogs();
+            });
+
+            // Success filter
+            document.getElementById('success-filter').addEventListener('change', function() {
+                currentFilters.success = this.value === '' ? null : this.value === 'true';
+                currentPage = 0;
+                loadAuditLogs();
+            });
+
+            // Page size
+            document.getElementById('page-size').addEventListener('change', function() {
+                currentPageSize = parseInt(this.value);
+                currentPage = 0;
+                loadAuditLogs();
+            });
+
+            // Apply filters button
+            document.getElementById('apply-filters').addEventListener('click', function() {
+                loadAuditLogs();
+            });
+
+            // Clear filters button
+            document.getElementById('clear-filters').addEventListener('click', function() {
+                clearAllFilters();
+            });
+
+            // Quick action buttons
+            document.getElementById('view-recent').addEventListener('click', function() {
+                viewRecentActivities();
+            });
+
+            document.getElementById('view-failed').addEventListener('click', function() {
+                viewFailedOperations();
+            });
+
+            document.getElementById('export-logs').addEventListener('click', function() {
+                exportAuditLogs();
+            });
+
+            // Refresh button
+            document.getElementById('refresh-logs').addEventListener('click', function() {
+                loadAuditLogs();
+                loadAuditStats();
+            });
+
+            // Modal event listeners
+            initializeModalListeners();
+        }
+
+        // Load audit statistics
+        async function loadAuditStats() {
+            try {
+                const response = await fetch('/admin/api/audit-logs/stats');
+                const stats = await response.json();
+                
+                updateStatsCards(stats);
+            } catch (error) {
+                console.error('Error loading audit stats:', error);
+            }
+        }
+
+        // Update stats cards
+        function updateStatsCards(stats) {
+            document.getElementById('total-logs').textContent = stats.totalLogs.toLocaleString();
+            document.getElementById('today-logs').textContent = stats.todayLogs.toLocaleString();
+            document.getElementById('error-logs').textContent = (stats.todayErrors + stats.todayFailures).toLocaleString();
+            
+            // Calculate security events (login/logout activities)
+            const securityEvents = stats.todayUserActions || 0;
+            document.getElementById('security-logs').textContent = securityEvents.toLocaleString();
+        }
+
+        // Load audit logs
+        async function loadAuditLogs() {
+            try {
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    size: currentPageSize,
+                    ...currentFilters
+                });
+
+                const response = await fetch(`/admin/api/audit-logs?${params}`);
+                const data = await response.json();
+                
+                updateLogsTable(data.logs);
+                updatePagination(data.totalPages, data.currentPage, data.totalElements);
+            } catch (error) {
+                console.error('Error loading audit logs:', error);
+                showError('Failed to load audit logs');
+            }
+        }
+
+        // Update logs table
+        function updateLogsTable(logs) {
+            const tbody = document.getElementById('logs-table-body');
+            tbody.innerHTML = '';
+            
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-8">No audit logs found</td></tr>';
+                return;
+            }
+
+            logs.forEach(log => {
+                const row = createLogRow(log);
+                tbody.appendChild(row);
+            });
+        }
+
+        // Create log table row
+        function createLogRow(log) {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50';
+            
+            const timestamp = new Date(log.timestamp).toLocaleString();
+            const entityInfo = log.entityType ? `${log.entityType}${log.entityId ? ` (${log.entityId})` : ''}` : '-';
+            const successBadge = log.success ? 
+                '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Success</span>' :
+                '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Failed</span>';
+            const severityBadge = getSeverityBadge(log.severity);
+            
+            row.innerHTML = `
+                <td class="p-3 text-sm">${timestamp}</td>
+                <td class="p-3">
+                    <div class="flex items-center">
+                        <i class="${getActionIcon(log.action)} mr-2"></i>
+                        <span class="font-medium">${log.action}</span>
+                    </div>
+                </td>
+                <td class="p-3 text-sm">${log.performedByName || 'System'}</td>
+                <td class="p-3 text-sm">${entityInfo}</td>
+                <td class="p-3">${successBadge}</td>
+                <td class="p-3">${severityBadge}</td>
+                <td class="p-3">
+                    <button class="bg-deep-sky-blue text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors text-sm" 
+                            onclick="viewLogDetails(${log.id})">
+                        <i class="fas fa-eye mr-1"></i> View
+                    </button>
+                </td>
+            `;
+            
+            return row;
+        }
+
+        // Get severity badge
+        function getSeverityBadge(severity) {
+            const badges = {
+                'INFO': '<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Info</span>',
+                'WARN': '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Warning</span>',
+                'ERROR': '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Error</span>',
+                'CRITICAL': '<span class="px-2 py-1 bg-red-200 text-red-900 text-xs rounded-full font-bold">Critical</span>'
+            };
+            return badges[severity] || badges['INFO'];
+        }
+
+        // Get action icon
+        function getActionIcon(action) {
+            const actionLower = action.toLowerCase();
+            if (actionLower.includes('create') || actionLower.includes('add')) {
+                return 'fas fa-plus text-green-500';
+            } else if (actionLower.includes('update') || actionLower.includes('edit')) {
+                return 'fas fa-edit text-blue-500';
+            } else if (actionLower.includes('delete') || actionLower.includes('remove')) {
+                return 'fas fa-trash text-red-500';
+            } else if (actionLower.includes('login')) {
+                return 'fas fa-sign-in-alt text-green-500';
+            } else if (actionLower.includes('logout')) {
+                return 'fas fa-sign-out-alt text-gray-500';
+            } else {
+                return 'fas fa-cog text-gray-500';
+            }
+        }
+
+        // Update pagination
+        function updatePagination(totalPages, currentPageNum, totalElements) {
+            const paginationContainer = document.getElementById('pagination-container');
+            paginationContainer.innerHTML = '';
+
+            // Update showing text
+            const showingText = document.getElementById('showing-text');
+            const start = currentPageNum * currentPageSize + 1;
+            const end = Math.min((currentPageNum + 1) * currentPageSize, totalElements);
+            showingText.textContent = `Showing ${start}-${end} of ${totalElements.toLocaleString()} logs`;
+
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors';
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.disabled = currentPageNum === 0;
+            prevBtn.onclick = () => {
+                if (currentPageNum > 0) {
+                    currentPage = currentPageNum - 1;
+                    loadAuditLogs();
+                }
+            };
+            paginationContainer.appendChild(prevBtn);
+
+            // Page numbers
+            const maxPagesToShow = 5;
+            const startPage = Math.max(0, currentPageNum - Math.floor(maxPagesToShow / 2));
+            const endPage = Math.min(totalPages, startPage + maxPagesToShow);
+
+            for (let i = startPage; i < endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = currentPageNum === i ? 
+                    'bg-deep-sky-blue text-white w-10 h-10 rounded-lg' : 
+                    'bg-gray-200 hover:bg-gray-300 w-10 h-10 rounded-lg';
+                pageBtn.textContent = i + 1;
+                pageBtn.onclick = () => {
+                    currentPage = i;
+                    loadAuditLogs();
+                };
+                paginationContainer.appendChild(pageBtn);
+            }
+
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'bg-gray-200 hover:bg-gray-300 p-2 rounded-lg transition-colors';
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.disabled = currentPageNum >= totalPages - 1;
+            nextBtn.onclick = () => {
+                if (currentPageNum < totalPages - 1) {
+                    currentPage = currentPageNum + 1;
+                    loadAuditLogs();
+                }
+            };
+            paginationContainer.appendChild(nextBtn);
+        }
+
+        // Modal functions
+        function initializeModalListeners() {
+            const modal = document.getElementById('log-modal');
+            const closeModal = document.getElementById('close-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+
+            closeModal.addEventListener('click', hideModal);
+            closeModalBtn.addEventListener('click', hideModal);
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) hideModal();
+            });
+        }
+
+        function showModal() {
+            document.getElementById('log-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideModal() {
+            document.getElementById('log-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // View log details
+        async function viewLogDetails(id) {
+            try {
+                const response = await fetch(`/admin/api/audit-logs/${id}`);
+                const log = await response.json();
+                
+                populateModal(log);
+                showModal();
+            } catch (error) {
+                console.error('Error loading log details:', error);
+                showError('Failed to load log details');
+            }
+        }
+
+        // Populate modal with log data
+        function populateModal(log) {
+            document.getElementById('modal-id').textContent = log.id;
+            document.getElementById('modal-timestamp').textContent = new Date(log.timestamp).toLocaleString();
+            document.getElementById('modal-action').textContent = log.action;
+            document.getElementById('modal-user').textContent = log.performedByName || 'System';
+            document.getElementById('modal-entity-type').textContent = log.entityType || '-';
+            document.getElementById('modal-entity-id').textContent = log.entityId || '-';
+            document.getElementById('modal-ip').textContent = log.ipAddress || '-';
+            document.getElementById('modal-severity').innerHTML = getSeverityBadge(log.severity);
+            document.getElementById('modal-success').innerHTML = log.success ? 
+                '<span class="text-green-600">✓ Success</span>' : 
+                '<span class="text-red-600">✗ Failed</span>';
+            document.getElementById('modal-details').textContent = log.details || 'No additional details';
+            document.getElementById('modal-user-agent').textContent = log.userAgent || '-';
+        }
+
+        // Quick action functions
+        function viewRecentActivities() {
+            // Clear filters and show recent activities
+            clearAllFilters();
+            currentFilters = {};
+            currentPage = 0;
+            loadAuditLogs();
+        }
+
+        async function viewFailedOperations() {
+            try {
+                const response = await fetch('/admin/api/audit-logs/failed');
+                const data = await response.json();
+                
+                updateLogsTable(data.logs);
+                updatePagination(data.totalPages, 0, data.totalElements);
+                
+                // Update showing text to indicate filtered view
+                document.getElementById('showing-text').textContent = `Showing failed operations (${data.totalElements} total)`;
+            } catch (error) {
+                console.error('Error loading failed operations:', error);
+                showError('Failed to load failed operations');
+            }
+        }
+
+        // Export audit logs
+        async function exportAuditLogs() {
+            try {
+                const params = new URLSearchParams({
+                    format: 'csv',
+                    ...currentFilters
+                });
+
+                const response = await fetch(`/admin/api/audit-logs/export?${params}`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'audit-logs.csv';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    showSuccess('Export completed successfully');
+                } else {
+                    showError('Failed to export audit logs');
+                }
+            } catch (error) {
+                console.error('Error exporting audit logs:', error);
+                showError('Failed to export audit logs');
+            }
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            currentFilters = {};
+            currentPage = 0;
+            
+            // Reset form elements
+            document.getElementById('search-input').value = '';
+            document.getElementById('from-date').value = '';
+            document.getElementById('to-date').value = '';
+            document.getElementById('entity-filter').value = '';
+            document.getElementById('severity-filter').value = '';
+            document.getElementById('success-filter').value = '';
+            
+            loadAuditLogs();
+        }
+
+        // Utility functions
+        function showSuccess(message) {
+            // You can implement a toast notification here
+            alert(message);
+        }
+
+        function showError(message) {
+            // You can implement a toast notification here
+            alert('Error: ' + message);
+        }
     </script>
 </body>
 

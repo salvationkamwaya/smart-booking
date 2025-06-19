@@ -179,8 +179,7 @@
             <a href="/admin/report" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg">
                 <i class="fas fa-chart-bar w-6"></i>
                 <span>Reports</span>
-            </a>
-            <a href="/logout" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg text-crimson">
+            </a>            <a href="#" id="logout-link" class="sidebar-link flex items-center space-x-3 p-3 rounded-lg text-crimson">
                 <i class="fas fa-sign-out-alt w-6"></i>
                 <span>Logout</span>
             </a>
@@ -442,10 +441,19 @@
             contentOverlay.addEventListener('click', () => {
                 document.getElementById('sidebar').classList.remove('active');
             });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
+        }        document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('user-name').textContent = 'Admin User';
+            
+            // Logout functionality
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to logout?')) {
+                        window.location.href = '/logout';
+                    }
+                });
+            }
         });
 
         document.getElementById('toggle-sidebar').addEventListener('click', function() {
