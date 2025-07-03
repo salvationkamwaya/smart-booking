@@ -9,6 +9,9 @@ This guide helps you test all the new dynamic features of the client booking sys
 2. Ensure PostgreSQL database is connected and populated with sample data
 3. Open the booking page: `http://localhost:8080/client/book-appointment`
 
+
+
+ hello this is a minor change 
 ## 🔍 Test Scenarios
 
 ### 1. Provider Filtering Test
